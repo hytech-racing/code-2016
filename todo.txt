@@ -7,5 +7,7 @@ Find the CAN documentation for each of the ECUs:
     Orion BMS
     Tritium EV Driver Control
     Tritium Wavesculptor200 Motor Inverter
+# 2 #
+Use masks and filters instead of if statements to sort messages by CANid
 
 Test each unit individually and ensure that they respond to their corresponding CAN messages.
