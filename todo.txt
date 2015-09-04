@@ -1,0 +1,11 @@
+###############################################################################
+# LIST OF ALL SHORT AND LONG TERM GOALS                                       #
+###############################################################################
+
+# 1 #
+Find the CAN documentation for each of the ECUs:
+    Orion BMS
+    Tritium EV Driver Control
+    Tritium Wavesculptor200 Motor Inverter
+
+Test each unit individually and ensure that they respond to their corresponding CAN messages.
