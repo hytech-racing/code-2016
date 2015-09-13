@@ -3,13 +3,8 @@
 ###############################################################################
 
 # 1 #
-Find the CAN documentation for each of the ECUs:
-    Orion BMS
-    Tritium EV Driver Control
-    Tritium Wavesculptor200 Motor Inverter
-# 2 #
 Use masks and filters instead of if statements to sort messages by CANid
-
-Test each unit individually and ensure that they respond to their corresponding CAN messages.
-
 **ignore this, testing something**
+
+# 2 #
+Add item prices to inventory.txt and come up with an overall budget

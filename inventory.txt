@@ -3,5 +3,5 @@
 1 - Raspberry Pi 2
 1 - Pi CAN Shield
 1 - Radio adapter for Pi (replace with specific model)
-1 - Soldering iron
+2 - Soldering iron
 1 - Telemetry Chip and related parts
