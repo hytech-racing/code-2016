@@ -7,4 +7,4 @@ Use masks and filters instead of if statements to sort messages by CANid
 **ignore this, testing something**
 
 # 2 #
-Add item prices to inventory.txt and come up with an overall budget
+Design overall layout of the different modules and their external wiring
