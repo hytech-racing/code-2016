@@ -1,0 +1,5 @@
+3 - Arduino UNO
+3 - SeeedStudio CAN Shield
+1 - Soldering iron
+1 - Telemetry Chip and related parts
+
