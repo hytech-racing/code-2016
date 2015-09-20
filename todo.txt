@@ -2,6 +2,9 @@
 # LIST OF ALL SHORT AND LONG TERM GOALS                                       #
 ###############################################################################
 
+# 0 # Important
+Change inventory list
+
 # 1 #
 Use masks and filters instead of if statements to sort messages by CANid
 **ignore this, testing something**
