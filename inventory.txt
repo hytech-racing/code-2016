@@ -1,8 +1,7 @@
-3 x $ 25.00 - Arduino UNO
-3 x $ 13.00 - Elecfreaks CAN Shield
-1 x $ 40.00 - Raspberry Pi 2
-1 x $ 50.00 - Pi CAN Shield
-1 x $150.00 - XBee Pro XSC S3B Dev Kit
-2 x $ 50.00 - Soldering iron
+2 x $ - Arduino NANO
+1 x $ - Raspberry Pi 2
+1 x $ - Pi CAN Shield
+1 x $ - XBee Pro XSC S3B Dev Kit
+2 x $ - Soldering iron
 
-Total Price: $ 460.00
+Total Price: $
