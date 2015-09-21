@@ -2,12 +2,11 @@
 # LIST OF ALL SHORT AND LONG TERM GOALS                                       #
 ###############################################################################
 
-# 0 # Important
-Change inventory list
-
 # 1 #
-Use masks and filters instead of if statements to sort messages by CANid
-**ignore this, testing something**
+Manually design CAN IC
 
 # 2 #
-Design overall layout of the different modules and their external wiring
+Design different namespaces for all of the ECUs that communicate through CAN
+
+# 3 #
+Testing bluetooth communication between Pi and Smartphone
