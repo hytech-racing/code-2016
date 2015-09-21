@@ -1,9 +1,0 @@
-4 x $  - Arduino NANO - NewEgg
-1 x $  35.00 - Raspberry Pi 2 - Microcenter
-1 x $  50.00 - Pi CAN Shield - http://skpang.co.uk/catalog/pican-canbus-board-for-raspberry-pi-p-1196.html
-1 x $ 150.00 - XBee Pro XSC S3B Dev Kit
-2 x $  50.00 - Soldering iron - http://www.amazon.com/937D-Solder-Soldering-Station-Display/dp/B009PQ0LQS
-
-Total Price: $
-
-Excel Format: Quantity, Unit Price, Subtotal Price, Item, Description, Link
