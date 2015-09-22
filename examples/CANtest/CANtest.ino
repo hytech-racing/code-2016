@@ -15,7 +15,7 @@
   Set to 9 if using a SEEEDStudio (black) shield
   Set to 10 if using a SparkFun (red) shield
 */
-const int SPI_CS_PIN = 9;
+const int SPI_CS_PIN = 10;
 MCP_CAN CAN(SPI_CS_PIN);
 int sent = 0;
 
@@ -54,13 +54,19 @@ void loop() {
         length: 0 to 8 (bytes)
         message: the message to be sent (max 8 bytes)
       */
-      CAN.sendMsgBuf(0x01, 0, 8, msg); //This is the line that actually sends the CAN message
-      Serial.println("sent request 0x01");
+      if (CAN.sendMsgBuf(0x01, 0, 8, msg) == CAN_OK) { //This is the line that actually sends the CAN message
+        Serial.println("sent request 0x01");
+      } else {
+        Serial.println("Message failed to send");
+      }
       sent = 1;
     }
     else if(entry == 's') {
-      CAN.sendMsgBuf(0x02, 0, 8, msg); //Different message being sent, so different ID
-      Serial.println("sent request 0x02");
+      if (CAN.sendMsgBuf(0x02, 0, 8, msg) == CAN_OK) { //Different message being sent, so different ID
+        Serial.println("sent request 0x02");
+      } else {
+        Serial.println("Message failed to send");
+      }
       sent = 1;
     }
   }

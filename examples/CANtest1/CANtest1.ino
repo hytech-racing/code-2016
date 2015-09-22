@@ -16,7 +16,7 @@ MCP_CAN CAN(SPI_CS_PIN);
 
 void setup()
 {
-    Serial.begin(115200);
+    Serial.begin(9600);
 
 START_INIT:
 
