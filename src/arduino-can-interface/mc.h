@@ -5,7 +5,13 @@
 
 /**
  * Functions for sending and receiving data from the Motor Controller
+ * Shashank S
  */
 
 namespace MC {
+
+    float getTemp(char[]);
+    float getRPM(char[]);
+    float getCurrent(char[]);
+
 }

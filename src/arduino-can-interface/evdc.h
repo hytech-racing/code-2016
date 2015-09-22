@@ -5,6 +5,7 @@
 
 /**
  * Functions for sending and receiving data from the EVDC
+ * Maxim M
  */
 
 namespace EVDC {
