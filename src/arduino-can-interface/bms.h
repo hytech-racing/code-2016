@@ -9,7 +9,7 @@
  */
 
 namespace BMS {
-    double getVoltage(char[]);
-    double getCurrent(char[]);
-    double getTemp(char[]);
+    float getVoltage(char[]);
+    float getCurrent(char[]);
+    float getTemp(char[]);
 }
