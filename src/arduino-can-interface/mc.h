@@ -14,4 +14,6 @@ namespace MC {
     float getRPM(char[]);
     float getCurrent(char[]);
 
+    void sendRPM(MCP_CAN* can, float data);
+
 }
