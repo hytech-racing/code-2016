@@ -1,6 +1,3 @@
-#include <SPI.h>
-#include "mcp_can.h"
-
 #pragma once
 
 /**
@@ -10,10 +7,10 @@
 
 namespace MC {
 
-    float getTemp(char[]);
-    float getRPM(char[]);
-    float getCurrent(char[]);
+    float getTemp(char*);
+    float getRPM(char*);
+    float getCurrent(char*);
 
-    void sendRPM(MCP_CAN* can, float data);
+//    void sendRPM(MCP_CAN* can, float data);
 
 }
