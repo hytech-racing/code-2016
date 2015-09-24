@@ -18,5 +18,5 @@ float MC::getCurrent(char* data) {
     float real, imag;
     memcpy(&real, &data[0], sizeof(float));
     memcpy(&imag, &data[4], sizeof(float));
-    return sqrt(pow(real, 2) + pow(imag, 2));
+    return sqrt(pow(real, 2.f) + pow(imag, 2.f));
 }
