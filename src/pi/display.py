@@ -2,7 +2,7 @@ import bluetooth
 
 server_addr = "A0:A8:CD:B5:52:97"
 client_addr = "2C:8A:72:ED:BE:F1"
-UUID = "0000110a-0000-1000-8000-00805f9b34fb"
+UUID = "00001101-0000-1000-8000-00805F9B34FB"
 port = 1
 DATA_LENGTH = 20
 
