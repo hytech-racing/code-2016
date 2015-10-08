@@ -15,7 +15,7 @@
   Set to 9 if using a SEEEDStudio (black) shield
   Set to 10 if using a SparkFun (red) shield
 */
-const int SPI_CS_PIN = 10;
+const int SPI_CS_PIN = 9;
 MCP_CAN CAN(SPI_CS_PIN);
 int sent = 0;
 
