@@ -1,0 +1,13 @@
+Rules that I noticed that we will need to implement
+
+SAE Electric:
+2.2.1 power drawn from BATTERY must not exceed 80 kW
+2.2.7 cannot use regenerative braking if speed less than 5 km/h
+2.2.8 cannot use power to drive in reverse
+2.5 if acc pedal signals more than 25% and brakes are pressed, motor must immediately recieve no power.
+2.5.1 the motor can only get power back if the acc pedal is reduced to 5%; not any time before
+3.6.3 max allowable HV battery temperature is 60 degrees C
+4.10.2 brake pedal must be pressed in order to go into ready-to-drive mode
+4.13.4 ready to drive sound can't be a song part
+5.1.4 driver cannot reset after BMS or IMD error.
+ended at 8.3
