@@ -10,4 +10,10 @@ SAE Electric:
 4.10.2 brake pedal must be pressed in order to go into ready-to-drive mode
 4.13.4 ready to drive sound can't be a song part
 5.1.4 driver cannot reset after BMS or IMD error.
-ended at 8.3
+
+
+Formula Hybrid:
+3.6.8 BMS needs to be able to shut down systems
+4.8.1 driver cannot reset after BMS or IMD error
+4.11.2 Ready to Drive sound must be 2500-3500 Hz
+ended at 5.3.7
