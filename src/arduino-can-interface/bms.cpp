@@ -19,6 +19,7 @@ float BMS::getCurrent(unsigned char* data) {
 float BMS::getTemp(unsigned char* data) {
     unsigned char uTemp = data[4]; //Replace with actual value when we know what it is
     byte temp = (byte) uTemp;
+    float fTemp = (float) temp;
 
-    return temp;
+    return fTemp;
 }
