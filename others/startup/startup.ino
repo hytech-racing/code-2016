@@ -1,7 +1,7 @@
 boolean startupSequence() { // 0 means a normal startup, 1 means BMS resset, 2 means IMD reset
 // EVDC get progression button
 
-//progression: 1-5 normal, 6 is BMS error, 7 is IMD error
+//progression: 1-5 normal, 6 is BMS error, 7 is IMD error 
   while(!EVDC::getProgressionSwitch()){
     RPi::giveProgression(1);
   }
