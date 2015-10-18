@@ -7,7 +7,8 @@
 
 namespace MC {
 
-    float getTemp(char*);
+    float getPhaseTemp(char*);
+    float getMotorTemp(char*);
     float getRPM(char*);
     float getCurrent(char*);
 
