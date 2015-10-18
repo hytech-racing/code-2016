@@ -16,4 +16,6 @@ Formula Hybrid:
 3.6.8 BMS needs to be able to shut down systems
 4.8.1 driver cannot reset after BMS or IMD error
 4.11.2 Ready to Drive sound must be 2500-3500 Hz
-ended at 5.3.7
+5.7.3 Control, Telemetry and Instrumentation systems may remain energized if the cockpit BRB is depressed
+5.9.5 tractive system has to stay disabled until reset by someone other than driver (driver can't reactivate from within car if IMD fault)
+ended at 5.10
