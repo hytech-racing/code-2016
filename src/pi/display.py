@@ -20,7 +20,7 @@ server_sock, client_sock = create_server_and_client_socket()
 
 while True:
     try:
-        print client_sock.recv(DATA_LENGTH)
+        client_sock.send(raw_input("Data to send: "))
     except bluetooth.btcommon.BluetoothError:
         print "## Lost Bluetooth connection"
         server_sock.close()
