@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -32,6 +33,7 @@ public class MainActivity extends Activity {
         @Override
         public void handleMessage(Message msg) {
             String text = new String((byte[]) msg.obj);
+            BluetoothCommService.log("Message received");
             tempTextView.setText(text);
         }
     };

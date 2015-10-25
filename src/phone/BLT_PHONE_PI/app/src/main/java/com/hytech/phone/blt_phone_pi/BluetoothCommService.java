@@ -45,7 +45,10 @@ public class BluetoothCommService {
         btSetupConnection = null;
         btCommunicationThread = null;
         try {
-            if (btSocket != null) btSocket.close();
+            if (btSocket != null) {
+                btSocket.close();
+                btSocket = null;
+            }
         } catch (IOException e) {
             log("Failed to close socket");
         }
@@ -144,7 +147,7 @@ public class BluetoothCommService {
         r.write(out);
     }
 
-    private void log(String message) {
+    public static void log(String message) {
         Log.d(LOG_TAG, message);
     }
 }
