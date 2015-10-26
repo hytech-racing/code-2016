@@ -4,7 +4,7 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 
-#define DATA_LENGTH 1024
+#define DATA_LENGTH 256
 #define PORT 1
 
 // variables

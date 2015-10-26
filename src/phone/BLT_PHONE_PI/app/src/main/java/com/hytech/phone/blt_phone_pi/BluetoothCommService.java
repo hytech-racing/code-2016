@@ -21,9 +21,12 @@ public class BluetoothCommService {
     private CommunicationThread btCommunicationThread;
 
     private static final String LOG_TAG = "BluetoothCommService";
-    private static final String SERVER_ADDR = "A0:A8:CD:B5:52:97";
+    //private static final String SERVER_ADDR = "A0:A8:CD:B5:52:97";
+    private static final String SERVER_ADDR = "00:1A:7D:DA:71:11";
     private static final String B_UUID = "00001101-0000-1000-8000-00805F9B34FB";
     private static final int PORT = 1;
+
+    private static final int DATA_LENGTH = 256;
 
     public BluetoothCommService(Handler handler) {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -60,6 +63,7 @@ public class BluetoothCommService {
     }
 
     private class SetupConnection extends Thread {
+        @Override
         public void run() {
             if (!btAdapter.isEnabled()) btAdapter.enable();
             while (!btAdapter.isEnabled());
@@ -114,8 +118,9 @@ public class BluetoothCommService {
             log("IO streams created");
         }
 
+        @Override
         public void run() {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[DATA_LENGTH];
             int bytes;
             while (true) {
                 try {
