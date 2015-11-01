@@ -21,6 +21,10 @@ long MC_timeout_limit = 500;
 long EVDC_timeout;
 long EVDC_timmeout = 500;
 
+  unsigned char msgReceive[8]; // buffer for getting messages
+  unsigned char msgGive[8]; // buffer for sending messages
+  unsigned char len;
+
 MCP_CAN CanBus(9);
 
 void setup() {
@@ -29,7 +33,7 @@ void setup() {
     Serial.println("CAN Bus is not operaitonal");
     delay(10);
   }
-  startup();
+  startup(CanBus);
   BMS_timeout = millis() + BMS_timeout_limit;
   MC_timeout = millis() + MC_timeout_limit;
   ar_timeout = millis() + ar_timeout_limit;
@@ -39,9 +43,7 @@ void setup() {
 
 void loop() {
   // code structure: do error checks first, then do other things
-  unsigned char msgReceive[8]; // buffer for getting messages
-  unsigned char msgGive[8]; // buffer for sending messages
-  unsigned char len;
+
   while(CAN_MSGAVAIL == CanBus.checkReceive() {
     CAN.readMsgBuf(&len, msgReceive);
     switch(CAN.getCanId()) {
