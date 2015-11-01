@@ -12,6 +12,15 @@
 #define MC_TIMED_OUT 3
 #define REAR_TIMED_OUT 4
 
+long BMS_timeout;
+long BMS_timeout_limit = 2000; // 2000 ms
+long ar_timeout;
+long ar_timeout_limit = 2000;
+long MC_timeout;
+long MC_timeout_limit = 500;
+long EVDC_timeout;
+long EVDC_timmeout = 500;
+
 MCP_CAN CanBus(9);
 
 void setup() {
@@ -21,10 +30,10 @@ void setup() {
     delay(10);
   }
   startup();
-  BMS::timeout = millis() + BMS_timeout_limit;
-  BMS::timeout = millis() + BMS_timeout_limit;
-  BMS::timeout = millis() + BMS_timeout_limit;
-  BMS::timeout = millis() + BMS_timeout_limit;
+  BMS_timeout = millis() + BMS_timeout_limit;
+  MC_timeout = millis() + MC_timeout_limit;
+  ar_timeout = millis() + ar_timeout_limit;
+  EVDC_timeout = millis() + BMS_timeout_limit;
 
 }
 
@@ -41,44 +50,49 @@ void loop() {
         float voltage = BMS::getVoltage(msgRecieve);
         float current = BMS::getCurrent(msgReceive);
         BMS::timeout = millis() + BMS_timeout_limit;
+        break;
       case BMS::Message_2:
         BMS::timeout = millis() + BMS_timeout_limit;
+        break;
       case BMS::Message_3:
         BMS::timeout = millis() + BMS_timeout_limit;
+        break;
       case EVDC::Message:
         int errors = EVDC::determineErrors(msgReceive);
         EVDC::timeout = millis() + EVDC_timeout_limit;
+        break;
       case ar::Message:
         int errors = ar::determineErrors(msgReceive);
         ar::timeout = millis() + rear_timeout_limit;
-      case mc::Message_1:
+        break;
+      case MC::Message_1:
         float mctemp = MC::getTemp(msgRecieve);
         float phaseTemp = MC::getPhaseTemp(msgReceive);
         float mcSpeed = MC::getRPM(msgRecieve);
         float mcCurrent = MC::getCurrent(msgReceive);
         MC::timeout = millis() + MC_timeout_limit;
-      case mc::Message_2:
+        break;
+      case MC::Message_2:
         MC::timeout = millis() + MC_timeout_limit;
-      case mc::Message_3:
+        break;
+      case MC::Message_3:
         MC::timeout = millis() + MC_timeout_limit;
+        break;
       default:
+        break;
     }
   }
-  if(millis() > BMS_timeout_limit) {
+  if(millis() > BMS_timeout) {
     shutdownError(BMS_TIMED_OUT);
   }
-  if(millis() > rear_timeout_limit) {
+  if(millis() > ar_timeout) {
     shutdownError(REAR_TIMED_OUT);
   }
-  if(millis() > MC_timeout_limit) {
+  if(millis() > MC_timeout) {
     shutdownError(MC_TIMED_OUT);
   }
-  if(millis() > EVDC_timeout_limit) {
+  if(millis() > EVDC_timeout) {
     shutdownError(EVDC_TIMED_OUT);
   }
   
-      
-  
-  // put your main code here, to run repeatedly:
-
 }
