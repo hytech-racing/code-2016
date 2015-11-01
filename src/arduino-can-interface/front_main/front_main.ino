@@ -1,11 +1,11 @@
-#inlcude <SPI.h>
+#include <SPI.h>
 #include "mcp_can.h"
-#include mc.h
-#include EVDC.h
-#include BMS.h
-#include ar.h
-#include RPi.h
-#include startupShutdown.h
+#include "mc.h"
+#include "evdc.h"
+#include "bms.h"
+#include "ar.h"
+#include "pi.h"
+#include "startupShutdown.h"
 
 #define BMS_TIMED_OUT 1
 #define EVDC_TIMED_OUT 2
