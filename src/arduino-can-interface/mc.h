@@ -13,5 +13,8 @@ namespace MC {
     float getCurrent(char*);
 
 //    void sendRPM(MCP_CAN* can, float data);
-
+// include definitions for message identifiers, like
+// Message_1 = 0x34;
+// Message_2 = 0x2D7
+// like that
 }
