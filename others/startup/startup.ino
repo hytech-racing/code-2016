@@ -19,7 +19,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   boolean oldProgressButton;
   boolean needsToProgress;
   while(!needsToProgress){
-    RPi.giveProgression(1); // "Press button 1 to begin startup"
+    RPi.giveProgression(1, lilEngineThatCAN); // "Press button 1 to begin startup"
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
       lilEngineThatCAN.readMsgBuf(&len, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
@@ -41,7 +41,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   
   
   while(!needsToProgress){
-    RPi.giveProgression(2); // "checking for BMS errors"
+    RPi.giveProgression(2,lilEngineThatCAN); // "checking for BMS errors"
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
       lilEngineThatCAN.readMsgBuf(&len, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
@@ -61,14 +61,14 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   needsToProgress = false;
   
   while(!needsToProgress){
-    RPi.giveProgression(3); // "checking for IMD errors"
+    RPi.giveProgression(3,lilEngineThatCAN); // "checking for IMD errors"
     if(!IMD.checkErrors()) {
       needsToProgress = true;
   }
   needsToProgress = false;
          
     while(!needsToProgress){
-    RPi.giveProgression(
+    RPi.giveProgression(4,lilEngineThatCAN);
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
       lilEngineThatCAN.readMsgBuf(&len, msgGet);
       switch(lilEngineThatCAN.getCanId()) {

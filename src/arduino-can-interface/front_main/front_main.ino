@@ -21,6 +21,17 @@ long MC_timeout_limit = 500;
 long EVDC_timeout;
 long EVDC_timmeout = 500;
 
+// global variables for data from CANBUS
+float current;
+float BMStemp;
+float BMSpackvoltage;
+float BMSlowcellvoltage;
+float MCphasetemp;
+float MCmotortemp;
+float MCrpm;
+float MCcurrent;
+
+
   unsigned char msgReceive[8]; // buffer for getting messages
   unsigned char msgGive[8]; // buffer for sending messages
   unsigned char len;
@@ -42,7 +53,8 @@ void setup() {
 }
 
 void loop() {
-  // code structure: do error checks first, then do other things
+  // the basic premise is that I get the data from the CANBUS and
+  // load it into variables. Then, I check the data for plausibility
 
   while(CAN_MSGAVAIL == CanBus.checkReceive() {
     CAN.readMsgBuf(&len, msgReceive);
@@ -59,6 +71,15 @@ void loop() {
       case BMS::Message_3:
         BMS::timeout = millis() + BMS_timeout_limit;
         break;
+      case BMS::Message_4:
+        BMS::timeout = millis() + BMS_timeout_limit;
+        break;
+      case BMS::Message_5:
+        BMS::timeout = millis() + BMS_timeout_limit;
+        break;
+      case BMS::Message_6:
+        BMS::timeout = millis() + BMS_timeout_limit;
+        break;
       case EVDC::Message:
         int errors = EVDC::determineErrors(msgReceive);
         EVDC::timeout = millis() + EVDC_timeout_limit;
@@ -68,33 +89,33 @@ void loop() {
         ar::timeout = millis() + rear_timeout_limit;
         break;
       case MC::Message_1:
-        float mctemp = MC::getTemp(msgRecieve);
-        float phaseTemp = MC::getPhaseTemp(msgReceive);
-        float mcSpeed = MC::getRPM(msgRecieve);
-        float mcCurrent = MC::getCurrent(msgReceive);
+        MCmotortemp = MC::getMotorTemp(msgRecieve);
+        MCphaseTemp = MC::getPhaseTemp(msgReceive);
+        MCrpm = MC::getRPM(msgRecieve);
+        MCcurrent = MC::getCurrent(msgReceive);
         MC::timeout = millis() + MC_timeout_limit;
         break;
-      case MC::Message_2:
+     /* case MC::Message_2:
         MC::timeout = millis() + MC_timeout_limit;
         break;
       case MC::Message_3:
         MC::timeout = millis() + MC_timeout_limit;
-        break;
+        break; */
       default:
         break;
     }
   }
   if(millis() > BMS_timeout) {
-    shutdownError(BMS_TIMED_OUT);
+    shutdownError(BMS_TIMED_OUT, CanBus);
   }
   if(millis() > ar_timeout) {
-    shutdownError(REAR_TIMED_OUT);
+    shutdownError(REAR_TIMED_OUT, CanBus);
   }
   if(millis() > MC_timeout) {
-    shutdownError(MC_TIMED_OUT);
+    shutdownError(MC_TIMED_OUT, CanBus);
   }
   if(millis() > EVDC_timeout) {
-    shutdownError(EVDC_TIMED_OUT);
+    shutdownError(EVDC_TIMED_OUT, CanBus);
   }
   
 }

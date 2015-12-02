@@ -9,7 +9,11 @@
  */
 
 namespace BMS {
-    float getVoltage(char[]);
-    float getCurrent(char[]);
-    float getTemp(char[]);
+    float getPackVoltage(char*);
+    float getCurrent(char*);
+    float getHighTemp(char*);
+	float getStateOfCharge(char*);
+	float getHighResistance(char*);
+	float getLowVoltage(char*);
+	float getPowerDischargeLimit(char*);
 }

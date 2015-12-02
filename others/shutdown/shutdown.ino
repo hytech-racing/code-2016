@@ -1,5 +1,5 @@
-void ShutDownNormal() {
-  RPi::giveProgression(8);
+void ShutDownNormal(MCP_CAN& datCan) {
+  RPi::giveProgression(8, datCan);
   digitalWrite(Air4, LOW);
   digitalWrite(Air2, LOW);
   digitalWrite(Air3, LOW);
@@ -8,8 +8,8 @@ void ShutDownNormal() {
   digitalWrite(TSMasterRelay, LOW);
 }
 
-void shutdownError(int code) {
-  RPi::giveError(code);
+void shutdownError(int code, MCP_CAN& datCan) {
+  RPi::giveError(code, datCan);
   digitalWrite(TSMasterRelay, LOW);
   digitalWrite(Air4, LOW);
   digitalWrite(Air2, LOW);
