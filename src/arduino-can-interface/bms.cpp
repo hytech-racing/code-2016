@@ -132,7 +132,7 @@ float BMS::getInternalTemp(unsigned char* data) {
  * 0x005: Cell Voltages
  */
 
-float getHighVoltage(unsigned char* data) {
+float BMS::getHighVoltage(unsigned char* data) {
     unsigned char high = data[0];
     unsigned char low = data[1];
 
@@ -140,14 +140,14 @@ float getHighVoltage(unsigned char* data) {
     return volts / 10000; // units are 0.0001 V
 }
 
-float getLowVoltage(unsigned char* data) {
+float BMS::getLowVoltage(unsigned char* data) {
     int MostSig = data[2]<<(8);
     int volts = MostSig + data[3];
     float needsDivision = float(volts);
     return needsDivision/10000 ; // the units are in ten-thousandths of a volt
 }
 
-float getAvgVoltage(unsigned char* data) {
+float BMS::getAvgVoltage(unsigned char* data) {
     unsigned char high = data[4];
     unsigned char low = data[5];
 
@@ -159,7 +159,7 @@ float getAvgVoltage(unsigned char* data) {
  * 0x006: Cell Open Voltages
  */
 
- float getHighOpenVoltage(unsigned char* data) {
+ float BMS::getHighOpenVoltage(unsigned char* data) {
     unsigned char high = data[0];
     unsigned char low = data[1];
 
@@ -167,7 +167,7 @@ float getAvgVoltage(unsigned char* data) {
     return volts / 10000; // units are 0.0001 V
  }
 
- float getLowOpenVoltage(unsigned char* data) {
+ float BMS::getLowOpenVoltage(unsigned char* data) {
     unsigned char high = data[2];
     unsigned char low = data[3];
 
@@ -175,7 +175,7 @@ float getAvgVoltage(unsigned char* data) {
     return volts / 10000; // units are 0.0001 V
  }
 
- float getAvgOpenVoltage(unsigned char* data) {
+ float BMS::getAvgOpenVoltage(unsigned char* data) {
     unsigned char high = data[4];
     unsigned char low = data[5];
 
@@ -187,7 +187,7 @@ float getAvgVoltage(unsigned char* data) {
  * 0x007: Cell Resistances
  */
 
-float getHighResistance(unsigned char* data) {
+float BMS::getHighResistance(unsigned char* data) {
     unsigned char high = data[0];
     unsigned char low = data[1];
 
@@ -195,7 +195,7 @@ float getHighResistance(unsigned char* data) {
     return res / 100; // units are 0.01 milli-ohm
 }
 
-float getLowResistance(unsigned char* data) {
+float BMS::getLowResistance(unsigned char* data) {
     unsigned char high = data[2];
     unsigned char low = data[3];
 
@@ -203,7 +203,7 @@ float getLowResistance(unsigned char* data) {
     return res / 100; // units are 0.01 milli-ohm
 }
 
-float getAvgResistance(unsigned char* data) {
+float BMS::getAvgResistance(unsigned char* data) {
     unsigned char high = data[4];
     unsigned char low = data[5];
 
