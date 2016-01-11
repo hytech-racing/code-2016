@@ -18,46 +18,45 @@ namespace BMS {
     int Message_7 = 0x07; // cell resistances- probably dont need
 
     // 0x001: Pack Information
-    float getRelayStatus(char*);
-    float getPopulatedCellCount(char*);
-    float getStateOfCharge(char*);
-    float getDepthOfDischarge(char*);
-    float getPackHealth(char*);
-    float getPackCycles(char*);
-    float getSupplyVoltage(char*);
+    float getRelayStatus(unsigned char*);
+    float getStateOfCharge(unsigned char*);
+    float getDepthOfDischarge(unsigned char*);
+    float getPackHealth(unsigned char*);
+    float getPackCycles(unsigned char*);
+    float getSupplyVoltage(unsigned char*);
 
     // 0x002: Pack Values 1
-    float getPackCCL(char*);
-    float getCurrent(char*);
-    float getPackDCL(char*);
-    float getAmpHours(char*);
+    float getPackCCL(unsigned char*);
+    float getCurrent(unsigned char*);
+    float getPackDCL(unsigned char*);
+    float getAmpHours(unsigned char*);
 
     // 0x003: Pack Values 2
-    float getPackVoltage(char*);
-    float getPackOpenVoltage(char*);
-    float getPackSumVoltage(char*);
-    float getPackResistance(char*);
+    float getPackVoltage(unsigned char*);
+    float getPackOpenVoltage(unsigned char*);
+    float getPackSumVoltage(unsigned char*);
+    float getPackResistance(unsigned char*);
 
     // 0x004: Temperature Values
-    float getHighTemp(char*);
-    float getLowTemp(char*);
-    float getAvgTemp(char*);
-    float getInternalTemp(char*);
+    float getHighTemp(unsigned char*);
+    float getLowTemp(unsigned char*);
+    float getAvgTemp(unsigned char*);
+    float getInternalTemp(unsigned char*);
 
     // 0x005: Cell Voltages
-    float getHighVoltage(char*);
-    float getLowVoltage(char*);
-    float getAvgVoltage(char*);
+    float getHighVoltage(unsigned char*);
+    float getLowVoltage(unsigned char*);
+    float getAvgVoltage(unsigned char*);
 
-    // 0x006: Open Cell Voltages
-    float getHighOpenVoltage(char*);
-    float getLowOpenVoltage(char*);
-    float getAvgOpenVoltage(char*);
+    // 0x006: Cell Open Voltages
+    float getHighOpenVoltage(unsigned char*);
+    float getLowOpenVoltage(unsigned char*);
+    float getAvgOpenVoltage(unsigned char*);
 
     // 0x007: Cell Resistances
-    float getHighResistance(char*);
-    float getLowResistance(char*);
-    float getAvgResistance(char*);
+    float getHighResistance(unsigned char*);
+    float getLowResistance(unsigned char*);
+    float getAvgResistance(unsigned char*);
 }
 /*
 float BMSstateOfCharge;

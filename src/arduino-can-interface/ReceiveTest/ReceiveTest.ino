@@ -38,16 +38,9 @@ void loop() {
 
     // You have to readMsgBuf before you can get the ID of the message
 
-    if (CAN.getCanId() == 0x03B) { //Filters so only certain messages will execute this code
-      Serial.print("Current pack voltage: ");
-      Serial.println(BMS::getVoltage(buf));
-      Serial.print("Current pack current: ");
-      Serial.println(BMS::getCurrent(buf));
-    } else if (CAN.getCanId() == 0x6B2) {
-      Serial.println("Received 0x6B2 but no library to parse");
-    } else if (CAN.getCanId() == 0x3CB) {
-      Serial.print("Current pack temp: ");
-      Serial.println(BMS::getTemp(buf));
+    if (CAN.getCanId() == 0x01) { //Filters so only certain messages will execute this code
+      Serial.print("Current supply V: ");
+      Serial.println(BMS::getSupplyVoltage(buf));
     } else if (CAN.getCanId() == 0x60) {
       Serial.print(buf[0]);
       Serial.print(" ");
