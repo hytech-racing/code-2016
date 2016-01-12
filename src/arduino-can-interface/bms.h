@@ -18,7 +18,7 @@ namespace BMS {
     int Message_7 = 0x07; // cell resistances- probably dont need
 
     // 0x001: Pack Information
-    float getRelayStatus(unsigned char*);
+    unsigned char getRelayStatus(unsigned char*);
     float getStateOfCharge(unsigned char*);
     float getDepthOfDischarge(unsigned char*);
     float getPackHealth(unsigned char*);

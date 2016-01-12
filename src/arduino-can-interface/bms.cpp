@@ -4,8 +4,8 @@
  * 0x001: Pack Information
  */
 
-float BMS::getRelayStatus(unsigned char* data) {
-    return float(data[0]);
+unsigned char BMS::getRelayStatus(unsigned char* data) {
+    return data[0];
 }
 
 float BMS::getStateOfCharge(unsigned char* data){
