@@ -22,14 +22,19 @@ long EVDC_timeout;
 long EVDC_timmeout = 500;
 
 // global variables for data from CANBUS
-float current;
-float BMStemp;
-float BMSpackvoltage;
+float BMSstateOfCharge;
+float BMScurrent;
+float BMShighestTemp;
 float BMSlowcellvoltage;
+
 float MCphasetemp;
 float MCmotortemp;
 float MCrpm;
 float MCcurrent;
+
+int EVDCerror  = 0;
+
+int ARerror = 0;
 
 
   unsigned char msgReceive[8]; // buffer for getting messages
@@ -60,47 +65,53 @@ void loop() {
     CAN.readMsgBuf(&len, msgReceive);
     switch(CAN.getCanId()) {
       case BMS::Message_1:
-        float temp = BMS::getTemp(msgReceive);
-        float voltage = BMS::getVoltage(msgRecieve);
-        float current = BMS::getCurrent(msgReceive);
+        BMSstateOfCharge = BMS::getStateOfCharge(msgRecieve);
         BMS::timeout = millis() + BMS_timeout_limit;
         break;
       case BMS::Message_2:
+        BMScurrent = BMS::getCurrent(msgRecieve);
+      
         BMS::timeout = millis() + BMS_timeout_limit;
         break;
       case BMS::Message_3:
+        
         BMS::timeout = millis() + BMS_timeout_limit;
         break;
       case BMS::Message_4:
+        BMShighestTemp = BMS::getHighTemp(msgRecieve);
         BMS::timeout = millis() + BMS_timeout_limit;
         break;
       case BMS::Message_5:
-        BMS::timeout = millis() + BMS_timeout_limit;
-        break;
-      case BMS::Message_6:
+        BMSlowcellvoltage = BMS::getLowVoltage(msgRecieve);
         BMS::timeout = millis() + BMS_timeout_limit;
         break;
       case EVDC::Message:
-        int errors = EVDC::determineErrors(msgReceive);
+        EVDCerrors = EVDC::determineErrors(msgReceive);
         EVDC::timeout = millis() + EVDC_timeout_limit;
         break;
-      case ar::Message:
-        int errors = ar::determineErrors(msgReceive);
+      case AR::Message:
+        ARerror = ar::getError(msgReceive);
         ar::timeout = millis() + rear_timeout_limit;
         break;
-      case MC::Message_1:
+      case MC::Message_Phase_temp:
+        //MCmotortemp = MC::getMotorTemp(msgRecieve);
+        MCphasetemp = MC::getPhaseTemp(msgReceive);
+        //MCrpm = MC::getRPM(msgRecieve);
+        //MCcurrent = MC::getCurrent(msgReceive);
+        MC::timeout = millis() + MC_timeout_limit;
+        break;
+      case MC::Message_Motor_Temp:
         MCmotortemp = MC::getMotorTemp(msgRecieve);
-        MCphaseTemp = MC::getPhaseTemp(msgReceive);
+        MC::timeout = millis() + MC_timeout_limit;
+        break;
+      case MC::Message_Motor_Speed:
         MCrpm = MC::getRPM(msgRecieve);
-        MCcurrent = MC::getCurrent(msgReceive);
         MC::timeout = millis() + MC_timeout_limit;
         break;
-     /* case MC::Message_2:
+      case MC::Message_Motor_Current:
+        MCcurrent = MC::getCurrent(msgRecieve);
         MC::timeout = millis() + MC_timeout_limit;
         break;
-      case MC::Message_3:
-        MC::timeout = millis() + MC_timeout_limit;
-        break; */
       default:
         break;
     }
@@ -117,5 +128,31 @@ void loop() {
   if(millis() > EVDC_timeout) {
     shutdownError(EVDC_TIMED_OUT, CanBus);
   }
+  
+  // error checking
+  
+  if(BMSstateOfCharge < 10) {
+   alertError(LOW_SOC);
+  }
+  if(BMSstateOfCharge < 5) {
+   shutdownError(VERY_LOW_SOC)
+  }
+  
+  if(BMShighestTemp > 80) {
+   shutdownError(HIGH_BATT_TEMP);
+  }
+  if(MCphasetemp > 100) {
+   shutdownError(HIGH_PHASE_TEMP);
+  }
+  if(MCmotortemp > 100) {
+   shutdownError(HIGH_MOTOR_TEMP);
+  }
+  if(EVDCerror > 0) {
+   shutdownError(EVDC_BASE_ERROR + EVDCerror);
+  }
+  if(ARerror > 0) {
+   shutdownError(AR_BASE_ERROR + ARerror);
+  }
+  
   
 }

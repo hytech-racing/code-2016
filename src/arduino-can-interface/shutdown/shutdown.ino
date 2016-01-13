@@ -17,3 +17,6 @@ void shutdownError(int code) {
   digitalWrite(Air1, LOW);
   digitalWrite(discharge, LOW); // discharge is on by default
 }
+void alertError(int code) { // alert errors are for things not serious enough to shut down 
+ RPi::giveError(code);
+}
