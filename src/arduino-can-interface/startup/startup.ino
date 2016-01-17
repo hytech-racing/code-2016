@@ -62,12 +62,12 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   
   while(!needsToProgress){
     RPi.giveProgression(3); // "checking for IMD errors"
-    if(!IMD.checkErrors()) {
+    if(IMD.checkError() == 0) {
       needsToProgress = true;
   }
   needsToProgress = false;
-         
-    while(!needsToProgress){
+
+  while(!needsToProgress){
     RPi.giveProgression(
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
       lilEngineThatCAN.readMsgBuf(&len, msgGet);
@@ -75,7 +75,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
         case EVDC::Message:
         
           oldProgressButton = progressButton;
-          EVDC::getButtonStates(IMDswitch, progressButton, msgReceive);
+          EVDC::getButtonStates(IMDswitch, progressButton, msgGet);
           
           break;
         default:

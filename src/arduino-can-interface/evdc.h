@@ -11,4 +11,5 @@
 namespace EVDC {
 	int EVDC_Message = 0xDC; // get it? because it's short for driver controls XD
 	int getError(char*);
+	int getButtons(char*);
 }
