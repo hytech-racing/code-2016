@@ -9,6 +9,6 @@
  */
 
 namespace AR {
-	int getError(char*);
-	int Message = 0xAB; // because it looks like AR
+	int getError(unsigned char*);
+	int Message = 0xA2; // 'Arduino 2'
 }

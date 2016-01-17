@@ -11,7 +11,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
 // EVDC get progression button
   //progression: 1-5 normal, 6 is BMS error, 7 is IMD error 
 
-  unsigned char megGet[8];
+  unsigned char msgGet[8];
   unsigned char msgGive[8];
   unsigned char len;
   boolean IMDswitch;
@@ -19,17 +19,15 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   boolean oldProgressButton;
   boolean needsToProgress;
   while(!needsToProgress){
-    RPi.giveProgression(1); // "Press button 1 to begin startup"
+    RPi::giveProgression(lilEngineThatCAN, 1); // "Press button 1 to begin startup"
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
       lilEngineThatCAN.readMsgBuf(&len, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case EVDC::Message:
          
           oldProgressButton = progressButton;
-          EVDC::getButtonStates(IMDswitch, progressButton, msgReceive);
+          int derp = EVDC::getButtons(msgGet);
           
-          break;
-        default:
           break;
       }
     }
@@ -41,7 +39,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   
   
   while(!needsToProgress){
-    RPi.giveProgression(2); // "checking for BMS errors"
+    RPi::giveProgression(2); // "checking for BMS errors"
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
       lilEngineThatCAN.readMsgBuf(&len, msgGet);
       switch(lilEngineThatCAN.getCanId()) {

@@ -9,7 +9,7 @@
  */
 
 namespace EVDC {
-	int EVDC_Message = 0xDC; // get it? because it's short for driver controls XD
-	int getError(char*);
-	int getButtons(char*);
+	const int Message = 0xDC; // get it? because it's short for driver controls XD
+	int getError(unsigned char*);
+	int getButtons(unsigned char*);
 }

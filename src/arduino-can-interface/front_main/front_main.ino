@@ -1,16 +1,31 @@
 #include <SPI.h>
+#include <EEPROM.h>
 #include "mcp_can.h"
 #include "mc.h"
 #include "evdc.h"
 #include "bms.h"
 #include "ar.h"
 #include "pi.h"
-#include "startupShutdown.h"
+#include "startup.h"
+#include"shutdown.h"
+#include "IMD.h"
 
 #define BMS_TIMED_OUT 1
 #define EVDC_TIMED_OUT 2
 #define MC_TIMED_OUT 3
 #define REAR_TIMED_OUT 4
+#define LOW_SOC 5
+#define VERY_LOW_SOC 6
+#define HIGH_BATT_TEMP 7
+#define LOW_CELL_CUTOFF 8
+#define CELL_CRITICAL_LOW 9
+#define TOO_MUCH_CURRENT 10
+#define HIGH_PHASE_TEMP 11
+#define HIGH_MOTOR_TEMP 12
+#define EVDC_BASE_ERROR 13 // 13 to 18
+#define AR_BASE_ERROR 19 // 19 to 25
+#define IMD_BASE_ERROR 26
+
 
 long BMS_timeout;
 long BMS_timeout_limit = 2000; // 2000 ms
@@ -26,6 +41,7 @@ float BMSstateOfCharge;
 float BMScurrent;
 float BMShighestTemp;
 float BMSlowcellvoltage;
+float BMScurrentLimit;
 
 float MCphasetemp;
 float MCmotortemp;
@@ -35,6 +51,11 @@ float MCcurrent;
 int EVDCerror  = 0;
 
 int ARerror = 0;
+
+int EVDCbuttons;
+
+int IMDerror = 0;
+int IMDtimer = 0;
 
 
   unsigned char msgReceive[8]; // buffer for getting messages
@@ -49,7 +70,8 @@ void setup() {
     Serial.println("CAN Bus is not operaitonal");
     delay(10);
   }
-  startup(CanBus);
+  startupSequence(CanBus);
+  EEPROM.write(0, 0x00);
   BMS_timeout = millis() + BMS_timeout_limit;
   MC_timeout = millis() + MC_timeout_limit;
   ar_timeout = millis() + ar_timeout_limit;
@@ -70,7 +92,7 @@ void loop() {
         break;
       case BMS::Message_2:
         BMScurrent = BMS::getCurrent(msgRecieve);
-      
+		BMScurrentLimit = BMS::getPackDCL;
         BMS::timeout = millis() + BMS_timeout_limit;
         break;
       case BMS::Message_3:
@@ -87,6 +109,7 @@ void loop() {
         break;
       case EVDC::Message:
         EVDCerrors = EVDC::determineErrors(msgReceive);
+		EVDCbuttons = EVDC::getButtons(msgRecieve);
         EVDC::timeout = millis() + EVDC_timeout_limit;
         break;
       case AR::Message:
@@ -129,30 +152,50 @@ void loop() {
     shutdownError(EVDC_TIMED_OUT, CanBus);
   }
   
+  IMDtimer++;
+  if(IMDtimer > 10) {
+   IMDtimer = 0;
+   IMDerror = IMD::getError();
+  }
   // error checking
   
   if(BMSstateOfCharge < 10) {
-   alertError(LOW_SOC);
+   alertError(CanBus, LOW_SOC);
   }
   if(BMSstateOfCharge < 5) {
-   shutdownError(VERY_LOW_SOC)
+   shutdownError(CanBus, VERY_LOW_SOC);
+  }
+  if(BMShighestTemp > 80) {
+   shutdownError(CanBus, HIGH_BATT_TEMP);
+  }
+  if(BMSlowcellvoltage < LOW_CELL_CUTOFF) {
+   shutdownError(CanBus, CELL_CRITICAL_LOW)
+  }
+  if(BMScurrentLimit > BMScurrent) {
+   shutdownError(CanBus, TOO_MUCH_CURRENT);
   }
   
-  if(BMShighestTemp > 80) {
-   shutdownError(HIGH_BATT_TEMP);
-  }
   if(MCphasetemp > 100) {
-   shutdownError(HIGH_PHASE_TEMP);
+   shutdownError(CanBus, HIGH_PHASE_TEMP);
   }
   if(MCmotortemp > 100) {
-   shutdownError(HIGH_MOTOR_TEMP);
-  }
-  if(EVDCerror > 0) {
-   shutdownError(EVDC_BASE_ERROR + EVDCerror);
-  }
-  if(ARerror > 0) {
-   shutdownError(AR_BASE_ERROR + ARerror);
+   shutdownError(CanBus, HIGH_MOTOR_TEMP);
   }
   
+  if(EVDCerror > 0) {
+   shutdownError(CanBus, EVDC_BASE_ERROR + EVDCerror);
+  }
+  
+  if(ARerror > 0) {
+   shutdownError(CanBus, AR_BASE_ERROR + ARerror);
+  }
+  
+  if(IMDerror > 0){
+	shutdownError(CanBus, IMD_BASE_ERROR + IMDerror)
+  }
+  
+  if((EVDCbuttons & 0x01) == 0x01) { // if the shutdown button is pushed
+   shutDownNormal(CanBus);
+  }
   
 }
