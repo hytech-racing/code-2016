@@ -1,5 +1,5 @@
-void ShutDownNormal() {
-  RPi::giveProgression(8);
+void ShutDownNormal(MCP_CAN& datCAN) {
+  RPi::giveProgression(datCAN, 8);
   digitalWrite(Air4, LOW);
   digitalWrite(Air2, LOW);
   digitalWrite(Air3, LOW);
@@ -8,8 +8,8 @@ void ShutDownNormal() {
   digitalWrite(TSMasterRelay, LOW);
 }
 
-void shutdownError(int code) {
-  RPi::giveError(code);
+void shutdownError(MCP_CAN& datCAN, int code) {
+  RPi::giveError(datCAN, code);
   digitalWrite(TSMasterRelay, LOW);
   digitalWrite(Air4, LOW);
   digitalWrite(Air2, LOW);
@@ -17,6 +17,6 @@ void shutdownError(int code) {
   digitalWrite(Air1, LOW);
   digitalWrite(discharge, LOW); // discharge is on by default
 }
-void alertError(int code) { // alert errors are for things not serious enough to shut down 
- RPi::giveError(code);
+void alertError(MCP_CAN& datCAN, int code) { // alert errors are for things not serious enough to shut down 
+ RPi::giveError(datCAN, code);
 }

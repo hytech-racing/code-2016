@@ -210,3 +210,5 @@ float BMS::getAvgResistance(unsigned char* data) {
     float res = (high << 8) | low;
     return res / 100; // units are 0.01 milli-ohm
 }
+
+

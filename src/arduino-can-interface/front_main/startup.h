@@ -5,15 +5,23 @@
 #include "bms.h"
 #include "ar.h"
 #include "pi.h"
+#include "IMD.h"
 
 
 boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1 means BMS resset, 2 means IMD reset
 // EVDC get progression button
   //progression: 1-5 normal, 6 is BMS error, 7 is IMD error 
-
+  const int TSmasterSwitch = 0;
+  const int Air1 = 0;
+  const int Air2 = 0;
+  const int Air3 = 0;
+  const int Air4 = 0;
+  const int precharge = 0;
+  const int readyToDriveSound = 0; 
+  
   unsigned char msgGet[8];
-  unsigned char msgGive[8];
-  unsigned char len;
+  unsigned char msgSend[8];
+  unsigned char biglen;
   boolean IMDswitch;
   boolean progressButton;
   boolean oldProgressButton;
@@ -21,7 +29,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   while(!needsToProgress){
     RPi::giveProgression(lilEngineThatCAN, 1); // "Press button 1 to begin startup"
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&len, msgGet);
+      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case EVDC::Message:
          
@@ -39,12 +47,12 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   
   
   while(!needsToProgress){
-    RPi::giveProgression(2); // "checking for BMS errors"
+    RPi::giveProgression(lilEngineThatCAN,2); // "checking for BMS errors"
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&len, msgGet);
+      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
-        case BMS::Message1:
-          if(!BMS::getErrors() {
+        case BMS::Message_1:
+          if(!BMS::getErrors()) {
             needsToProgress = true;
           }
           break;
@@ -59,28 +67,27 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   needsToProgress = false;
   
   while(!needsToProgress){
-    RPi.giveProgression(3); // "checking for IMD errors"
-    if(IMD.checkError() == 0) {
+    RPi::giveProgression(lilEngineThatCAN, 3); // "checking for IMD errors"
+    if(IMD::checkError() == 0) {
       needsToProgress = true;
   }
   needsToProgress = false;
 
   while(!needsToProgress){
-    RPi.giveProgression(
+    RPi::giveProgression(lilEngineThatCAN, 4);
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&len, msgGet);
+      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case EVDC::Message:
         
           oldProgressButton = progressButton;
-          EVDC::getButtonStates(IMDswitch, progressButton, msgGet);
-          
+          int demButtons = EVDC::getButtons(msgGet);
+          progressButton = ((demButtons & 0x02) == 0x02);
           break;
-        default:
-          break;
+
       }
     }
-    if(IMDswitch) {
+    if(progressButton & !oldProgressButton) {
       needsToProgress = true;
     }
   }
@@ -90,7 +97,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
  /* 
  while(!needsToProgress){
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&len, msgGet);
+      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case EVDC::Message:
         
@@ -113,19 +120,18 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   
   while(!needsToProgress){
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&len, msgGet);
+      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case EVDC::Message:
         
           oldProgressButton = progressButton;
-          EVDC::getButtonStates(IMDswitch, progressButton, msgReceive);
+          int demButtons = EVDC::getButtons(msgGet);
+          progressButton = ((demButtons & 0x02) == 0x02);
           
-          break;
-        default:
           break;
       }
     }
-    if(IMDswitch) {
+    if(progressButton) {
       needsToProgress = true;
     }
   }
@@ -141,15 +147,13 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   
     while(!needsToProgress){
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&len, msgGet);
+      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case EVDC::Message:
         
           oldProgressButton = progressButton;
-          EVDC::getButtonStates(IMDswitch, progressButton, msgReceive);
-          
-          break;
-        default:
+          int demButtons = EVDC::getButtons(msgGet);
+          progressButton = ((demButtons & 0x02) == 0x02);          
           break;
       }
     }
@@ -163,14 +167,13 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   float brakePedal;
   while(!needsToProgress){
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&len, msgGet);
+      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case EVDC::Message:
           oldProgressButton = progressButton;
-          EVDC::getButtonStates(IMDswitch, progressButton, msgReceive);
-          brakePedal = EVDC::getBrakes(msgReceive);
-          break;
-        default:
+          int demButtons = EVDC::getButtons(msgGet);
+          progressButton = ((demButtons & 0x02) == 0x02);         
+          brakePedal = EVDC::getBrakes(msgGet);
           break;
       }
     }
@@ -181,7 +184,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   needsToProgress = false;
   digitalWrite(precharge, HIGH);
   delay(3000);
-  digitalWrite(AIR4, HIGH); // brake needs to be pressed in order to go into a ready-to-drive state
+  digitalWrite(Air4, HIGH); // brake needs to be pressed in order to go into a ready-to-drive state
   digitalWrite(precharge, LOW);
   digitalWrite(readyToDriveSound, HIGH);
   delay(2000);
