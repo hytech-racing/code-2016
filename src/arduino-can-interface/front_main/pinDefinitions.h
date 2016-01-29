@@ -1,8 +1,10 @@
-#define Air1 0
-#define Air2 0
-#define Air3 0
-#define Air4 0
-#define TSmasterSwitch 0
-#define readyToDriveSound 0
-#define precharge 0
+const int Air1 = 0;
+const int Air2 = 0;
+const int Air3 = 0;
+const int Air4 = 0;
+const int TSmasterSwitch = 0;
+const int readyToDriveSound = 0;
+const int precharge = 0;
+const int discharge = 0;
+const int TSMasterRelay = 0;
 

@@ -1,5 +1,5 @@
 #include "mc.h"
-#include <cstring>
+#include "memory.h"
 
 // 0x0A0
 float MC::getAveragePhaseTemp(unsigned char *data) {
@@ -8,6 +8,14 @@ float MC::getAveragePhaseTemp(unsigned char *data) {
     memcpy(&phaseB, &data[2], sizeof(short));
     memcpy(&phaseC, &data[4], sizeof(short));
     return (phaseA + phaseB + phaseC) / 30.0f;
+}
+
+float MC::getMaxPhaseTemp(unsigned char *data) {
+    short phaseA, phaseB, phaseC;
+    memcpy(&phaseA, &data[0], sizeof(short));
+    memcpy(&phaseB, &data[2], sizeof(short));
+    memcpy(&phaseC, &data[4], sizeof(short));
+    return max(phaseA, max(phaseB,phaseC)) / 10.0f;
 }
 
 float MC::getGateDriverTemp(unsigned char *data) {

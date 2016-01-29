@@ -6,16 +6,17 @@
  */
 
 namespace MC {
-    // 0x0A0
+    const int Message_Phase_Temp = 0x0A0;
     float getAveragePhaseTemp(unsigned char *);
+    float getMaxPhaseTemp(unsigned char*);
     float getGateDriverTemp(unsigned char *);
-    // 0x0A1
+    const int Message_Internal_Temp =  0x0A1;
     float getControlBoardTemp(unsigned char *);
     float getThermistor1Temp(unsigned char *);
     float getThermistor2Temp(unsigned char *);
     float getThermistor3Temp(unsigned char *);
-    // 0x0A2
-    float getMotorTemperature(unsigned char *);
+    const int Message_Motor_Temp =  0x0A2;
+    float getMotorTemp(unsigned char *);
     // 0x0A4
     bool isForwardSwitchOn(unsigned char *);
     bool isReverseSwitchOn(unsigned char *);
@@ -23,9 +24,9 @@ namespace MC {
     bool isRegenOn(unsigned char *);
     bool isIgnitionOn(unsigned char *);
     bool isStartSwitchOn(unsigned char *);
-    // 0x0A5
+    const int Message_Motor_Speed = 0x0A5;
     int getMotorRPM(unsigned char *);
-    // 0x0A6
+    const int Message_Motor_Current =  0x0A6;
     float getPhaseACurrent(unsigned char *);
     float getPhaseBCurrent(unsigned char *);
     float getPhaseCCurrent(unsigned char *);

@@ -10,5 +10,5 @@
 
 namespace AR {
 	int getError(unsigned char*);
-	int Message = 0xA2; // 'Arduino 2'
+	const int Message = 0xA20; // 'Arduino 2'
 }

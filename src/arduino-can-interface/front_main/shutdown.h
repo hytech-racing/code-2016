@@ -1,4 +1,5 @@
-void ShutDownNormal(MCP_CAN& datCAN) {
+
+void shutDownNormal(MCP_CAN& datCAN) {
   RPi::giveProgression(datCAN, 8);
   digitalWrite(Air4, LOW);
   digitalWrite(Air2, LOW);
@@ -18,5 +19,6 @@ void shutdownError(MCP_CAN& datCAN, int code) {
   digitalWrite(discharge, LOW); // discharge is on by default
 }
 void alertError(MCP_CAN& datCAN, int code) { // alert errors are for things not serious enough to shut down 
- RPi::giveError(datCAN, code);
+  RPi::giveError(datCAN, code);
 }
+
