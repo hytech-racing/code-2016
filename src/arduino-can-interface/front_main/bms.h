@@ -58,9 +58,7 @@ namespace BMS {
     float getLowResistance(unsigned char*);
     float getAvgResistance(unsigned char*);
     
-    boolean getErrors() {
-      return false;
-    }
+    boolean getErrors();
 }
 /*
 float BMSstateOfCharge;

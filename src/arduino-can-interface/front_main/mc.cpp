@@ -1,6 +1,6 @@
 #include "mc.h"
-#include "memory.h"
-
+#include "stupidmemory.h"
+#define max(a,b) ((a)>(b)?(a):(b))
 // 0x0A0
 float MC::getAveragePhaseTemp(unsigned char *data) {
     short phaseA, phaseB, phaseC;
@@ -15,7 +15,8 @@ float MC::getMaxPhaseTemp(unsigned char *data) {
     memcpy(&phaseA, &data[0], sizeof(short));
     memcpy(&phaseB, &data[2], sizeof(short));
     memcpy(&phaseC, &data[4], sizeof(short));
-    return max(phaseA, max(phaseB,phaseC)) / 10.0f;
+    float derpFloat = max(phaseA, max(phaseB, phaseC)) / 10.0;
+    return derpFloat;
 }
 
 float MC::getGateDriverTemp(unsigned char *data) {
@@ -44,7 +45,7 @@ float MC::getThermistor2Temp(unsigned char *data) {
 }
 
 // 0x0A2
-float MC::getMotorTemperature(unsigned char *data) {
+float MC::getMotorTemp(unsigned char *data) {
     short motorTemp;
     memcpy(&motorTemp, &data[4], sizeof(short));
     return motorTemp / 10.0f;

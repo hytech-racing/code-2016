@@ -37,13 +37,13 @@ namespace MC {
     float getPhaseABVoltage(unsigned char *);
     float getPhaseBCVoltage(unsigned char *);
     // 0x0AA
-    unsigned char STATE_POWER_ON = 0;
-    unsigned char STATE_STOP = 1;
-    unsigned char STATE_OPEN_LOOP = 2;
-    unsigned char STATE_CLOSED_LOOP = 3;
-    unsigned char STATE_WAIT = 4;
-    unsigned char STATE_IDLE_RUN = 8;
-    unsigned char STATE_IDLE_STOP = 9;
+    const unsigned char STATE_POWER_ON = 0;
+    const unsigned char STATE_STOP = 1;
+    const unsigned char STATE_OPEN_LOOP = 2;
+    const unsigned char STATE_CLOSED_LOOP = 3;
+    const unsigned char STATE_WAIT = 4;
+    const unsigned char STATE_IDLE_RUN = 8;
+    const unsigned char STATE_IDLE_STOP = 9;
     unsigned char getInverterState(unsigned char *);
     bool isInverterOn(unsigned char *);
     // 0x0AB

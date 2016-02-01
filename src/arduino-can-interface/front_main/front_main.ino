@@ -1,3 +1,6 @@
+
+// list of shortcuts: memcpy is not defined. BMS::getError is not defined. pins not properly defined. pin modes not properly defined.
+
 #include <SPI.h>
 #include <EEPROM.h>
 #include "pinDefinitions.h"
@@ -56,7 +59,7 @@ int ARerror = 0;
 int EVDCbuttons;
 
 int IMDerror = 0;
-int IMDtimer = 0;
+long IMDtimer = 0;
 
 
   unsigned char msgReceive[8]; // buffer for getting messages
@@ -64,6 +67,7 @@ int IMDtimer = 0;
   unsigned char len;
 
 MCP_CAN CanBus(9);
+
 
 void setup() {
   definePinModes();
@@ -77,6 +81,7 @@ void setup() {
   MC_timeout = millis() + MC_timeout_limit;
   ar_timeout = millis() + ar_timeout_limit;
   EVDC_timeout = millis() + BMS_timeout_limit;
+  IMDtimer = millis() + 1000;
 
 }
 
@@ -152,9 +157,9 @@ void loop() {
     shutdownError(CanBus, EVDC_TIMED_OUT);
   }
   
-  IMDtimer++;
-  if(IMDtimer > 10) {
-   IMDtimer = 0;
+  
+  if(IMDtimer > millis()) {
+   IMDtimer = millis()+1000;
    IMDerror = IMD::checkError();
   }
   // error checking

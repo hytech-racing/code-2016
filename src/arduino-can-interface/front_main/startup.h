@@ -6,7 +6,24 @@
 #include "ar.h"
 #include "pi.h"
 #include "IMD.h"
+/*
+startup sequence according to Nathan
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
 
 void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1 means BMS resset, 2 means IMD reset
 // EVDC get progression button
@@ -52,7 +69,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
       lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case BMS::Message_1:
-          if(!BMS::getErrors()) {
+          if(getRelayStatus(msgGet) & 0x03 == 0x03) { // charge and discharge relays on mean that the BMS has no errors
             needsToProgress = true;
           }
           break;
