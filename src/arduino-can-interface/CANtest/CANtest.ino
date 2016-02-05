@@ -16,7 +16,7 @@
   Set to 9 if using a SEEEDStudio (black) shield
   Set to 10 if using a SparkFun (red) shield
 */
-const int SPI_CS_PIN = 10;
+const int SPI_CS_PIN = 9;
 MCP_CAN CAN(SPI_CS_PIN);
 int sent = 0;
 
@@ -80,10 +80,14 @@ void loop() {
 
     // You have to readMsgBuf before you can get the ID of the message
 
-    if(CAN.getCanId() == 0x03B) { //Filters so only certain messages will execute this code
-      Serial.print("Current pack voltage: ");
-      Serial.println(BMS::getVoltage(buf));
-    }
+    Serial.print(String(CAN.getCanId(), HEX));
+    Serial.print(buf[0]);
+    Serial.print(" ");
+    Serial.print(buf[1]);
+    Serial.print(" ");
+    Serial.print(buf[2]);
+    Serial.print(" ");
+    Serial.println(buf[3]);
 //    else if(CAN.getCanId() == 0x14) { //Same thing, different filter
 //      Serial.print("Received value: ");
 //      Serial.println(buf[0]);

@@ -44,5 +44,6 @@ void loop() {
   CAN.sendMsgBuf(0x004, 0, 4, msg4);
   CAN.sendMsgBuf(0x005, 0, 6, msg5);
   CAN.sendMsgBuf(0x006, 0, 6, msg6);
+  Serial.println("Sent messages");
   delay(96);
 }
