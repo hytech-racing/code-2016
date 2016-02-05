@@ -1,13 +1,13 @@
 // raspberry pi class implementation
-
-RPi::sendProgression(mcp_can& datCan, int progress) {
-	char msgBuf[8];
+#include "pi.h"
+void RPi::giveProgression(MCP_CAN& datCan, int progress) {
+	unsigned char msgBuf[8];
 	msgBuf[0] = char(progress);
 	datCan.sendMsgBuf(piAddress, 0, 8, msgBuf);
 }
 
-RPi::sendError(mcp_can& datCan, int error) {
-	char msgBuf[8];
+void RPi::giveError(MCP_CAN& datCan, int error) {
+	unsigned char msgBuf[8];
 	msgBuf[0] = char(error);
 	msgBuf[1] = 0x01;
 	datCan.sendMsgBuf(piAddress, 0, 8, msgBuf);

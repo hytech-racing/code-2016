@@ -1,6 +1,9 @@
+
+// list of shortcuts: memcpy is not defined. BMS::getError is not defined. pins not properly defined. pin modes not properly defined.
+
 #include <SPI.h>
 #include <EEPROM.h>
-//#include "pinDefinitions.h"
+#include "pinDefinitions.h"
 #include "mcp_can.h"
 #include "mc.h"
 #include "evdc.h"
@@ -14,7 +17,7 @@
 #define BMS_TIMED_OUT 1
 #define EVDC_TIMED_OUT 2
 #define MC_TIMED_OUT 3
-#define REAR_TIMED_OUT 4
+#define AR_TIMED_OUT 4
 #define LOW_SOC 5
 #define VERY_LOW_SOC 6
 #define HIGH_BATT_TEMP 7
@@ -35,7 +38,7 @@ long ar_timeout_limit = 2000;
 long MC_timeout;
 long MC_timeout_limit = 500;
 long EVDC_timeout;
-long EVDC_timmeout = 500;
+long EVDC_timeout_limit = 500;
 
 // global variables for data from CANBUS
 float BMSstateOfCharge;
@@ -56,7 +59,7 @@ int ARerror = 0;
 int EVDCbuttons;
 
 int IMDerror = 0;
-int IMDtimer = 0;
+long IMDtimer = 0;
 
 
   unsigned char msgReceive[8]; // buffer for getting messages
@@ -64,6 +67,7 @@ int IMDtimer = 0;
   unsigned char len;
 
 MCP_CAN CanBus(9);
+
 
 void setup() {
   definePinModes();
@@ -77,6 +81,7 @@ void setup() {
   MC_timeout = millis() + MC_timeout_limit;
   ar_timeout = millis() + ar_timeout_limit;
   EVDC_timeout = millis() + BMS_timeout_limit;
+  IMDtimer = millis() + 1000;
 
 }
 
@@ -84,79 +89,78 @@ void loop() {
   // the basic premise is that I get the data from the CANBUS and
   // load it into variables. Then, I check the data for plausibility
 
-  while(CAN_MSGAVAIL == CanBus.checkReceive() {
-    CAN.readMsgBuf(&len, msgReceive);
-    switch(CAN.getCanId()) {
+  while(CAN_MSGAVAIL == CanBus.checkReceive()) {
+    CanBus.readMsgBuf(&len, msgReceive);
+    switch(CanBus.getCanId()) {
       case BMS::Message_1:
-        BMSstateOfCharge = BMS::getStateOfCharge(msgRecieve);
-        BMS::timeout = millis() + BMS_timeout_limit;
+        BMSstateOfCharge = BMS::getStateOfCharge(msgReceive);
+        BMS_timeout = millis() + BMS_timeout_limit;
         break;
       case BMS::Message_2:
-        BMScurrent = BMS::getCurrent(msgRecieve);
-		BMScurrentLimit = BMS::getPackDCL;
-        BMS::timeout = millis() + BMS_timeout_limit;
+        BMScurrent = BMS::getCurrent(msgReceive);
+        BMScurrentLimit = BMS::getPackDCL(msgReceive);
+        BMS_timeout = millis() + BMS_timeout_limit;
         break;
       case BMS::Message_3:
         
-        BMS::timeout = millis() + BMS_timeout_limit;
+        BMS_timeout = millis() + BMS_timeout_limit;
         break;
       case BMS::Message_4:
-        BMShighestTemp = BMS::getHighTemp(msgRecieve);
-        BMS::timeout = millis() + BMS_timeout_limit;
+        BMShighestTemp = BMS::getHighTemp(msgReceive);
+        BMS_timeout = millis() + BMS_timeout_limit;
         break;
       case BMS::Message_5:
-        BMSlowcellvoltage = BMS::getLowVoltage(msgRecieve);
-        BMS::timeout = millis() + BMS_timeout_limit;
+        BMSlowcellvoltage = BMS::getLowVoltage(msgReceive);
+        BMS_timeout = millis() + BMS_timeout_limit;
         break;
       case EVDC::Message:
-        EVDCerrors = EVDC::determineErrors(msgReceive);
-		EVDCbuttons = EVDC::getButtons(msgRecieve);
-        EVDC::timeout = millis() + EVDC_timeout_limit;
+        EVDCerror = EVDC::getError(msgReceive);
+        EVDCbuttons = EVDC::getButtons(msgReceive);
+        EVDC_timeout = millis() + EVDC_timeout_limit;
         break;
       case AR::Message:
-        ARerror = ar::getError(msgReceive);
-        ar::timeout = millis() + rear_timeout_limit;
+        ARerror = AR::getError(msgReceive);
+        ar_timeout = millis() + ar_timeout_limit;
         break;
-      case MC::Message_Phase_temp:
-        //MCmotortemp = MC::getMotorTemp(msgRecieve);
-        MCphasetemp = MC::getPhaseTemp(msgReceive);
-        //MCrpm = MC::getRPM(msgRecieve);
+      case MC::Message_Phase_Temp:
+        //MCmotortemp = MC::getMotorTemp(msgReceive);
+        MCphasetemp = MC::getMaxPhaseTemp(msgReceive);
+        //MCrpm = MC::getRPM(msgReceive);
         //MCcurrent = MC::getCurrent(msgReceive);
-        MC::timeout = millis() + MC_timeout_limit;
+        MC_timeout = millis() + MC_timeout_limit;
         break;
       case MC::Message_Motor_Temp:
-        MCmotortemp = MC::getMotorTemp(msgRecieve);
-        MC::timeout = millis() + MC_timeout_limit;
+        MCmotortemp = MC::getMotorTemp(msgReceive);
+        MC_timeout = millis() + MC_timeout_limit;
         break;
       case MC::Message_Motor_Speed:
-        MCrpm = MC::getRPM(msgRecieve);
-        MC::timeout = millis() + MC_timeout_limit;
+        MCrpm = MC::getMotorRPM(msgReceive);
+        MC_timeout = millis() + MC_timeout_limit;
         break;
       case MC::Message_Motor_Current:
-        MCcurrent = MC::getCurrent(msgRecieve);
-        MC::timeout = millis() + MC_timeout_limit;
+        MCcurrent = MC::getDCBusCurrent(msgReceive);
+        MC_timeout = millis() + MC_timeout_limit;
         break;
       default:
         break;
     }
   }
   if(millis() > BMS_timeout) {
-    shutdownError(BMS_TIMED_OUT, CanBus);
+    shutdownError(CanBus, BMS_TIMED_OUT);
   }
   if(millis() > ar_timeout) {
-    shutdownError(REAR_TIMED_OUT, CanBus);
-  }
+    shutdownError(CanBus, AR_TIMED_OUT);  }
   if(millis() > MC_timeout) {
-    shutdownError(MC_TIMED_OUT, CanBus);
+    shutdownError(CanBus, MC_TIMED_OUT);
   }
   if(millis() > EVDC_timeout) {
-    shutdownError(EVDC_TIMED_OUT, CanBus);
+    shutdownError(CanBus, EVDC_TIMED_OUT);
   }
   
-  IMDtimer++;
-  if(IMDtimer > 10) {
-   IMDtimer = 0;
-   IMDerror = IMD::getError();
+  
+  if(IMDtimer > millis()) {
+   IMDtimer = millis()+1000;
+   IMDerror = IMD::checkError();
   }
   // error checking
   
@@ -170,7 +174,7 @@ void loop() {
    shutdownError(CanBus, HIGH_BATT_TEMP);
   }
   if(BMSlowcellvoltage < LOW_CELL_CUTOFF) {
-   shutdownError(CanBus, CELL_CRITICAL_LOW)
+   shutdownError(CanBus, CELL_CRITICAL_LOW);
   }
   if(BMScurrentLimit > BMScurrent) {
    shutdownError(CanBus, TOO_MUCH_CURRENT);
@@ -192,7 +196,7 @@ void loop() {
   }
   
   if(IMDerror > 0){
-	shutdownError(CanBus, IMD_BASE_ERROR + IMDerror)
+	shutdownError(CanBus, IMD_BASE_ERROR + IMDerror);
   }
   
   if((EVDCbuttons & 0x01) == 0x01) { // if the shutdown button is pushed

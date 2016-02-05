@@ -6,9 +6,26 @@
 #include "ar.h"
 #include "pi.h"
 #include "IMD.h"
+/*
+startup sequence according to Nathan
 
 
-boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1 means BMS resset, 2 means IMD reset
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+
+void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1 means BMS resset, 2 means IMD reset
 // EVDC get progression button
   //progression: 1-5 normal, 6 is BMS error, 7 is IMD error 
   const int TSmasterSwitch = 0;
@@ -52,7 +69,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
       lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case BMS::Message_1:
-          if(!BMS::getErrors()) {
+          if(getRelayStatus(msgGet) & 0x03 == 0x03) { // charge and discharge relays on mean that the BMS has no errors
             needsToProgress = true;
           }
           break;
@@ -72,6 +89,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
       needsToProgress = true;
   }
   needsToProgress = false;
+  }
 
   while(!needsToProgress){
     RPi::giveProgression(lilEngineThatCAN, 4);
@@ -189,63 +207,8 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup
   digitalWrite(readyToDriveSound, HIGH);
   delay(2000);
   digitalWrite(readyToDriveSound, LOW);
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    /*    
-  while(!EVDC::getProgressionSwitch()){
-    RPi::giveProgression(1);
-  }
-  digitalWrite(TSMasterRelay, HIGH);
-
-  if(BMS::getError()) {
-    RPi::giveProgression(6);
-    return false;
-  }
-  if(getImdError()) {
-    RPi::giveProgression(7);
-    return false;
-  }
-  
-  
-  while(!EVDC::getImdBypassSwitch()) {
-    RPi::giveProgression(2);
-  }
-  digitalWrite(Air1, HIGH);
-  delay(500);
-  digitalWrite(Air2, HIGH);
-  delay(500);
-  digitalWrite(Air3, HIGH);
-  while(!EVDC::getProgressionSwitch() {
-    RPi::giveProgression(3);
-  }
-  digitalWrite(prechargeRelay, HIGH);
-  delay(3000); // check how long
-  digitalWrite(Air4, HIGH);
-  digitalWrite(prechargeRelay, LOW);
-  // now we have high voltage power to the motor controller
-  digitalWrite(readyToDriveSound, HIGH);
-  while(EVDC::getImdBypassSwitch()) {// the bypass swtich needs to be turned off to progress
-    RPi::giveProgression(4);
-  }
-  RPi::giveProgression(5); // this will display ready to drive
-  return true;
-  */
 }
-  
-  
-  
-  
-  
+
+void definePinModes() {
+  pinMode(0, INPUT);
+}
