@@ -17,8 +17,12 @@ void shutdownError(MCP_CAN& datCAN, int code) {
   digitalWrite(Air3, LOW);
   digitalWrite(Air1, LOW);
   digitalWrite(discharge, LOW); // discharge is on by default
+  Serial.print("EPIC ERROR -- ");
+  Serial.println(code);
 }
 void alertError(MCP_CAN& datCAN, int code) { // alert errors are for things not serious enough to shut down 
   RPi::giveError(datCAN, code);
+  Serial.print("ALERT ERROR -- ");
+  Serial.println(code);
 }
 

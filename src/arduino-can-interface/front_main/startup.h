@@ -69,7 +69,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
       lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
       switch(lilEngineThatCAN.getCanId()) {
         case BMS::Message_1:
-          if(getRelayStatus(msgGet) & 0x03 == 0x03) { // charge and discharge relays on mean that the BMS has no errors
+          if(BMS::getRelayStatus(msgGet) & 0x01 == 0x01) { // discharge relay means that the BMS has no errors  
             needsToProgress = true;
           }
           break;
@@ -208,6 +208,21 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
   delay(2000);
   digitalWrite(readyToDriveSound, LOW);
 }
+
+
+void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
+   digitalWrite(Air1, HIGH);
+  delay(500);
+  digitalWrite(Air2, HIGH);
+  delay(500);
+  digitalWrite(Air3, HIGH);  
+  digitalWrite(precharge, HIGH);
+  delay(3000);
+  digitalWrite(Air4, HIGH); 
+  digitalWrite(precharge, LOW);
+  RPi::giveProgression(lilEngineThatCAN,5);
+}
+  
 
 void definePinModes() {
   pinMode(0, INPUT);

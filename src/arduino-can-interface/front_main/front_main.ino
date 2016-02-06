@@ -14,6 +14,8 @@
 #include"shutdown.h"
 #include "IMD.h"
 
+#define DEBUG_ACTIVATE 0
+
 #define BMS_TIMED_OUT 1
 #define EVDC_TIMED_OUT 2
 #define MC_TIMED_OUT 3
@@ -29,6 +31,7 @@
 #define EVDC_BASE_ERROR 13 // 13 to 18
 #define AR_BASE_ERROR 19 // 19 to 25
 #define IMD_BASE_ERROR 26
+
 
 
 long BMS_timeout;
@@ -70,12 +73,18 @@ MCP_CAN CanBus(9);
 
 
 void setup() {
+  Serial.begin(9600);
   definePinModes();
   while(CAN_OK != CanBus.begin(CAN_500KBPS)) {
     Serial.println("CAN Bus is not operaitonal");
     delay(10);
   }
-  startupSequence(CanBus);
+  if(DEBUG_ACTIVATE != 42) {
+    startupSequence(CanBus);
+  }
+  else {
+    startupDebug(CanBus);
+  }
   EEPROM.write(0, 0x00);
   BMS_timeout = millis() + BMS_timeout_limit;
   MC_timeout = millis() + MC_timeout_limit;

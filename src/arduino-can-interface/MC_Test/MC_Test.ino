@@ -9,7 +9,7 @@
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
-const int SPI_CS_PIN = 9;
+const int SPI_CS_PIN = 10;
 
 MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
@@ -49,17 +49,27 @@ void loop()
 {
     // send data:  id = 0x00, standrad frame, data len = 8, stmp: data buf
     CAN.sendMsgBuf(0x0A0, 0, 8, msg1);
+    delay(1);
     CAN.sendMsgBuf(0x0A1, 0, 8, msg2);
+    delay(1);
     CAN.sendMsgBuf(0x0A2, 0, 8, msg3);
+    delay(1);
     CAN.sendMsgBuf(0x0A4, 0, 8, msg4);
+    delay(1);
     CAN.sendMsgBuf(0x0A5, 0, 8, msg5);
+    delay(1);
     CAN.sendMsgBuf(0x0A6, 0, 8, msg6);
+    delay(1);
     CAN.sendMsgBuf(0x0A7, 0, 8, msg7);
+    delay(1);
     CAN.sendMsgBuf(0x0AA, 0, 8, msg8);
+    delay(1);
     CAN.sendMsgBuf(0x0AB, 0, 8, msg9);
+    delay(1);
     CAN.sendMsgBuf(0x0AC, 0, 8, msg10);
+    Serial.println("Sent");
     timer0++;
-    delay(100);                       // send data per 100ms
+    delay(93);                       // send data per 100ms
 }
 
 /*********************************************************************************************************

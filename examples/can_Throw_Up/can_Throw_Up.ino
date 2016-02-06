@@ -15,7 +15,7 @@
   Set to 9 if using a SEEEDStudio (black) shield
   Set to 10 if using a SparkFun (red) shield
 */
-const int SPI_CS_PIN = 9;
+const int SPI_CS_PIN = 10;
 MCP_CAN CAN(SPI_CS_PIN);
 int sent = 0;
 
@@ -51,11 +51,12 @@ void loop() {
       Serial.print("Message on ID ");
       Serial.print(CAN.getCanId(), HEX);
       Serial.print(": ");
-  
+  /*
       for(int i = 0; i < len; i++) {
         Serial.print(buf[i]);
         Serial.print(" ");
      }
+     */
       Serial.println();
     //}
     // You have to readMsgBuf before you can get the ID of the message
