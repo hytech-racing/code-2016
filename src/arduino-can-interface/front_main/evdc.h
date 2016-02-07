@@ -1,4 +1,3 @@
-#include <SPI.h>
 #include "mcp_can.h"
 
 #pragma once
@@ -13,4 +12,6 @@ namespace EVDC {
 	int getError(unsigned char*);
 	int getButtons(unsigned char*);
         int getBrakes(unsigned char*);
+        void goForLaunch(MCP_CAN&);
+        void shutThemAllDown(MCP_CAN&);
 }

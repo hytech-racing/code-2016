@@ -1,4 +1,6 @@
 #pragma once
+#include "mcp_can.h"
+
 
 /**
  * Functions for sending and receiving data from the Motor Controller
@@ -51,4 +53,6 @@ namespace MC {
     unsigned long getRUNFault(unsigned char *);
     // 0x0AC
     unsigned long getElapsedTime(unsigned char *);
+    //other things
+    void shutThemAllDown(MCP_CAN&);
 }

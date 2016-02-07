@@ -1,53 +1,54 @@
 #include "mc.h"
+
 #include "stupidmemory.h"
 #define max(a,b) ((a)>(b)?(a):(b))
 // 0x0A0
 float MC::getAveragePhaseTemp(unsigned char *data) {
     short phaseA, phaseB, phaseC;
-    memcpy(&phaseA, &data[0], sizeof(short));
-    memcpy(&phaseB, &data[2], sizeof(short));
-    memcpy(&phaseC, &data[4], sizeof(short));
+    memcpyInt(&phaseA, &data[0]);
+    memcpyInt(&phaseB, &data[2]);
+    memcpyInt(&phaseC, &data[4]);
     return (phaseA + phaseB + phaseC) / 30.0f;
 }
 
 float MC::getMaxPhaseTemp(unsigned char *data) {
     short phaseA, phaseB, phaseC;
-    memcpy(&phaseA, &data[0], sizeof(short));
-    memcpy(&phaseB, &data[2], sizeof(short));
-    memcpy(&phaseC, &data[4], sizeof(short));
+    memcpyInt(&phaseA, &data[0]);
+    memcpyInt(&phaseB, &data[2]);
+    memcpyInt(&phaseC, &data[4]);
     float derpFloat = max(phaseA, max(phaseB, phaseC)) / 10.0;
     return derpFloat;
 }
 
 float MC::getGateDriverTemp(unsigned char *data) {
     short gateDriverTemp;
-    memcpy(&gateDriverTemp, &data[6], sizeof(short));
+    memcpyInt(&gateDriverTemp, &data[6]);
     return gateDriverTemp / 10.0f;
 }
 
 // 0x0A1
 float MC::getControlBoardTemp(unsigned char *data) {
     short boardTemp;
-    memcpy(&boardTemp, &data[0], sizeof(short));
+    memcpyInt(&boardTemp, &data[0]);
     return boardTemp / 10.0f;
 }
 
 float MC::getThermistor1Temp(unsigned char *data) {
     short t1Temp;
-    memcpy(&t1Temp, &data[2], sizeof(short));
+    memcpyInt(&t1Temp, &data[2]);
     return t1Temp / 10.0f;
 }
 
 float MC::getThermistor2Temp(unsigned char *data) {
     short t2Temp;
-    memcpy(&t2Temp, &data[4], sizeof(short));
+    memcpyInt(&t2Temp, &data[4]);
     return t2Temp / 10.0f;
 }
 
 // 0x0A2
 float MC::getMotorTemp(unsigned char *data) {
     short motorTemp;
-    memcpy(&motorTemp, &data[4], sizeof(short));
+    memcpyInt(&motorTemp, &data[4]);
     return motorTemp / 10.0f;
 }
 
@@ -78,57 +79,57 @@ bool MC::isStartSwitchOn(unsigned char *data) {
 // 0x0A5
 int MC::getMotorRPM(unsigned char *data) {
     short motorRPM;
-    memcpy(&motorRPM, &data[2], sizeof(short));
+    memcpyInt(&motorRPM, &data[2]);
     return motorRPM;
 }
 
 // 0x0A6
 float MC::getPhaseACurrent(unsigned char *data) {
     short aI;
-    memcpy(&aI, &data[0], sizeof(short));
+    memcpyInt(&aI, &data[0]);
     return aI / 10.0f;
 }
 
 float MC::getPhaseBCurrent(unsigned char *data) {
     short bI;
-    memcpy(&bI, &data[2], sizeof(short));
+    memcpyInt(&bI, &data[2]);
     return bI / 10.0f;
 }
 
 float MC::getPhaseCCurrent(unsigned char *data) {
     short cI;
-    memcpy(&cI, &data[4], sizeof(short));
+    memcpyInt(&cI, &data[4]);
     return cI / 10.0f;
 }
 
 float MC::getDCBusCurrent(unsigned char *data) {
     short dcI;
-    memcpy(&dcI, &data[6], sizeof(short));
+    memcpyInt(&dcI, &data[6]);
     return dcI / 10.0f;
 }
 
 // 0x0A7
 float MC::getDCBusVoltage(unsigned char *data) {
     short dcV;
-    memcpy(&dcV, &data[0], sizeof(short));
+    memcpyInt(&dcV, &data[0]);
     return dcV / 10.0f;
 }
 
 float MC::getOutputVoltage(unsigned char *data) {
     short oV;
-    memcpy(&oV, &data[2], sizeof(short));
+    memcpyInt(&oV, &data[2]);
     return oV / 10.0f;
 }
 
 float MC::getPhaseABVoltage(unsigned char *data) {
     short abV;
-    memcpy(&abV, &data[4], sizeof(short));
+    memcpyInt(&abV, &data[4]);
     return abV / 10.0f;
 }
 
 float MC::getPhaseBCVoltage(unsigned char *data) {
     short bcV;
-    memcpy(&bcV, &data[6], sizeof(short));
+    memcpyInt(&bcV, &data[6]);
     return bcV / 10.0f;
 }
 
@@ -144,19 +145,24 @@ bool MC::isInverterOn(unsigned char *data) {
 // 0x0AB
 unsigned long MC::getPOSTFault(unsigned char *data) {
     unsigned long errorCode;
-    memcpy(&errorCode, &data[0], sizeof(unsigned long));
+    memcpyLong(&errorCode, &data[0]);
     return errorCode;
 }
 
 unsigned long MC::getRUNFault(unsigned char *data) {
     unsigned long errorCode;
-    memcpy(&errorCode, &data[4], sizeof(unsigned long));
+    memcpyLong(&errorCode, &data[4]);
     return errorCode;
 }
 
 // 0x0AC
 unsigned long MC::getElapsedTime(unsigned char *data) {
     unsigned long elapsedTime;
-    memcpy(&elapsedTime, &data[4], sizeof(unsigned long));
+    memcpyLong(&elapsedTime, &data[4]);
     return (unsigned long) (elapsedTime * 0.003f);
+}
+
+void MC::shutThemAllDown(MCP_CAN& CanYouDoTheCANCAN) {
+  unsigned char msgBuf[8] = {0,0,0,0,0,0,0,0};
+  CanYouDoTheCANCAN.sendMsgBuf(0x0C0, 0, 8, msgBuf);
 }

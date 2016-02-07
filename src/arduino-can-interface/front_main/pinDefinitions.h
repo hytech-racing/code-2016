@@ -1,10 +1,11 @@
-const int Air1 = 0;
-const int Air2 = 0;
-const int Air3 = 0;
-const int Air4 = 0;
-const int TSmasterSwitch = 0;
-const int readyToDriveSound = 0;
-const int precharge = 0;
-const int discharge = 0;
-const int TSMasterRelay = 0;
+const int Air1 = 2;
+const int Air2 = 2;
+const int Air3 = 2;
+const int Air4 = 2;
+const int TSmasterSwitch = 2;
+const int readyToDriveSound = 2;
+const int precharge = 2;
+const int discharge = 2;
+const int TSMasterRelay = 2;
+const int IMDpin = 3;
 

@@ -207,10 +207,14 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
   digitalWrite(readyToDriveSound, HIGH);
   delay(2000);
   digitalWrite(readyToDriveSound, LOW);
+  EVDC::goForLaunch(lilEngineThatCAN);
 }
 
 
 void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
+  Serial.println("starting up DEBUG");
+  Serial.println("starting up DEBUG");
+  Serial.println("starting up DEBUG");
    digitalWrite(Air1, HIGH);
   delay(500);
   digitalWrite(Air2, HIGH);
@@ -221,9 +225,11 @@ void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
   digitalWrite(Air4, HIGH); 
   digitalWrite(precharge, LOW);
   RPi::giveProgression(lilEngineThatCAN,5);
+  EVDC::goForLaunch(lilEngineThatCAN);
+
 }
   
 
 void definePinModes() {
-  pinMode(0, INPUT);
+  pinMode(2, INPUT);
 }
