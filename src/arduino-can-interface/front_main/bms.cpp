@@ -61,7 +61,7 @@ float BMS::getPackDCL(unsigned char* data) {
     unsigned char low = data[5];
 
     float limit = (high << 8) | low;
-    return limit; // units are 0.1A
+    return limit/10.0; // units are 0.1kW
 }
 
 float BMS::getAmpHours(unsigned char* data) {
@@ -135,16 +135,17 @@ float BMS::getInternalTemp(unsigned char* data) {
 float BMS::getHighVoltage(unsigned char* data) {
     unsigned char high = data[0];
     unsigned char low = data[1];
-
-    float volts = (high << 8) | low;
-    return volts / 10000; // units are 0.0001 V
+    unsigned int highInt = int(high);
+    float volts = (highInt << 8) | low;
+    return volts / 10000.0; // units are 0.0001 V
 }
 
 float BMS::getLowVoltage(unsigned char* data) {
-    int MostSig = data[2]<<(8);
-    int volts = MostSig + data[3];
-    float needsDivision = float(volts);
-    return needsDivision/10000 ; // the units are in ten-thousandths of a volt
+    unsigned char high = data[2];
+    unsigned char low = data[3];
+    unsigned int highInt = int(high);
+    float volts = (highInt << 8) | low;
+    return volts/10000.0 ; // the units are in ten-thousandths of a volt
 }
 
 float BMS::getAvgVoltage(unsigned char* data) {

@@ -32,11 +32,11 @@ void setup() {
 
 void loop() {
   unsigned char msg1[8] = {0b10010100,194,99,0,20,0,119};
-  unsigned char msg2[8] = {0,100,1,244,0,10,0,100};
+  unsigned char msg2[8] = {0,100,1,244,1,144,0,100};
   unsigned char msg3[8] = {8,152,8,152,8,152,0,1};
   unsigned char msg4[4] = {50,30,40,30};
-  unsigned char msg5[6] = {13,172,12,128,13,22};
-  unsigned char msg6[6] = {13,172,12,128,13,22};
+  unsigned char msg5[6] = {13,172,120,128,13,22};
+  unsigned char msg6[6] = {13,172,120,128,13,22};
 
   CAN.sendMsgBuf(0x001, 0, 8, msg1);
   delay(1);

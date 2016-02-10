@@ -32,7 +32,7 @@
 #define AR_BASE_ERROR 19 // 19 to 25
 #define IMD_BASE_ERROR 26
 
-
+long CANtimer;
 
 long BMS_timeout;
 long BMS_timeout_limit = 2000; // 2000 ms
@@ -42,18 +42,19 @@ long ar_timeout;
 long ar_timeout_limit = 2000;
 
 long MC_timeout;
-long MC_timeout_limit = 500;
+long MC_timeout_limit = 1000;
 char MC_Message_Checker;
 
 long EVDC_timeout;
 long EVDC_timeout_limit = 500;
 
 // global variables for data from CANBUS
+float BMSwholePackVoltage = 300;
 float BMSstateOfCharge = 50.0;
 float BMScurrent = 0.0;
 float BMShighestTemp = 20.0;
 float BMSlowcellvoltage = 3.7;
-float BMScurrentLimit = 500;
+float BMScurrentLimitKW = 100;
 float BMS_low_cell_cutoff = 3.0;
 
 float MCphasetemp = 20.0;
@@ -105,9 +106,9 @@ void loop() {
   // load it into variables. Then, I check the data for plausibility
   
   Serial.println("loop start");
-  
+  CANtimer = millis() + 100;
+  while(CANtimer > millis()) { // the loop listens to CAN for 100 ms in order to make sure all messages are read
   while(CAN_MSGAVAIL == CanBus.checkReceive()) {
-    Serial.println("gotCAN");
     CanBus.readMsgBuf(&len, msgReceive);
     switch(CanBus.getCanId()) {
       //BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  
@@ -117,11 +118,11 @@ void loop() {
         break;
       case BMS::Message_2:
         BMScurrent = BMS::getCurrent(msgReceive);
-        BMScurrentLimit = BMS::getPackDCL(msgReceive);
+        BMScurrentLimitKW = BMS::getPackDCL(msgReceive);
         BMS_Message_Checker |= 0x02;   
         break;
       case BMS::Message_3:
-        
+        BMSwholePackVoltage = BMS::getPackVoltage(msgReceive);
         BMS_Message_Checker |= 0x04; 
         break;
       case BMS::Message_4:
@@ -165,19 +166,19 @@ void loop() {
         break;
     }
   }
-  
+  }
   
   // TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  
   
   
-  if(BMS_Message_Checker == 0x1B) { // all messages = 1 + 2 + 8 + 16
+  if(BMS_Message_Checker == 0x1F) { // all messages = 1 + 2 + 4 + 8 + 16
     BMS_timeout = millis() + BMS_timeout_limit;
     BMS_Message_Checker = 0;
   }
   
   if(MC_Message_Checker == 0x0F) { // all messages = 1 + 2 + 4 + 8
-    BMS_timeout = millis() + MC_timeout_limit;
-    BMS_Message_Checker = 0;
+    MC_timeout = millis() + MC_timeout_limit;
+    MC_Message_Checker = 0;
   }
   
   if(millis() > BMS_timeout) {
@@ -197,6 +198,8 @@ void loop() {
   
   //ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  
   
+  Serial.println(BMSlowcellvoltage);
+  
   if(millis() > IMDtimer) {
    IMDtimer = millis()+5000;
    IMDerror = IMD::checkError();
@@ -215,7 +218,7 @@ void loop() {
   if(BMSlowcellvoltage < BMS_low_cell_cutoff) {
    shutdownError(CanBus, CELL_CRITICAL_LOW);
   }
-  if(BMScurrent > BMScurrentLimit) {
+  if(BMScurrent > (BMScurrentLimitKW*1000.0)/BMSwholePackVoltage) {
    shutdownError(CanBus, TOO_MUCH_CURRENT);
   }
   

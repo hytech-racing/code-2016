@@ -31,8 +31,8 @@ void setup() {
 }
 
 void loop() {
-  unsigned char msg1[8] = {50,35,27,188,89,42,0};
-  unsigned char msg2[8] = {50,35,27,188,0,0,0};
+  unsigned char msg1[8] = {0,35,27,188,89,42,0};
+  unsigned char msg2[8] = {0,35,27,188,0,0,0};
 
 
   CAN.sendMsgBuf(0x2A2, 0, 8, msg1);
