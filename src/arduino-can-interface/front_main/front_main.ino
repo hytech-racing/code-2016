@@ -197,8 +197,7 @@ void loop() {
   }
   
   //ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  
-  
-  Serial.println(BMSlowcellvoltage);
+ 
   
   if(millis() > IMDtimer) {
    IMDtimer = millis()+5000;
