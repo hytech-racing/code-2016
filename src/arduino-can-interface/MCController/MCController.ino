@@ -37,16 +37,62 @@ START_INIT:
     }
 }
 
-unsigned char msg[8] = {0,0,0,0,0,2,0,0};
+unsigned char lockout[8] = {0,0,0,0,0,0,0,0};
+unsigned char enable[8] = {0,0,0,0,0,1,0,0};
+unsigned char msg[8] = {0,0,0,0,1,1,0,0};
+int torque = 0;
+int enabled = 0;
 int value;
 
 void loop() {
-  digitalWrite(A3, HIGH);
-  digitalWrite(A5, LOW);
-  value = analogRead(A4);
-  memcpy(&msg[2], &value, sizeof(short));
-  Serial.println(value);
-  CAN.sendMsgBuf(0x0C0, 0, 8, msg);
-  delay(50);
+  if (!enabled) {
+    CAN.sendMsgBuf(0x0C0, 0, 8, lockout);
+    Serial.println("inverter disable");
+    char entry;
+    entry = Serial.read();
+    if (entry == 's') {
+      CAN.sendMsgBuf(0x0C0, 0, 8, enable);
+      torque = 0;
+      Serial.println("enabled");
+      enabled = 1;
+    }
+    delay(50);
+  } else {
+    if (Serial.available() > 0) {
+      char entry;
+      entry = Serial.read();
+      if (entry == 'd') {
+        CAN.sendMsgBuf(0x0C0, 0, 8, enable);
+        Serial.println("disable");
+        enabled = 0;
+      } else if (entry == 'e') {
+        CAN.sendMsgBuf(0x0C0, 0, 8, lockout);
+      } else if (entry == 'a') {
+  //    digitalWrite(A3, HIGH);
+  //    digitalWrite(A5, LOW);
+  //    value = analogRead(A4);
+        torque = 40;
+      } else if (entry == 'b') {
+        torque = 120;
+      } else if (entry == 'c') {
+        torque = 200; 
+      } else if (entry == 'f') {
+        torque = 0;
+      }
+
+      /**
+       * INPUT SEQUENCE TO TURN ON MOTOR 100% OF THE TIME
+       * Start sending disable messages
+       * Then send real messages (press s)
+       * Then send quick disable for lockout (press e)
+       */
+    }
+    memcpy(&msg[0], &torque, sizeof(short)); //torque mode
+    Serial.print(msg[0], HEX);
+    Serial.print(" ");
+    Serial.println(msg[1]);
+    CAN.sendMsgBuf(0x0C0, 0, 8, msg);
+    delay(50);
+  }
 }
 
