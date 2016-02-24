@@ -204,6 +204,8 @@ void loop() {
    IMDerror = IMD::checkError();
   }
   
+  Serial.print("StateOfCharge ");
+  Serial.println(BMSstateOfCharge);
   
   if(BMSstateOfCharge < 10) {
    alertError(CanBus, LOW_SOC);
