@@ -11,7 +11,7 @@ void shutDownNormal(MCP_CAN& datCAN) {
 
 void shutdownError(MCP_CAN& datCAN, int code) {
   RPi::giveError(datCAN, code);
-  MC::shutThemAllDown(datCAN); //  "shut them ALL down!!!"
+  //MC::shutThemAllDown(datCAN); //  "shut them ALL down!!!"
   EVDC::shutThemAllDown(datCAN);//    - C-3PO, on trash compactors containing friends
   digitalWrite(TSMasterRelay, LOW);
   digitalWrite(Air4, LOW);

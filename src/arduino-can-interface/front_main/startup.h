@@ -9,197 +9,88 @@
 /*
 startup sequence according to Nathan
 
+we only NEED to check for BMS fault if there was previously a BMS fault
 
 
+so, sequence is: car is switched on
+asks for permission to go forward
+checks BMS for errors if need be
+checks IMD for errors
+AIRs close
+flips precharge
+precharges
+asks if they want to start the car
+if brakes are on, the TSMS relay flips
+RTD sound sounds
+car is ready to drive
+vroom vroom
 
-
-
-
-
-
-
-
-
+Pi Progression Statements:
+0- dude ur in a dope car. this thing lit.
+1- press continue to begin car startup sequence
+2- beginning startup checks
+3- press brake pedal and continue button to start car
+4- car is ready to drive! (while ready to drive sound is going off)
+5- standard display
 
 
 
 */
 
 void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1 means BMS resset, 2 means IMD reset
-// EVDC get progression button
-  //progression: 1-5 normal, 6 is BMS error, 7 is IMD error 
-  const int TSmasterSwitch = 0;
-  const int Air1 = 0;
-  const int Air2 = 0;
-  const int Air3 = 0;
-  const int Air4 = 0;
-  const int precharge = 0;
-  const int readyToDriveSound = 0; 
+  unsigned char msgRecieve[8];
+  boolean progressBlock = true;
+  int buttons = 0;
   
-  unsigned char msgGet[8];
-  unsigned char msgSend[8];
-  unsigned char biglen;
-  boolean IMDswitch;
-  boolean progressButton;
-  boolean oldProgressButton;
-  boolean needsToProgress;
-  while(!needsToProgress){
-    RPi::giveProgression(lilEngineThatCAN, 1); // "Press button 1 to begin startup"
-    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
-      switch(lilEngineThatCAN.getCanId()) {
-        case EVDC::Message:
-         
-          oldProgressButton = progressButton;
-          int derp = EVDC::getButtons(msgGet);
-          
-          break;
-      }
-    }
-    if(progressButton && !oldProgressButton) {
-      needsToProgress = true;
-    }
-  }
-  needsToProgress = false;
-  
-  
-  while(!needsToProgress){
-    RPi::giveProgression(lilEngineThatCAN,2); // "checking for BMS errors"
-    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
-      switch(lilEngineThatCAN.getCanId()) {
-        case BMS::Message_1:
-          if(BMS::getRelayStatus(msgGet) & 0x01 == 0x01) { // discharge relay means that the BMS has no errors  
-            needsToProgress = true;
-          }
-          break;
-        default:
-          break;
-      } 
-    }
-    if(progressButton && !oldProgressButton) {
-      needsToProgress = true;
-    }
-  }
-  needsToProgress = false;
-  
-  while(!needsToProgress){
-    RPi::giveProgression(lilEngineThatCAN, 3); // "checking for IMD errors"
-    if(IMD::checkError() == 0) {
-      needsToProgress = true;
-  }
-  needsToProgress = false;
-  }
-
-  while(!needsToProgress){
-    RPi::giveProgression(lilEngineThatCAN, 4);
-    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
-      switch(lilEngineThatCAN.getCanId()) {
-        case EVDC::Message:
-        
-          oldProgressButton = progressButton;
-          int demButtons = EVDC::getButtons(msgGet);
-          progressButton = ((demButtons & 0x02) == 0x02);
-          break;
-
-      }
-    }
-    if(progressButton & !oldProgressButton) {
-      needsToProgress = true;
-    }
-  }
-  needsToProgress = false;
-   digitalWrite(TSmasterSwitch, HIGH);  // turn on Tractive System Master Switch if there aren't any BMS or IMD errors
-
- /* 
- while(!needsToProgress){
-    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
-      switch(lilEngineThatCAN.getCanId()) {
-        case EVDC::Message:
-        
-          oldProgressButton = progressButton;
-          EVDC::getButtonStates(IMDswitch, progressButton, msgReceive);
-          
-          break;
-        default:
-          break;
-      }
-    }
-    if(progressButton && !oldProgressButton) {
-      needsToProgress = true;
-    }
-  }
-  needsToProgress = false;
-  */
-  
+  RPi::giveProgression(0);
+  delay(2000); // I want a delay for all the other systems to boot up.
 
   
-  while(!needsToProgress){
-    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
-      switch(lilEngineThatCAN.getCanId()) {
-        case EVDC::Message:
-        
-          oldProgressButton = progressButton;
-          int demButtons = EVDC::getButtons(msgGet);
-          progressButton = ((demButtons & 0x02) == 0x02);
-          
-          break;
-      }
+  while((CAN_MSGAVAIL == CanBus.checkReceive()) && progressBlock) {
+    RPi::giveProgression(1); 
+    CanBus.readMsgBuf(&len, msgReceive);
+    if(CanBus.getCanId() == 0xDC) {
+      buttons = EVDC::getButtons(msgReceive);
     }
-    if(progressButton) {
-      needsToProgress = true;
+    if((buttons & 0x02) == 0x02) {
+      brogressBlock == false;
     }
   }
-  needsToProgress = false;
-       
- 
-  digitalWrite(Air1, HIGH); // turn on 3 AIRs when IMD bypass switch is flipped
-  delay(500);
-  digitalWrite(Air2, HIGH);
-  delay(500);
-  digitalWrite(Air3, HIGH);      
   
+  progressBlock = true;
   
-    while(!needsToProgress){
-    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
-      switch(lilEngineThatCAN.getCanId()) {
-        case EVDC::Message:
-        
-          oldProgressButton = progressButton;
-          int demButtons = EVDC::getButtons(msgGet);
-          progressButton = ((demButtons & 0x02) == 0x02);          
-          break;
-      }
-    }
-    if(!IMDswitch) {
-      needsToProgress = true;
-    }
-  }
-  needsToProgress = false;
- 
-       
-  float brakePedal;
-  while(!needsToProgress){
-    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&biglen, msgGet);
-      switch(lilEngineThatCAN.getCanId()) {
-        case EVDC::Message:
-          oldProgressButton = progressButton;
-          int demButtons = EVDC::getButtons(msgGet);
-          progressButton = ((demButtons & 0x02) == 0x02);         
-          brakePedal = EVDC::getBrakes(msgGet);
-          break;
-      }
-    }
-    if(progressButton && !oldProgressButton && (brakePedal > 0.5)){
-      needsToProgress = true;
-    }
-  }
-  needsToProgress = false;
+  if(EEPROM.read(0) == 1) { // for BMS error on last shutdown
+    while((CAN_MSGAVAIL == CanBus.checkReceive()) && progressBlock) {
+    RPi::giveProgression(2); 
+    CanBus.readMsgBuf(&len, msgReceive);
+    switch(CanBus.getCanId()) {
+      //BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  
+      case BMS::Message_1:
+        BMSstateOfCharge = BMS::getStateOfCharge(msgReceive);
+        BMS_Message_Checker |= 0x01;
+        break;
+      case BMS::Message_2:
+        BMScurrent = BMS::getCurrent(msgReceive);
+        BMScurrentLimitKW = BMS::getPackDCL(msgReceive);
+        BMS_Message_Checker |= 0x02;   
+        break;
+      case BMS::Message_3:
+        BMSwholePackVoltage = BMS::getPackVoltage(msgReceive);
+        BMS_Message_Checker |= 0x04; 
+        break;
+      case BMS::Message_4:
+        BMShighestTemp = BMS::getHighTemp(msgReceive);
+        BMS_Message_Checker |= 0x08; 
+        break;
+      case BMS::Message_5:
+        BMSlowcellvoltage = BMS::getLowVoltage(msgReceive);
+        BMS_Message_Checker |= 0x10; 
+        break;
+  
+
+
+
+
   digitalWrite(precharge, HIGH);
   delay(3000);
   digitalWrite(Air4, HIGH); // brake needs to be pressed in order to go into a ready-to-drive state

@@ -15,7 +15,7 @@
   Set to 9 if using a SEEEDStudio (black) shield
   Set to 10 if using a SparkFun (red) shield
 */
-const int SPI_CS_PIN = 10;
+const int SPI_CS_PIN = 9;
 MCP_CAN CAN(SPI_CS_PIN);
 int sent = 0;
 
@@ -47,18 +47,22 @@ void loop() {
   */
   if(CAN_MSGAVAIL == CAN.checkReceive()) { //Checks if message is available
     CAN.readMsgBuf(&len, buf); //If so, stores length & value
-    //if(CAN.getCanId() == 0x3CB) {
+    long BIGID = CAN.getCanId();
+    if( BIGID == 0xAA || BIGID == 0xAC) {
+      if(BIGID == 0xAC) {
+        Serial.print("                                   ");
+      }
       Serial.print("Message on ID ");
       Serial.print(CAN.getCanId(), HEX);
       Serial.print(": ");
-  /*
+      
       for(int i = 0; i < len; i++) {
-        Serial.print(buf[i]);
+        Serial.print(buf[i], HEX);
         Serial.print(" ");
      }
-     */
+     
       Serial.println();
-    //}
+    }
     // You have to readMsgBuf before you can get the ID of the message
 
 //    if(CAN.getCanId() == 0x15) { //Filters so only certain messages will execute this code

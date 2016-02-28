@@ -12,7 +12,7 @@
 #include "pi.h"
 #include "startup.h"
 #include"shutdown.h"
-#include "IMD.h"
+//#include "IMD.h"     we are going to go off of a digital read of OKHS instead
 
 #define DEBUG_ACTIVATE 42 // declare to be 42 to turn on debug functionality
 
@@ -199,11 +199,12 @@ void loop() {
   //ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  
  
   
-  if(millis() > IMDtimer) {
-   IMDtimer = millis()+5000;
-   IMDerror = IMD::checkError();
+  if(digitalRead(IMDpin)) {
+   IMDerror = 1;
   }
   
+  Serial.print("StateOfCharge ");
+  Serial.println(BMSstateOfCharge);
   
   if(BMSstateOfCharge < 10) {
    alertError(CanBus, LOW_SOC);
