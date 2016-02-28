@@ -1,36 +1,23 @@
 
-// list of shortcuts: BMS::getError is not defined. pins not properly defined. pin modes not properly defined. startup sequence is a mess
+// list of shortcuts: pins not properly defined. startup sequence might be mess
 
 #include <SPI.h>
 #include <EEPROM.h>
-#include "pinDefinitions.h"
+#include "pinAndErrorDefinitions.h"
 #include "mcp_can.h"
 #include "mc.h"
 #include "evdc.h"
 #include "bms.h"
 #include "ar.h"
 #include "pi.h"
+#include "shutdown.h"
 #include "startup.h"
-#include"shutdown.h"
+
 //#include "IMD.h"     we are going to go off of a digital read of OKHS instead
 
 #define DEBUG_ACTIVATE 42 // declare to be 42 to turn on debug functionality
 
-#define BMS_TIMED_OUT 1
-#define EVDC_TIMED_OUT 2
-#define MC_TIMED_OUT 3
-#define AR_TIMED_OUT 4
-#define LOW_SOC 5
-#define VERY_LOW_SOC 6
-#define HIGH_BATT_TEMP 7
 
-#define CELL_CRITICAL_LOW 9
-#define TOO_MUCH_CURRENT 10
-#define HIGH_PHASE_TEMP 11
-#define HIGH_MOTOR_TEMP 12
-#define EVDC_BASE_ERROR 13 // 13 to 18
-#define AR_BASE_ERROR 19 // 19 to 25
-#define IMD_BASE_ERROR 26
 
 long CANtimer;
 
@@ -46,7 +33,7 @@ long MC_timeout_limit = 1000;
 char MC_Message_Checker;
 
 long EVDC_timeout;
-long EVDC_timeout_limit = 500;
+long EVDC_timeout_limit = 2000;
 
 // global variables for data from CANBUS
 float BMSwholePackVoltage = 300;
@@ -80,7 +67,7 @@ MCP_CAN CanBus(9);
 
 void setup() {
   Serial.begin(9600);
-  definePinModes();
+  defineAndSetPinModes();
   while(CAN_OK != CanBus.begin(CAN_500KBPS)) {
     Serial.println("CAN Bus is not operaitonal");
     delay(10);
@@ -106,6 +93,7 @@ void loop() {
   // load it into variables. Then, I check the data for plausibility
   
   Serial.println("loop start");
+  RPi::giveProgression(CanBus, 5);
   CANtimer = millis() + 100;
   while(CANtimer > millis()) { // the loop listens to CAN for 100 ms in order to make sure all messages are read
   while(CAN_MSGAVAIL == CanBus.checkReceive()) {
@@ -165,8 +153,8 @@ void loop() {
       default:
         break;
     }
-  }
-  }
+  } // end "while canbus message available"
+  } // end "while timer greater than millis()"
   
   // TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  
   
@@ -229,8 +217,13 @@ void loop() {
    shutdownError(CanBus, HIGH_MOTOR_TEMP);
   }
   
-  if(EVDCerror > 0) {
+  if(EVDCerror > 1) {
    shutdownError(CanBus, EVDC_BASE_ERROR + EVDCerror);
+  }
+  
+  if(EVDCerror == 1) {
+    alertError(CanBus, EVDC_BASE_ERROR + EVDCerror);
+    EVDC::goForLaunch(CanBus);
   }
   
   if(ARerror > 0) {
