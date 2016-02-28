@@ -446,16 +446,16 @@ static int snprintf_error_prot(char *buf, size_t len, struct can_frame *cf)
 void snprintf_can_error_frame(char *buf, size_t len, struct can_frame *cf,
 			      char* sep)
 {
-	canid_t class, mask;
+	canid_t cls, mask;
 	int i, n = 0, classes = 0;
 	char *defsep = ",";
 
 	if (!(cf->can_id & CAN_ERR_FLAG))
 		return;
 
-	class = cf->can_id & CAN_EFF_MASK;
-	if (class > (1 << ARRAY_SIZE(error_classes))) {
-		fprintf(stderr, "Error class %#x is invalid\n", class);
+	cls = cf->can_id & CAN_EFF_MASK;
+	if (cls > (1 << ARRAY_SIZE(error_classes))) {
+		fprintf(stderr, "Error class %#x is invalid\n", cls);
 		return;
 	}
 
@@ -464,7 +464,7 @@ void snprintf_can_error_frame(char *buf, size_t len, struct can_frame *cf,
 
 	for (i = 0; i < ARRAY_SIZE(error_classes); i++) {
 		mask = 1 << i;
-		if (class & mask) {
+		if (cls & mask) {
 			if (classes)
 				n += snprintf(buf + n, len - n, "%s", sep);
  			n += snprintf(buf + n, len - n, "%s", error_classes[i]);
