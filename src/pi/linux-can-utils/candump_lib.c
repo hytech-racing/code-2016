@@ -17,7 +17,6 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
-#include "terminal.h"
 #include "lib.h"
 
 #define MAXSOCK 1     /* max. number of CAN interfaces given on the cmdline */
@@ -30,17 +29,6 @@
 #define SILENT_OFF 0  /* no silent mode */
 #define SILENT_ANI 1  /* silent mode with animation */
 #define SILENT_ON  2  /* silent mode (completely silent) */
-
-#define BOLD    ATTBOLD
-#define RED     ATTBOLD FGRED
-#define GREEN   ATTBOLD FGGREEN
-#define YELLOW  ATTBOLD FGYELLOW
-#define BLUE    ATTBOLD FGBLUE
-#define MAGENTA ATTBOLD FGMAGENTA
-#define CYAN    ATTBOLD FGCYAN
-
-const char col_on [MAXCOL][19] = {BLUE, RED, GREEN, BOLD, MAGENTA, CYAN};
-const char col_off [] = ATTRESET;
 
 static char *cmdlinename[MAXSOCK];
 static __u32 dropcnt[MAXSOCK];
