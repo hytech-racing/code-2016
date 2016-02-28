@@ -1,4 +1,5 @@
 #include "candump_lib.c"
+#include "time.h"
 
 int main() {
     struct sockaddr_can addr;
@@ -29,10 +30,15 @@ int main() {
         addr.can_ifindex = 0;
 
     int ret = bind(s[0], (struct sockaddr *)&addr, sizeof(addr));
-
-    struct can_frame *frame = get_frame(s, &addr);
-    printf("ID: %d\n", frame->can_id); 
-    fflush(stdout);
+    struct can_frame *frame;
+    while(1) {
+        frame = get_frame(s, &addr);
+        if (frame) {
+            printf("ID: %d\n", frame->can_id);
+            fflush(stdout);
+        }
+        usleep(100000);
+    }
  
     return 0;
 }

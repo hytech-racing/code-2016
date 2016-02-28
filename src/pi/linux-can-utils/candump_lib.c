@@ -110,58 +110,55 @@ int idx2dindex(int ifidx, int socket) {
 }
 
 struct can_frame* get_frame(int s[], struct sockaddr_can *addr) {
-    struct timeval *last_tv;
-    struct timeval *tv;
+    struct timeval *last_tv = (struct timeval*) malloc(sizeof(struct timeval));
+    struct timeval *tv = (struct timeval*) malloc(sizeof(struct timeval));
     last_tv->tv_sec = 0;
     last_tv->tv_usec = 200000;
-    struct can_frame *frame;
-    struct iovec *iov;
-    struct msghdr *msg;
-    struct cmsghdr *cmsg;
+    struct can_frame *frame = (struct can_frame*) malloc(sizeof(struct can_frame));
+    struct iovec *iov = (struct iovec*) malloc(sizeof(struct iovec));
+    struct msghdr *msg = (struct msghdr*) malloc(sizeof(struct msghdr));
+    struct cmsghdr *cmsg = (struct cmsghdr*) malloc(sizeof(struct cmsghdr));
     fd_set rdfs;
     int nbytes;
     char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-
+    
     /* these settings are static and can be held out of the hot path */
-    iov->iov_base = &frame;
-    msg->msg_name = &addr;
+    iov->iov_base = frame;
+    msg->msg_name = addr;
     msg->msg_iov = iov;
     msg->msg_iovlen = 1;
-    msg->msg_control = &ctrlmsg;
+    msg->msg_control = ctrlmsg;
 
     FD_ZERO(&rdfs); 
     FD_SET(s[0], &rdfs);
-
     int ret = select(s[0] + 1, &rdfs, NULL, NULL, last_tv);
     if (ret < 0) {
         printf("select failed\n");
     }
 
-
     if (FD_ISSET(s[0], &rdfs)) {
-        //printf("if statement hit\n");
-        //fflush(stdout);
         int idx;
 
         /* these settings may be modified by recvmsg() */
-        iov->iov_len = sizeof(frame);
-        msg->msg_namelen = sizeof(addr);
-        msg->msg_controllen = sizeof(ctrlmsg);
+        iov->iov_len = sizeof(*frame);
+        msg->msg_namelen = sizeof(*addr);
+        msg->msg_controllen = sizeof(*ctrlmsg);
         msg->msg_flags = 0;
 
         nbytes = recvmsg(s[0], msg, 0);
-        printf("nbytes: %d, sizeof struct: %d\n", nbytes, sizeof(struct can_frame));
+        /*
+         * printf("nbytes: %d, sizeof struct: %d\n", nbytes, sizeof(struct can_frame));
+        */
         fflush(stdout);
         if (nbytes < 0) {
             perror("read");
             return NULL;
         }
 
-
         if (nbytes < sizeof(struct can_frame)) {
             printf("read: incomplete CAN frame %d\n", nbytes);
             fflush(stdout);
-            return frame;
+            return NULL;
         }
 
         for (cmsg = CMSG_FIRSTHDR(msg); cmsg && (cmsg->cmsg_level == SOL_SOCKET); cmsg = CMSG_NXTHDR(msg,cmsg)) {
