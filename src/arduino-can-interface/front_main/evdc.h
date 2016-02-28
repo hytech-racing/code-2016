@@ -6,6 +6,8 @@
  * Functions for sending and receiving data from the EVDC
  * Maxim M
  */
+ 
+ // Error Codes: 2 means there is an error. 1 means that the EVDC is off (has not been launched with the GoForLaunch function)
 
 namespace EVDC {
 	const int Message = 0x0DC; // get it? because it's short for driver controls XD
