@@ -51,18 +51,3 @@ canframe_t* MCP_CAN::read() {
     return &frame;
 }
 
-int MCP_CAN::send(int id, unsigned char *data) {
-    canframe_t *toSend;
-
-    memset(toSend, 0, sizeof(toSend));
-    toSend->can_id = id;
-    memcpy(toSend->data, data, 8);
-    int nbytes = write(sock, toSend, sizeof(*toSend));
-    if (nbytes != sizeof(*toSend)) {
-        printf("send failed: nbytes = %d, sizeof = %d", nbytes,
-                sizeof(*toSend));
-        fflush(stdout);
-        return 1;
-    }
-    return 0;
-}
