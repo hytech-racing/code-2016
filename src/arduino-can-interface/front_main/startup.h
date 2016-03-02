@@ -217,7 +217,7 @@ void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
 
 }
   
-//  const int AirDCDC = 2;
+//  const int AIRdcdc = 2;
 //const int AIRdcdc = 2;
 //const int readyToDriveSound = 2; // ready to derp sound?
 //const int precharge = 2;

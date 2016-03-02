@@ -16,7 +16,20 @@
 
 const int AirDCDC = 2;
 const int AIRdcdc = 2;
-const int readyToDriveSound = 2; // ready to derp sound?
+const int software_shutdown_control = 4;
+const int software_pushbutton_control = 5;
+
+/*
+okay, so the software_shutdown_control is turned on. then, the software_pushbutton_control is pulsed on for a second or so. then, AIRdcdc is turned on or off to turn AIRs on or off
+
+*/
+
+
+const int start_LED = 6;
+const int IMD_LED = 7;
+const int BMS_LED = 8;
+const int plex_LSB = 10;
+const int readyToDriveSound = 3; // ready to derp sound?
 const int precharge = 2;
 const int discharge = 2;
 const int TSMasterRelay = 2;
