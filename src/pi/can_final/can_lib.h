@@ -12,6 +12,7 @@ class MCP_CAN {
 public:
     MCP_CAN();
     canframe_t* read();
+    int send(int id, unsigned char *data);
 
 private:
     int sock;
