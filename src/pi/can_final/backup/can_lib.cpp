@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/can/raw.h>
 
@@ -19,6 +22,9 @@ MCP_CAN::MCP_CAN() {
     msg.msg_name    = &addr;
     msg.msg_iov     = &iov;
     msg.msg_iovlen  = 1;
+
+    timeout.tv_sec  = 0;
+    timeout.tv_usec = 100000;
 }
 
 canframe_t* MCP_CAN::read() {
@@ -26,7 +32,7 @@ canframe_t* MCP_CAN::read() {
 
     FD_ZERO(&rdfs);
     FD_SET(sock, &rdfs);
-    int ret = select(sock + 1, &rdfs, nullptr, nullptr, 0);
+    int ret = select(sock + 1, &rdfs, nullptr, nullptr, &timeout);
     if (ret < 0) {
         printf("select failed\n");
     }
@@ -51,3 +57,19 @@ canframe_t* MCP_CAN::read() {
     return &frame;
 }
 
+int MCP_CAN::send(int id, unsigned char *data, uint8_t msg_len) {
+    canframe_t toSend;
+
+    bzero(&toSend, sizeof(canframe_t));
+    toSend.can_id = id;
+    memcpy(toSend.data, data, 8);
+    toSend.can_dlc = msg_len;
+    int nbytes = write(sock, &toSend, sizeof(canframe_t));
+    if (nbytes != sizeof(toSend)) {
+        printf("send failed: nbytes = %d, sizeof = %d", nbytes,
+                sizeof(toSend));
+        fflush(stdout);
+        return 1;
+    }
+    return 0;
+}
