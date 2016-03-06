@@ -18,9 +18,9 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 void setup()
 {
     Serial.begin(9600);
-    pinMode(A3, OUTPUT);
+    pinMode(A1, OUTPUT);
     pinMode(A5, OUTPUT);
-    pinMode(A4, INPUT);
+    pinMode(A3, INPUT);
 
 START_INIT:
 
@@ -40,8 +40,9 @@ START_INIT:
 unsigned char lockout[8] = {0,0,0,0,0,0,0,0};
 unsigned char enable[8] = {0,0,0,0,0,1,0,0};
 unsigned char msg[8] = {0,0,0,0,1,1,0,0};
-int torque = 0;
+short torque = 0;
 int enabled = 0;
+int pot = 0;
 int value;
 
 void loop() {
@@ -58,6 +59,18 @@ void loop() {
     }
     delay(50);
   } else {
+//    digitalWrite(A1, HIGH);
+//    digitalWrite(A5, LOW);
+//    if (pot == 1) {
+//      value = analogRead(A3);
+//      if (value < 50) {
+//        torque = 0;
+//      } else {
+//        torque = value;
+//      }
+//      pot = 1;
+//      Serial.print("Using pot ");
+//    }
     if (Serial.available() > 0) {
       char entry;
       entry = Serial.read();
@@ -65,19 +78,18 @@ void loop() {
         CAN.sendMsgBuf(0x0C0, 0, 8, enable);
         Serial.println("disable");
         enabled = 0;
+        pot = 0;
       } else if (entry == 'e') {
         CAN.sendMsgBuf(0x0C0, 0, 8, lockout);
       } else if (entry == 'a') {
-  //    digitalWrite(A3, HIGH);
-  //    digitalWrite(A5, LOW);
-  //    value = analogRead(A4);
-        torque = 40;
-      } else if (entry == 'b') {
         torque = 120;
-      } else if (entry == 'c') {
-        torque = 200; 
+        pot = 0;
+      } else if (entry == 'r') {
+        torque = -100;
+        pot = 0;
       } else if (entry == 'f') {
         torque = 0;
+        pot = 0;
       }
 
       /**
@@ -87,10 +99,10 @@ void loop() {
        * Then send quick disable for lockout (press e)
        */
     }
-    memcpy(&msg[0], &torque, sizeof(short)); //torque mode
+    memcpy(&msg[0], &torque, sizeof(short)); //speed mode (ignore the fact that it's called "torque")
     Serial.print(msg[0], HEX);
     Serial.print(" ");
-    Serial.println(msg[1]);
+    Serial.println(msg[1], HEX);
     CAN.sendMsgBuf(0x0C0, 0, 8, msg);
     delay(50);
   }
