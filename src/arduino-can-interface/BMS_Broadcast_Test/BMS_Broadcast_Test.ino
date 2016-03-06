@@ -8,7 +8,7 @@
 #include <SPI.h>
 #include "mcp_can.h"
 
-const int SPI_CS_PIN = 10; //9 if using SEEEDStudio shield
+const int SPI_CS_PIN = 9; //9 if using SEEEDStudio shield
 MCP_CAN CAN(SPI_CS_PIN);
 int sent = 0;
 
