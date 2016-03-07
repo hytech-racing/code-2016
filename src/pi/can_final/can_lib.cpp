@@ -6,6 +6,7 @@
 #include "can_lib.h"
 
 MCP_CAN::MCP_CAN() {
+    // initialize CAN socket and configure CAN address and other parameters
     sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     addr.can_family = AF_CAN;
     memset(&ifr.ifr_name, 0, sizeof(ifr.ifr_name));
@@ -13,8 +14,10 @@ MCP_CAN::MCP_CAN() {
     ioctl(sock, SIOCGIFINDEX, &ifr);
     addr.can_ifindex = ifr.ifr_ifindex;
 
+    // bind CAN socket
     bind(sock, (struct sockaddr *) &addr, sizeof(addr));
 
+    // setup framework for reading CAN messages
     iov.iov_base    = &frame;
     msg.msg_name    = &addr;
     msg.msg_iov     = &iov;
@@ -26,8 +29,7 @@ canframe_t* MCP_CAN::read() {
 
     FD_ZERO(&rdfs);
     FD_SET(sock, &rdfs);
-    int ret = select(sock + 1, &rdfs, nullptr, nullptr, 0);
-    if (ret < 0) {
+    if (select(sock + 1, &rdfs, nullptr, nullptr, 0) < 0) {
         printf("select failed\n");
     }
 
