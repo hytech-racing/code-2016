@@ -19,5 +19,4 @@ clean:
 	-rm -f *.o
 	-rm -f main_can
 
-run: main_can
-	./main_can
+remake: clean all
