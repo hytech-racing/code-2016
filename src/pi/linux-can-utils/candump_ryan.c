@@ -158,7 +158,7 @@ int main() {
             perror("socket");
             return 1;
     }
-    
+
     addr.can_family = AF_CAN;
 
     memset(&ifr.ifr_name, 0, sizeof(ifr.ifr_name));
