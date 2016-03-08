@@ -39,7 +39,7 @@ void print(canframe_t* frame) {
     if (frame && frame->can_dlc > 0) {
         for (uint8_t i = 0; i < frame->can_dlc; ++i) {
             std::cout << CONSOLE_COLORS[rand() % 4];
-            std::cout << (int) frame->data[i] << " ";
+            std::cout << frame->data[i] << " ";
         }
         std::cout << NO_COLOR_CONSOLE << std::endl;
     } else {
