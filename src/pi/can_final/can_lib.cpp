@@ -9,16 +9,11 @@
 #include "can_lib.h"
 
 MCP_CAN::MCP_CAN() {
-    // initialize CAN socket and configure CAN address and other parameters
-    sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    // configure CAN address and other parameters
     addr.can_family = AF_CAN;
     bzero(&ifr.ifr_name, sizeof(ifr.ifr_name));
     strcpy(ifr.ifr_name, "can0");
-    ioctl(sock, SIOCGIFINDEX, &ifr);
     addr.can_ifindex = ifr.ifr_ifindex;
-
-    // bind CAN socket
-    bind(sock, (struct sockaddr *) &addr, sizeof(addr));
 
     // setup framework for reading CAN messages
     iov.iov_base    = &frame;
@@ -28,6 +23,15 @@ MCP_CAN::MCP_CAN() {
 
     timeout.tv_sec  = 0;
     timeout.tv_usec = 100000;
+}
+
+MCP_CAN::initialize() {
+    // initialize socket
+    sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    ioctl(sock, SIOCGIFINDEX, &ifr);
+
+    // bind CAN socket
+    bind(sock, (struct sockaddr *) &addr, sizeof(addr));
 }
 
 canframe_t* MCP_CAN::read() {
@@ -60,17 +64,14 @@ canframe_t* MCP_CAN::read() {
 }
 
 int MCP_CAN::send(int id, unsigned char *data, uint8_t msg_len) {
-    canframe_t toSend;
-
-    bzero(&toSend, sizeof(canframe_t));
-    toSend.can_id = id;
-    memcpy(toSend.data, data, 8);
-    toSend.can_dlc = msg_len;
-    int nbytes = write(sock, &toSend, sizeof(canframe_t));
-    if (nbytes != sizeof(toSend)) {
+    bzero(&frame, sizeof(canframe_t));
+    frame.can_id = id;
+    memcpy(frame.data, data, 8);
+    frame.can_dlc = msg_len;
+    int nbytes = write(sock, &frame, sizeof(canframe_t));
+    if (nbytes != sizeof(frame)) {
         printf("send failed: nbytes = %d, sizeof = %d", nbytes,
-                sizeof(toSend));
-        fflush(stdout);
+                sizeof(frame));
         return 1;
     }
     return 0;
