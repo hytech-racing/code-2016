@@ -12,7 +12,7 @@ MCP_CAN::MCP_CAN() {
     // initialize CAN socket and configure CAN address and other parameters
     sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     addr.can_family = AF_CAN;
-    memset(&ifr.ifr_name, 0, sizeof(ifr.ifr_name));
+    bzero(&ifr.ifr_name, sizeof(ifr.ifr_name));
     strcpy(ifr.ifr_name, "can0");
     ioctl(sock, SIOCGIFINDEX, &ifr);
     addr.can_ifindex = ifr.ifr_ifindex;
