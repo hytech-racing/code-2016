@@ -22,6 +22,7 @@ void print(canframe_t* frame);
 
 int main() {
     MCP_CAN can;
+    can.initialize();
 
     canframe_t *frame;
     uint8_t buffer[] = {70, 85, 67, 75, 32, 89, 79, 85};

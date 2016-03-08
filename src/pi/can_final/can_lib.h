@@ -12,6 +12,7 @@ typedef struct msghdr msghdr_t;
 class MCP_CAN {
 public:
     MCP_CAN();
+    initialize();
     canframe_t* read();
     int send(int id, unsigned char *data, uint8_t msg_len);
 
