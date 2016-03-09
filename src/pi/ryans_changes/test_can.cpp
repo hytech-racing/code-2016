@@ -1,5 +1,7 @@
 #include "can_lib.h"
 #include "time.h"
+#include "stdio.h"
+#include "signal.h"
 
 static volatile bool running = true;
 
@@ -25,6 +27,13 @@ int main() {
         usleep(100000);
     }
     */
+    int id = 0x07;
+    unsigned char mesg[] = {1,2,3,4,5,6,7,8};
+    if (can.send(id, mesg)) {
+        printf("sent the message!\n");
+    } else {
+        printf("something didn't work\n");
+    }
 
     return 0;
 }

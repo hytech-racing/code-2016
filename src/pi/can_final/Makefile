@@ -1,26 +1,22 @@
 CXX = g++
 FLAGS = -w -std=c++11
 
-all: test_can
+all: main_can
 
-test_can: lib.o can_lib.o test_can.o
-	$(CXX) $(FLAGS) -o test_can test_can.o
+main_can: can_lib.o main_can.o
+	$(CXX) $(FLAGS) -o main_can main_can.o can_lib.o
 
 
 # Object files
 
-lib.o: lib.c
-	$(CXX) $(FLAGS) -c lib.c
-
 can_lib.o: can_lib.cpp
 	$(CXX) $(FLAGS) -c can_lib.cpp
 
-test_can.o: test_can.cpp
-	$(CXX) $(FLAGS) -c test_can.cpp
+main_can.o: main_can.cpp
+	$(CXX) $(FLAGS) -c main_can.cpp
 
 clean:
-	-rm -f *.o *.gch
-	-rm -f test_can
+	-rm -f *.o
+	-rm -f main_can
 
-run: test_can
-	./test_can
+remake: clean all

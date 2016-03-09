@@ -1,37 +1,40 @@
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#include <string.h>
+#include <signal.h>
+#include <ctype.h>
+#include <libgen.h>
+#include <time.h>
+
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/uio.h>
+#include <net/if.h>
+
+#include <linux/can.h>
 #include <linux/can/raw.h>
 
+#include "lib.h"
 #include "can_lib.h"
 
+
 MCP_CAN::MCP_CAN() {
-    // configure CAN address and other parameters
+    sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     addr.can_family = AF_CAN;
-    bzero(&ifr.ifr_name, sizeof(ifr.ifr_name));
+    memset(&ifr.ifr_name, 0, sizeof(ifr.ifr_name));
     strcpy(ifr.ifr_name, "can0");
+    ioctl(sock, SIOCGIFINDEX, &ifr);
     addr.can_ifindex = ifr.ifr_ifindex;
 
-    // setup framework for reading CAN messages
+    bind(sock, (struct sockaddr *) &addr, sizeof(addr));
+
     iov.iov_base    = &frame;
     msg.msg_name    = &addr;
     msg.msg_iov     = &iov;
     msg.msg_iovlen  = 1;
-
-    timeout.tv_sec  = 0;
-    timeout.tv_usec = 100000;
-}
-
-MCP_CAN::initialize() {
-    // initialize socket
-    sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    ioctl(sock, SIOCGIFINDEX, &ifr);
-
-    // bind CAN socket
-    bind(sock, (struct sockaddr *) &addr, sizeof(addr));
 }
 
 canframe_t* MCP_CAN::read() {
@@ -39,7 +42,8 @@ canframe_t* MCP_CAN::read() {
 
     FD_ZERO(&rdfs);
     FD_SET(sock, &rdfs);
-    if (select(sock + 1, &rdfs, nullptr, nullptr, &timeout) < 0) {
+    int ret = select(sock + 1, &rdfs, nullptr, nullptr, 0);
+    if (ret < 0) {
         printf("select failed\n");
     }
 
@@ -63,15 +67,17 @@ canframe_t* MCP_CAN::read() {
     return &frame;
 }
 
-int MCP_CAN::send(int id, unsigned char *data, uint8_t msg_len) {
-    bzero(&frame, sizeof(canframe_t));
-    frame.can_id = id;
-    memcpy(frame.data, data, 8);
-    frame.can_dlc = msg_len;
-    int nbytes = write(sock, &frame, sizeof(canframe_t));
-    if (nbytes != sizeof(frame)) {
+int MCP_CAN::send(int id, unsigned char *data) {
+    canframe_t *toSend;
+
+    memset(toSend, 0, sizeof(toSend));
+    toSend->can_id = id;
+    memcpy(toSend->data, data, 8);
+    int nbytes = write(sock, toSend, sizeof(*toSend));
+    if (nbytes != sizeof(*toSend)) {
         printf("send failed: nbytes = %d, sizeof = %d", nbytes,
-                sizeof(frame));
+                sizeof(*toSend));
+        fflush(stdout);
         return 1;
     }
     return 0;

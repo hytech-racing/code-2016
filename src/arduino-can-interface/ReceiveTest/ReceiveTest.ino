@@ -33,31 +33,36 @@ void setup() {
 void loop() {
   unsigned char len = 0; //Length of received message
   unsigned char buf[8];  //Where the received message will be stored
+  unsigned char msg2[8] = {70, 85, 67, 75, 32, 89, 79, 85};
+  
   if (CAN_MSGAVAIL == CAN.checkReceive()) { //Checks if message is available
     CAN.readMsgBuf(&len, buf); //If so, stores length & value
 
     // You have to readMsgBuf before you can get the ID of the message
 
     if (CAN.getCanId() == 0x01) { //Filters so only certain messages will execute this code
-      Serial.print("Current supply V: ");
+      Serial.print("Received message: ");
       Serial.println(BMS::getSupplyVoltage(buf));
     } else if (CAN.getCanId() == 0x60) {
-      Serial.print(buf[0]);
+      Serial.print((char) buf[0]);
       Serial.print(" ");
-      Serial.print(buf[1]);
+      Serial.print((char) buf[1]);
       Serial.print(" ");
-      Serial.print(buf[2]);
+      Serial.print((char) buf[2]);
       Serial.print(" ");
-      Serial.print(buf[3]);
+      Serial.print((char) buf[3]);
       Serial.print(" ");
-      Serial.print(buf[4]);
+      Serial.print((char) buf[4]);
       Serial.print(" ");
-      Serial.print(buf[5]);
+      Serial.print((char) buf[5]);
       Serial.print(" ");
-      Serial.print(buf[6]);
+      Serial.print((char) buf[6]);
       Serial.print(" ");
-      Serial.println(buf[7]);
+      Serial.println((char) buf[7]);
     }
   }
+  
+  CAN.sendMsgBuf(0x002, 0, 8, msg2);
+  delay(10);
 }
 
