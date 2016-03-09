@@ -12,14 +12,14 @@ typedef struct msghdr msghdr_t;
 class MCP_CAN {
 public:
     MCP_CAN();
-    initialize();
-    canframe_t* read();
+    int read(canframe_t* read_frame);
     int send(int id, unsigned char *data, uint8_t msg_len);
 
 private:
     int sock;
     sockaddrcan_t addr;
-    canframe_t frame;
+    canframe_t recv_frame;
+    canframe_t send_frame;
     msghdr_t msg;
     fd_set rdfs;
     struct iovec iov;

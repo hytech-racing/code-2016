@@ -23,15 +23,21 @@ void print(canframe_t* frame);
 int main() {
     MCP_CAN can;
 
-    canframe_t *frame;
+    canframe_t *frame = (canframe_t*) malloc(sizeof(canframe_t));
     uint8_t buffer[] = {70, 85, 67, 75, 32, 89, 79, 85};
+
     while (1) {
-        frame = can.read();
+        if (can.read(frame) > 0) {
+            std::cout << "Error reading message" << std::endl;
+        }
         print(frame);
-        can.send(0x60, buffer, 8);
-        usleep(10000);
+        if (can.send(0x60, buffer, 8) > 0) {
+            std::cout << "Error sending message" << std::endl;
+        }
+        usleep(5000);
     }
 
+    free(frame);
     return 0;
 }
 

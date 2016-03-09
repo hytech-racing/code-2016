@@ -22,17 +22,22 @@ void print(canframe_t* frame);
 
 int main() {
     MCP_CAN can;
-    can.initialize();
 
-    canframe_t *frame;
+    canframe_t *frame = (canframe_t*) malloc(sizeof(canframe_t));
     uint8_t buffer[] = {70, 85, 67, 75, 32, 89, 79, 85};
+
     while (1) {
-        frame = can.read();
+        if (can.read(frame) > 0) {
+            std::cout << "Error reading message" << std::endl;
+        }
         print(frame);
-        can.send(0x60, buffer, 8);
-        usleep(10000);
+        if (can.send(0x60, buffer, 8) > 0) {
+            std::cout << "Error sending message" << std::endl;
+        }
+        usleep(5000);
     }
 
+    free(frame);
     return 0;
 }
 
@@ -40,7 +45,7 @@ void print(canframe_t* frame) {
     if (frame && frame->can_dlc > 0) {
         for (uint8_t i = 0; i < frame->can_dlc; ++i) {
             std::cout << CONSOLE_COLORS[rand() % 4];
-            std::cout << frame->data[i] << " ";
+            std::cout << (int) frame->data[i] << " ";
         }
         std::cout << NO_COLOR_CONSOLE << std::endl;
     } else {
