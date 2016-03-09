@@ -5,7 +5,7 @@
 #include <bluetooth/rfcomm.h>
 
 #define DATA_LENGTH 256
-#define PORT 1
+#define PORT 24
 
 // variables
 struct sockaddr_rc loc_addr = { 0 };
@@ -47,6 +47,7 @@ int main(int argc, char **argv)
     printf("Waiting for client\n");
     init_connection();
     printf("Connected\n");
+    fflush(stdout);
 
     while (1) {
         printf("Data to send: ");
