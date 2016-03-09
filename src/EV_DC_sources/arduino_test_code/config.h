@@ -1,0 +1,20 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define SPI_CS_PIN 9
+
+#define CAN_RATE CAN_1000KBPS
+
+#define COMMAND_MESSAGE_ID 0x0C0
+
+#define CALCULATE_CURRENT_QUADRATIC
+
+#define BRAKE_SUBTRACT_COEFF 1
+
+#define BRAKE_MAX_FRACTION 0.25f
+
+#define MAX_VOLTAGE_DIFFERENCE 1.0 // ?
+
+#define USE_REGEN true
+
+#endif
