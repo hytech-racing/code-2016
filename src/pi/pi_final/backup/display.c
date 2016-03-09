@@ -5,7 +5,7 @@
 #include <bluetooth/rfcomm.h>
 
 #define DATA_LENGTH 256
-#define PORT 24
+#define PORT 2
 
 // variables
 struct sockaddr_rc loc_addr = { 0 };

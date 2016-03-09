@@ -9,11 +9,11 @@ typedef struct sockaddr_can sockaddrcan_t;
 typedef struct can_frame canframe_t;
 typedef struct msghdr msghdr_t;
 
-class MCP_CAN {
+class CAN {
 public:
-    MCP_CAN();
+    CAN();
     int read(canframe_t* read_frame);
-    int send(int id, unsigned char *data, uint8_t msg_len);
+    int send(int id, uint8_t *data, uint8_t msg_len);
 
 private:
     int sock;
