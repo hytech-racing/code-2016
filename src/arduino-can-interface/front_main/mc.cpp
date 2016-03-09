@@ -1,7 +1,8 @@
 #include "mc.h"
-
 #include "stupidmemory.h"
+
 #define max(a,b) ((a)>(b)?(a):(b))
+
 // 0x0A0
 float MC::getAveragePhaseTemp(unsigned char *data) {
     short phaseA, phaseB, phaseC;
@@ -16,7 +17,7 @@ float MC::getMaxPhaseTemp(unsigned char *data) {
     memcpyInt(&phaseA, &data[0]);
     memcpyInt(&phaseB, &data[2]);
     memcpyInt(&phaseC, &data[4]);
-    float derpFloat = max(phaseA, max(phaseB, phaseC)) / 10.0;
+    float derpFloat = max(phaseA, max(phaseB, phaseC)) / 10.0f;
     return derpFloat;
 }
 
@@ -163,6 +164,6 @@ unsigned long MC::getElapsedTime(unsigned char *data) {
 }
 
 void MC::shutThemAllDown(MCP_CAN& CanYouDoTheCANCAN) {
-  unsigned char msgBuf[8] = {0,0,0,0,0,0,0,0};
-  CanYouDoTheCANCAN.sendMsgBuf(0x0C0, 0, 8, msgBuf);
+    unsigned char msgBuf[8] = {0,0,0,0,0,0,0,0};
+    CanYouDoTheCANCAN.sendMsgBuf(0x0C0, 0, 8, msgBuf);
 }
