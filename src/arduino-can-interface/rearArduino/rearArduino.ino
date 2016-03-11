@@ -12,14 +12,14 @@ const int SPI_CS_PIN = 10;
 
 MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
-int C_TH = 6;
-int B_TH = 7;
-int A_TH = 8;
-int C_BAT = 9;
-int B_BAT = 10;
-int A_BAT = 11;
-int ANALOG_TH = 26;
-int ANALOG_BAT = 25;
+int C_TH = 3;
+int B_TH = 4;
+int A_TH = 5;
+int C_BAT = 6;
+int B_BAT = 7;
+int A_BAT = 8;
+//int ANALOG_TH = A7;
+//int ANALOG_BAT = A6;
 void setup()
 {
     pinMode(C_TH, OUTPUT);
@@ -28,8 +28,8 @@ void setup()
     pinMode(C_BAT, OUTPUT);
     pinMode(B_BAT, OUTPUT);
     pinMode(A_BAT, OUTPUT);
-    pinMode(ANALOG_TH, INPUT);
-    pinMode(ANALOG_BAT, INPUT); /*analog_bat*/
+    pinMode(A7, INPUT); // thermistors
+    pinMode(A6, INPUT); /*analog_bat*/
     Serial.begin(9600);
 
 START_INIT:
@@ -84,36 +84,36 @@ void loop()
       }
       switch(i) {
         case 0 :
-          th[0] = analogRead(ANALOG_TH);
-          battery[i + 1] = analogRead(ANALOG_BAT) * ((float) 5 / 1023);
+          th[0] = analogRead(A7);
+          battery[i + 1] = analogRead(A6) * ((float) 5 / 1023);
           actual[i + 1] = battery[i + 1];
         case 1: 
-          th[1] = analogRead(ANALOG_TH);
-          battery[i + 1] = analogRead(ANALOG_BAT) * ((float) 5 / 1023);
+          th[1] = analogRead(A7);
+          battery[i + 1] = analogRead(A6) * ((float) 5 / 1023);
           actual[i + 1] = battery[i + 1] * ((10 + 10)/ 10);
         case 2 : 
-          th[2] = analogRead(ANALOG_TH);
-          battery[i + 1] = analogRead(ANALOG_BAT) * ((float) 5 / 1023);
+          th[2] = analogRead(A7);
+          battery[i + 1] = analogRead(A6) * ((float) 5 / 1023);
           actual[i + 1] = battery[i + 1] * ((20 + 10) / 10);
         case 3 :
-          th[3] = analogRead(ANALOG_TH);
-          battery[i + 1] = analogRead(ANALOG_BAT) * ((float) 5 / 1023);
+          th[3] = analogRead(A7);
+          battery[i + 1] = analogRead(A6) * ((float) 5 / 1023);
           actual[i + 1] = battery[i] * ((30 + 10) / 10);
         case 4 :
-          th[4] = analogRead(ANALOG_TH);
-          battery[i + 1] = analogRead(ANALOG_BAT) * ((float) 5 / 1023);
+          th[4] = analogRead(A7);
+          battery[i + 1] = analogRead(A6) * ((float) 5 / 1023);
           actual[i + 1] = battery[i + 1] * ((39 + 10) / 10);
         case 5 :
-          th[5] = analogRead(ANALOG_TH);
-          battery[i + 1] = analogRead(ANALOG_BAT) * ((float) 5 / 1023);
+          th[5] = analogRead(A7);
+          battery[i + 1] = analogRead(A6) * ((float) 5 / 1023);
           actual[i + 1] = battery[i + 1] * (51 + 10) / 10;
         case 6 :
-          th[6] = analogRead(ANALOG_TH);
-          battery[i + 1] = analogRead(ANALOG_BAT) * ((float) 5 / 1023);
+          th[6] = analogRead(A7);
+          battery[i + 1] = analogRead(A6) * ((float) 5 / 1023);
           actual[i + 1] = battery[i + 1] * ((62 + 10) / 10);
         case 7 :
-          th[7] = analogRead(ANALOG_TH);
-          battery[i + 1] = analogRead(ANALOG_BAT) * ((float) 5 / 1023);
+          th[7] = analogRead(A7);
+          battery[i + 1] = analogRead(A6) * ((float) 5 / 1023);
           actual[i + 1] = battery[i + 1] * ((68 + 10) / 10);
       }
       /*TODO: check thermistor values */
@@ -124,6 +124,7 @@ void loop()
           /*throw an error*/
         }
       }
+      delay(50);
     }
     for(int i = 0; i < 8; i++) {
       Serial.print("Thermistor ");
