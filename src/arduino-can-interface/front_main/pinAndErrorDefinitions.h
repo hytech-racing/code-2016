@@ -14,24 +14,49 @@
 #define AR_BASE_ERROR 19 // 19 to 25
 #define IMD_BASE_ERROR 26
 
-const int AirDCDC = 2;
-const int AIRdcdc = 2;
-const int software_shutdown_control = 4;
-const int software_pushbutton_control = 5;
+
 
 /*
 okay, so the software_shutdown_control is turned on. then, the software_pushbutton_control is pulsed on for a second or so. then, AIRdcdc is turned on or off to turn AIRs on or off
 
 */
-
-
-const int start_LED = 6;
+const int readyToDriveSound = 0; // ready to derp sound?
+const int AirDCDC = 1;
+const int AIRdcdc = 1;
+const int software_shutdown_control = 2;
+const int software_pushbutton_control = 3;
+const int start_LED = 4;
+const int fan_control = 5;
+const int pump_control = 6;
 const int IMD_LED = 7;
 const int BMS_LED = 8;
-const int plex_LSB = 10;
-const int readyToDriveSound = 3; // ready to derp sound?
-const int precharge = 2;
-const int discharge = 2;
-const int TSMasterRelay = 2;
-const int IMDpin = 3;
+const int MULTIPLEXER_SELECT_0 = 9;
+// 10,11,and 12, and 13 are SPI for CAN
+const int MULTIPLEXER_INPUT A0;
+const int CONTROL_11 A1;
+const int CONTROL_10 A2;
+const int IMDpin A3;
+const int five_supply_check_2 = A4;
+const int MULTIPLEXER_SELECT_3 = A5;
+const int MULTIPLEXER_SELECT_2 = A6;
+const int MULTIPLEXER_SELECT_1 = A7;
+
+// mutiplexer definitions
+
+const char SHUTDOWN_BUTTON_SELECT = 0;
+const char BOOST_BUTTON_SELECT = 1;
+const char CYCLE_BUTTON_SELECT = 2;
+const char TOGGLE_BUTTON_SELECT = 3;
+const char FIVE_SUPPLY_CHECK_SELECT = 4;
+const char TWELVE_THERMISTOR1_SELECT = 5;
+const char TWELVE_THERMISTOR2_SELECT = 6;
+const char FIVE_THERMISTOR_SELECT = 7;
+const char VCC_AIR_DIVIDER_SELECT = 8;
+const char RELAY_THERMISTOR_SELECT = 9;
+const char AIR_UNREGULATED_DIVIDER = 10;
+const char COOLING_SENSOR_1_SELECT = 11;
+const char COOLING_SENSOR_2_SELECT = 12;
+const char COOLING_SENSOR_3_SELECT = 13;
+const char IMD_PWM_LOW_SELECT = 14;
+const char IMD_PWM_HIGH_SELECT = 15;
 

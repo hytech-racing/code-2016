@@ -12,6 +12,7 @@
 #include "pi.h"
 #include "shutdown.h"
 #include "startup.h"
+#include "buttons.h"
 
 //#include "IMD.h"     we are going to go off of a digital read of OKHS instead
 
@@ -96,64 +97,64 @@ void loop() {
   RPi::giveProgression(CanBus, 5);
   CANtimer = millis() + 100;
   while(CANtimer > millis()) { // the loop listens to CAN for 100 ms in order to make sure all messages are read
-  while(CAN_MSGAVAIL == CanBus.checkReceive()) {
-    CanBus.readMsgBuf(&len, msgReceive);
-    switch(CanBus.getCanId()) {
-      //BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  
-      case BMS::Message_1:
-        BMSstateOfCharge = BMS::getStateOfCharge(msgReceive);
-        BMS_Message_Checker |= 0x01;
-        break;
-      case BMS::Message_2:
-        BMScurrent = BMS::getCurrent(msgReceive);
-        BMScurrentLimitKW = BMS::getPackDCL(msgReceive);
-        BMS_Message_Checker |= 0x02;   
-        break;
-      case BMS::Message_3:
-        BMSwholePackVoltage = BMS::getPackVoltage(msgReceive);
-        BMS_Message_Checker |= 0x04; 
-        break;
-      case BMS::Message_4:
-        BMShighestTemp = BMS::getHighTemp(msgReceive);
-        BMS_Message_Checker |= 0x08; 
-        break;
-      case BMS::Message_5:
-        BMSlowcellvoltage = BMS::getLowVoltage(msgReceive);
-        BMS_Message_Checker |= 0x10; 
-        break;
-        //EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  
-      case EVDC::Message:
-        EVDCerror = EVDC::getError(msgReceive);
-        EVDCbuttons = EVDC::getButtons(msgReceive);
-        EVDC_timeout = millis() + EVDC_timeout_limit;
-        break;
-      case AR::Message:
-        ARerror = AR::getError(msgReceive);
-        ar_timeout = millis() + ar_timeout_limit;
-        break;
-        //MOTOR CONTROLLER MESSAGES  MOTOR CONTROLLER MESSAGES  MOTOR CONTROLLER MESSAGES  MOTOR CONTROLLER MESSAGES
-      case MC::Message_Phase_Temp:
-        //MCmotortemp = MC::getMotorTemp(msgReceive);
-        MCphasetemp = MC::getMaxPhaseTemp(msgReceive);
-        //MCcurrent = MC::getCurrent(msgReceive);
-        MC_Message_Checker |= 0x01; 
-        break;
-      case MC::Message_Motor_Temp:
-        MCmotortemp = MC::getMotorTemp(msgReceive);
-        MC_Message_Checker |= 0x02; 
-        break;
-      case MC::Message_Motor_Speed:
-        MCrpm = MC::getMotorRPM(msgReceive);
-        MC_Message_Checker |= 0x04; 
-        break;
-      case MC::Message_Motor_Current:
-        MCcurrent = MC::getDCBusCurrent(msgReceive);
-        MC_Message_Checker |= 0x08;
-        break;
-      default:
-        break;
-    }
-  } // end "while canbus message available"
+    while(CAN_MSGAVAIL == CanBus.checkReceive()) {
+      CanBus.readMsgBuf(&len, msgReceive);
+      switch(CanBus.getCanId()) {
+        //BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  BMS MESSAGES  
+        case BMS::Message_1:
+          BMSstateOfCharge = BMS::getStateOfCharge(msgReceive);
+          BMS_Message_Checker |= 0x01;
+          break;
+        case BMS::Message_2:
+          BMScurrent = BMS::getCurrent(msgReceive);
+          BMScurrentLimitKW = BMS::getPackDCL(msgReceive);
+          BMS_Message_Checker |= 0x02;   
+          break;
+        case BMS::Message_3:
+          BMSwholePackVoltage = BMS::getPackVoltage(msgReceive);
+          BMS_Message_Checker |= 0x04; 
+          break;
+        case BMS::Message_4:
+          BMShighestTemp = BMS::getHighTemp(msgReceive);
+          BMS_Message_Checker |= 0x08; 
+          break;
+        case BMS::Message_5:
+          BMSlowcellvoltage = BMS::getLowVoltage(msgReceive);
+          BMS_Message_Checker |= 0x10; 
+          break;
+          //EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  
+        case EVDC::Message:
+          EVDCerror = EVDC::getError(msgReceive);
+          EVDCbuttons = EVDC::getButtons(msgReceive);
+          EVDC_timeout = millis() + EVDC_timeout_limit;
+          break;
+        case AR::Message:
+          ARerror = AR::getError(msgReceive);
+          ar_timeout = millis() + ar_timeout_limit;
+          break;
+          //MOTOR CONTROLLER MESSAGES  MOTOR CONTROLLER MESSAGES  MOTOR CONTROLLER MESSAGES  MOTOR CONTROLLER MESSAGES
+        case MC::Message_Phase_Temp:
+          //MCmotortemp = MC::getMotorTemp(msgReceive);
+          MCphasetemp = MC::getMaxPhaseTemp(msgReceive);
+          //MCcurrent = MC::getCurrent(msgReceive);
+          MC_Message_Checker |= 0x01; 
+          break;
+        case MC::Message_Motor_Temp:
+          MCmotortemp = MC::getMotorTemp(msgReceive);
+          MC_Message_Checker |= 0x02; 
+          break;
+        case MC::Message_Motor_Speed:
+          MCrpm = MC::getMotorRPM(msgReceive);
+          MC_Message_Checker |= 0x04; 
+          break;
+        case MC::Message_Motor_Current:
+          MCcurrent = MC::getDCBusCurrent(msgReceive);
+          MC_Message_Checker |= 0x08;
+          break;
+        default:
+          break;
+      }
+    } // end "while canbus message available"
   } // end "while timer greater than millis()"
   
   // TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  TIMER CHECKING  
@@ -226,7 +227,10 @@ void loop() {
     EVDC::goForLaunch(CanBus);
   }
   
-  if(ARerror > 0) {
+  if(ARerror == 1) {
+    alertError(CanBus, AR_BASE_ERROR + ARerror);
+  
+  if(ARerror > 1) {
    shutdownError(CanBus, AR_BASE_ERROR + ARerror);
   }
   
