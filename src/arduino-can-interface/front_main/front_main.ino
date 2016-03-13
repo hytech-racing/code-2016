@@ -1,10 +1,15 @@
 
-// list of shortcuts: pins not properly defined. startup sequence might be mess
+// list of shortcuts: pins not properly defined. startup sequence might be mess, need to add thermistor checking, add dashboard error lights, 
 
 #include <SPI.h>
 #include <EEPROM.h>
+// include general logic files
 #include "pinAndErrorDefinitions.h"
+#include "multiplexer.h"
+#include "thermistor.h"
+// include files for car functions
 #include "mcp_can.h"
+#include "miscFunctions.h"
 #include "mc.h"
 #include "evdc.h"
 #include "bms.h"
@@ -12,7 +17,7 @@
 #include "pi.h"
 #include "shutdown.h"
 #include "startup.h"
-#include "buttons.h"
+// #include "buttons.h" moved to misc functions
 
 //#include "IMD.h"     we are going to go off of a digital read of OKHS instead
 
@@ -192,8 +197,21 @@ void loop() {
    IMDerror = 1;
   }
   
-  Serial.print("StateOfCharge ");
-  Serial.println(BMSstateOfCharge);
+  
+  int coolantThermistor1 = getMultiplexerAnalog(COOLANT_SENSOR_1_SELECT);
+  int coolantThermistor2 = getMultiplexerAnalog(COOLANT_SENSOR_2_SELECT);
+  int coolantThermistor3 = getMultiplexerAnalog(COOLANT_SENSOR_3_SELECT);
+  long highCoolantTemp = max(checkThermistor(10000, coolantThermistor1), checkThermistor(10000, coolantThermistor2));
+  highCoolantTemp = max(highCoolantTemp, checkThermistor(10000, coolantThermistor3));
+  if(highCoolantTemp > MAXIMUM_COOLANT_TEMPERATURE) {
+    shutdownError(CanBus, COOLANT_OVER_TEMP);
+  }
+  else if{highCoolantTemp > COOLANT_TEMPERATURE_WARNING) {
+    alertError(CanBus, COOLANT_WARNING_TEMP);
+  }
+  
+  int twelveThermistor2 = getMul
+  
   
   if(BMSstateOfCharge < 10) {
    alertError(CanBus, LOW_SOC);

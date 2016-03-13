@@ -1,13 +1,14 @@
 /**
  * Victor Chen
- * 28 Feb 2016
+ * 13 Mar 2016
  * code for rear arduino, send error message on condition
  */
+#include <thermistor.h>
 #include <mcp_can.h>
 #include <SPI.h>
 
 // the cs pin of the version after v1.1 is default to D9
-// v0.9b and v1.0 is default D10
+// v0.9b and v1.0 is default D10r
 const int SPI_CS_PIN = 10;
 
 MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
@@ -116,15 +117,27 @@ void loop()
           battery[7 - i] = analogRead(A1) * ((float) 5 / 1023);
           actual[7 - i] = battery[7 - i] * ((68 + 10) / 10);
       }
-      /*TODO: check thermistor values */
 
+      unsigned char msg[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+      
+      /*TODO: check thermistor values */
+      for (int i = 0; i < 8; i++) {
+        if (checkThermistor(10, th[i]) >= 100) {
+          msg[1] = 2;
+        } else if (checkThermistor(10, th[i]) >= 80) {
+          msg[1] = 1;
+        }
+      }
       /*Check battery values*/
       for (int i = 0; i < 7; i++) {
-        if ((actual[i + 1] - actual[i]) < 2.0) {
-          /*throw an error*/
+        if ((actual[i + 1] - actual[i]) < 2.8) {
+          msg[0] = 2;
+        } else if ((actual[i + 1] - actual[i]) < 3.0) {
+          msg[0] = 1;
         }
       }
       delay(50);
+      CAN.sendMsgBuf(0x2A2, 0, 8, msg);
     }
     for(int i = 0; i < 8; i++) {
       Serial.print("Thermistor ");
@@ -144,6 +157,12 @@ void loop()
       Serial.print(" : ");
       Serial.println(actual[i]);
     }
+
+    for (int i = 0; i < 8; i++) {
+      Serial.print(msg[i]);
+      Serial.print(" ");
+    }
+    Serial.println();
     Serial.println("**************************");
     delay(1000);                       // send data per 100ms
 }
