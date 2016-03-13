@@ -19,11 +19,12 @@
 const std::string CONSOLE_COLORS[] = {RED_CONSOLE, GREEN_CONSOLE,
                                       YELLOW_CONSOLE, BLUE_CONSOLE};
 
+// function prototypes
 void print(canframe_t* frame);
 
 int main() {
     CAN can;
-    BT bt(2);
+    BT bt(10);
     bt.connect();
 
     canframe_t *frame = (canframe_t*) malloc(sizeof(canframe_t));

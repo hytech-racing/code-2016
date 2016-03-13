@@ -8,7 +8,7 @@
 
 #include "can_lib.h"
 
-MCP_CAN::MCP_CAN() {
+CAN::CAN() {
     // initialize CAN socket and configure CAN address and other parameters
     sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     addr.can_family = AF_CAN;
@@ -30,7 +30,7 @@ MCP_CAN::MCP_CAN() {
     timeout.tv_usec = 100000;
 }
 
-int MCP_CAN::read(canframe_t* read_frame) {
+int CAN::read(canframe_t* read_frame) {
     int nbytes;
 
     FD_ZERO(&rdfs);
@@ -59,7 +59,7 @@ int MCP_CAN::read(canframe_t* read_frame) {
     return 0;
 }
 
-int MCP_CAN::send(int id, unsigned char *data, uint8_t msg_len) {
+int CAN::send(int id, uint8_t *data, uint8_t msg_len) {
     bzero(&send_frame, sizeof(canframe_t));
     send_frame.can_id = id;
     memcpy(send_frame.data, data, 8);
