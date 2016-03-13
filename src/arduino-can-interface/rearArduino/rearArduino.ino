@@ -123,16 +123,16 @@ void loop()
       /*TODO: check thermistor values */
       for (int i = 0; i < 8; i++) {
         if (checkThermistor(10, th[i]) >= 100) {
-          msg[1] = 1;
-        } else if (checkThermistor(10, th[i]) >= 80) {
           msg[1] = 2;
+        } else if (checkThermistor(10, th[i]) >= 80) {
+          msg[1] = 1;
         }
       }
       /*Check battery values*/
       for (int i = 0; i < 7; i++) {
-        if (abs((actual[i + 1] - actual[i])) < 2.8) {
+        if ((actual[i + 1] - actual[i]) < 2.8) {
           msg[0] = 2;
-        } else if (abs((actual[i + 1] - actual[i])) < 3.0) {
+        } else if ((actual[i + 1] - actual[i]) < 3.0) {
           msg[0] = 1;
         }
       }
@@ -157,6 +157,12 @@ void loop()
       Serial.print(" : ");
       Serial.println(actual[i]);
     }
+
+    for (int i = 0; i < 8; i++) {
+      Serial.print(msg[i]);
+      Serial.print(" ");
+    }
+    Serial.println();
     Serial.println("**************************");
     delay(1000);                       // send data per 100ms
 }
