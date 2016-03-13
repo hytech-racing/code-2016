@@ -38,7 +38,7 @@ int main() {
         if (can.send(0x60, buffer, 8) > 0) {
             std::cout << "Error sending message" << std::endl;
         }
-        bt.send(buffer, 2);
+        bt.send(&frame->data[5], 2);
         usleep(10000);
     }
 
