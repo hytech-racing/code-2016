@@ -8,6 +8,7 @@
 #include <signal.h>
 
 #include "can_lib.h"
+#include "bt_lib.h"
 
 #define RED_CONSOLE "\033[31;1m"
 #define GREEN_CONSOLE "\033[32;1m"
@@ -21,7 +22,9 @@ const std::string CONSOLE_COLORS[] = {RED_CONSOLE, GREEN_CONSOLE,
 void print(canframe_t* frame);
 
 int main() {
-    MCP_CAN can;
+    CAN can;
+    BT bt(2);
+    bt.connect();
 
     canframe_t *frame = (canframe_t*) malloc(sizeof(canframe_t));
     uint8_t buffer[] = {70, 85, 67, 75, 32, 89, 79, 85};
@@ -34,10 +37,12 @@ int main() {
         if (can.send(0x60, buffer, 8) > 0) {
             std::cout << "Error sending message" << std::endl;
         }
-        usleep(5000);
+        bt.send(buffer, 2);
+        usleep(10000);
     }
 
     free(frame);
+    bt.disconnect();
     return 0;
 }
 
