@@ -20,11 +20,13 @@ public class BluetoothCommService {
     private SetupConnection btSetupConnection;
     private CommunicationThread btCommunicationThread;
 
-    private static final String LOG_TAG = "BluetoothCommService";
-    //private static final String SERVER_ADDR = "A0:A8:CD:B5:52:97";
+    private static final String LOG_TAG = "RETRYING";
+    // Laptop Address
+    // private static final String SERVER_ADDR = "A0:A8:CD:B5:52:97";
+    // RPi Address
     private static final String SERVER_ADDR = "00:1A:7D:DA:71:11";
     private static final String B_UUID = "00001101-0000-1000-8000-00805F9B34FB";
-    private static final int PORT = 2;
+    private static final int PORT = 10;
 
     private static final int DATA_LENGTH = 256;
 
@@ -44,24 +46,6 @@ public class BluetoothCommService {
         btCommunicationThread.start();
     }
 
-    public synchronized void stop() {
-        btSetupConnection = null;
-        btCommunicationThread = null;
-        try {
-            if (btSocket != null) {
-                btSocket.close();
-                btSocket = null;
-            }
-        } catch (IOException e) {
-            log("Failed to close socket");
-        }
-    }
-
-    private void retryConnection() {
-        stop();
-        BluetoothCommService.this.start();
-    }
-
     private class SetupConnection extends Thread {
         @Override
         public void run() {
@@ -75,7 +59,6 @@ public class BluetoothCommService {
                         UUID.fromString(B_UUID));
             } catch (Exception e) {
                 log("Socket creation failed");
-                retryConnection();
                 return;
             }
             try {
@@ -91,11 +74,10 @@ public class BluetoothCommService {
                 }
                 catch (Exception e2) {
                     log("Socket connection method #2 failed");
-                    retryConnection();
                     return;
                 }
             }
-            log("Socket created and connected");
+            log("Socket created and connected: " + btSocket);
             connected();
         }
     }
@@ -128,8 +110,7 @@ public class BluetoothCommService {
                     btHandler.obtainMessage(0, bytes, 0, buffer)
                             .sendToTarget();
                 } catch (IOException e) {
-                    log("Read Failed");
-                    retryConnection();
+                    log(e.getMessage());
                 }
             }
         }
@@ -140,8 +121,6 @@ public class BluetoothCommService {
                 btHandler.obtainMessage(0, 0, 0, buffer)
                         .sendToTarget();
             } catch (IOException e) {
-                log("Write Failed");
-                retryConnection();
             }
         }
     }
