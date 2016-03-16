@@ -14,13 +14,13 @@ public:
     int read();
     int send(uint8_t* data);
     int send(uint8_t* data, uint8_t length);
+    static const int DATA_LENGTH = 4;
 
 private:
     int sock;
     int client;
     int port;
 
-    static const int DATA_LENGTH = 256;
     uint8_t buf[DATA_LENGTH] = { 0 };
 
     struct sockaddr_rc loc_addr = { 0 };
