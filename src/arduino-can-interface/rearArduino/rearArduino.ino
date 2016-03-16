@@ -3,7 +3,7 @@
  * 13 Mar 2016
  * code for rear arduino, send error message on condition
  */
-#include <thermistor.h>
+//#include <thermistor.h>
 #include <mcp_can.h>
 #include <SPI.h>
 
@@ -61,7 +61,7 @@ void loop()
     int th[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     float battery[8] = {0, 0, 0, 0, 0, 0, 0, 0}; /*the voltages the arduino reads in*/
     float actual[8] = {0, 0, 0, 0, 0, 0, 0, 0}; /*The actual voltages at each resistor bridge*/
-    
+    unsigned char msg[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     for (int i = 0; i < 8; i++) {
 
       digitalWrite(C_TH, LOW);
@@ -88,46 +88,54 @@ void loop()
           th[0] = analogRead(A0);
           battery[7 - i] = analogRead(A1) * ((float) 5 / 1023);
           actual[7 - i] = battery[7 - i];
+          break;
         case 1: 
           th[1] = analogRead(A0);
           battery[7 - i] = analogRead(A1) * ((float) 5 / 1023);
-          actual[7 - i] = battery[7 - i] * ((10 + 10)/ 10);
+          actual[7 - i] = battery[7 - i] * ((10 + 10)/ 10.0);
+          break;
         case 2 : 
           th[2] = analogRead(A0);
           battery[7 - i] = analogRead(A1) * ((float) 5 / 1023);
-          actual[7 - i] = battery[7 - i] * ((20 + 10) / 10);
+          actual[7 - i] = battery[7 - i] * ((20 + 10)/ 10.0);
+          break;
         case 3 :
           th[3] = analogRead(A0);
           battery[7 - i] = analogRead(A1) * ((float) 5 / 1023);
-          actual[7 - i] = battery[7 - i] * ((30 + 10) / 10);
+          actual[7 - i] = battery[7 - i] * ((30 + 10)/ 10.0);
+          break;
         case 4 :
           th[4] = analogRead(A0);
           battery[7 - i] = analogRead(A1) * ((float) 5 / 1023);
-          actual[7 - i] = battery[7 - i] * ((39 + 10) / 10);
+          actual[7 - i] = battery[7 - i] * ((39 + 10) / 10.0);
+          break;
         case 5 :
           th[5] = analogRead(A0);
           battery[7 - i] = analogRead(A1) * ((float) 5 / 1023);
-          actual[7 - i] = battery[7 - i] * (51 + 10) / 10;
+          actual[7 - i] = battery[7 - i] * ((51 + 10) / 10.0);
+          break;
         case 6 :
           th[6] = analogRead(A0);
           battery[7 - i] = analogRead(A1) * ((float) 5 / 1023);
-          actual[7 - i] = battery[7 - i] * ((62 + 10) / 10);
+          actual[7 - i] = battery[7 - i] * ((62 + 10) / 10.0);
+          break;
         case 7 :
           th[7] = analogRead(A0);
           battery[7 - i] = analogRead(A1) * ((float) 5 / 1023);
-          actual[7 - i] = battery[7 - i] * ((68 + 10) / 10);
+          actual[7 - i] = battery[7 - i] * ((68 + 10) / 10.0);
+          break;
       }
 
-      unsigned char msg[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+      
       
       /*TODO: check thermistor values */
-      for (int i = 0; i < 8; i++) {
-        if (checkThermistor(10, th[i]) >= 100) {
-          msg[1] = 2;
-        } else if (checkThermistor(10, th[i]) >= 80) {
-          msg[1] = 1;
-        }
-      }
+//      for (int i = 0; i < 8; i++) {
+//        if (checkThermistor(10, th[i]) >= 100) {
+//          msg[1] = 2;
+//        } else if (checkThermistor(10, th[i]) >= 80) {
+//          msg[1] = 1;
+//        }
+//      }
       /*Check battery values*/
       for (int i = 0; i < 7; i++) {
         if ((actual[i + 1] - actual[i]) < 2.8) {
@@ -145,12 +153,12 @@ void loop()
       Serial.print(" : ");
       Serial.println(th[i]);
     }
-//    for(int i = 0; i<8;i++) {
-//      Serial.print("Battery: ");
-//      Serial.print(i + 1);
-//      Serial.print(" : ");
-//      Serial.println(battery[i]);
-//    }
+    for(int i = 0; i<8;i++) {
+      Serial.print("Battery: ");
+      Serial.print(i + 1);
+      Serial.print(" : ");
+      Serial.println(battery[i]);
+    }
     for(int i = 0; i < 8; i++) {
       Serial.print("Battery ");
       Serial.print(i + 1);
@@ -166,6 +174,33 @@ void loop()
     Serial.println("**************************");
     delay(1000);                       // send data per 100ms
 }
+
+//Thermistor 1 : 0
+//Thermistor 2 : 1
+//Thermistor 3 : 0
+//Thermistor 4 : 0
+//Thermistor 5 : 0
+//Thermistor 6 : 0
+//Thermistor 7 : 0
+//Thermistor 8 : 0
+//Battery: 1 : 3.53
+//Battery: 2 : 3.37
+//Battery: 3 : 3.39
+//Battery: 4 : 3.57
+//Battery: 5 : 3.08
+//Battery: 6 : 3.48
+//Battery: 7 : 3.50
+//Battery: 8 : 3.50
+//Battery 1 : 27.52
+//Battery 2 : 24.18
+//Battery 3 : 20.72
+//Battery 4 : 17.46 
+//Battery 5 : 1.86  13.182
+//Battery 6 : 10.44 9.89
+//Battery 7 : 7.04  6.590
+//Battery 8 : 3.51  3.296
+
+
 
 /*********************************************************************************************************
   END FILE
