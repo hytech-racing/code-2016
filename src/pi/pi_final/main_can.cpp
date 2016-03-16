@@ -19,30 +19,68 @@
 const std::string CONSOLE_COLORS[] = {RED_CONSOLE, GREEN_CONSOLE,
                                       YELLOW_CONSOLE, BLUE_CONSOLE};
 
+// function prototypes
+int process_data_for_sending(uint8_t* bt_data, canframe_t* frame);
 void print(canframe_t* frame);
 
 int main() {
     CAN can;
-    BT bt(2);
+    BT bt(10);
     bt.connect();
 
     canframe_t *frame = (canframe_t*) malloc(sizeof(canframe_t));
-    uint8_t buffer[] = {70, 85, 67, 75, 32, 89, 79, 85};
+    uint8_t bt_buffer[BT::DATA_LENGTH];
 
     while (1) {
         if (can.read(frame) > 0) {
             std::cout << "Error reading message" << std::endl;
         }
-        print(frame);
-        if (can.send(0x60, buffer, 8) > 0) {
-            std::cout << "Error sending message" << std::endl;
+        if (!process_data_for_sending(bt_buffer, frame)) {
+            bt.send(bt_buffer);
         }
-        bt.send(buffer, 2);
         usleep(10000);
     }
 
     free(frame);
     bt.disconnect();
+    return 0;
+}
+
+int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
+    short value;
+    bzero(bt_data, BT::DATA_LENGTH);
+    switch(frame->can_id) {
+        case 0x01:
+            value = frame->data[1] / 2;
+            bt_data[0] = 0;
+            memcpy(&bt_data[1], &value, sizeof(value));
+            break;
+        case 0x02:
+            // TODO CALCULATIONS
+            // Time Left (0x02, 6-7)
+            break;
+        case 0x04:
+            bt_data[0] = 2;
+            memcpy(&bt_data[1], &frame->data[2], sizeof(uint8_t));
+            memcpy(&bt_data[2], &frame->data[0], sizeof(uint8_t));
+            break;
+        case 0x10:
+            // TODO TALK TO ANDREW
+            // Startup State (0x10, 0)
+            // Error Messages (0x10, 1)
+            break;
+        case 0xA2:
+            value = ((frame->data[5] << 8) | frame->data[4]) / 10;
+            bt_data[0] = 4;
+            memcpy(&bt_data[1], &value, sizeof(value));
+            break;
+        case 0xA5:
+            // TODO CALCULATIONS
+            // Speed (0xA5, 2-3)
+            break;
+        default:
+            return -1;
+    }
     return 0;
 }
 

@@ -20,7 +20,6 @@ main_can.o: main_can.cpp
 
 clean:
 	-rm -f *.o
-	-rm -f *.gch
 	-rm -f main_can
 
 remake: clean all
