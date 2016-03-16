@@ -1,9 +1,6 @@
 package com.hytech.display;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -17,10 +14,6 @@ import android.view.WindowManager;
 
 import com.github.pavlospt.CircleView;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.UUID;
 
 public class MainActivity extends Activity implements SensorEventListener {
 
@@ -49,9 +42,9 @@ public class MainActivity extends Activity implements SensorEventListener {
     private final Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message message) {
-            Log.d("RETRYING", "Got callbacked");
-            String str = new String((byte[]) message.obj, 0, message.arg1);
-            odometer.setTitleText(str);
+            byte[] data = (byte[]) message.obj;
+            int val = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
+            odometer.setTitleText("" + val);
             return false;
         }
     });

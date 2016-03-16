@@ -28,7 +28,7 @@ public class BluetoothCommService {
     private static final String B_UUID = "00001101-0000-1000-8000-00805F9B34FB";
     private static final int PORT = 10;
 
-    private static final int DATA_LENGTH = 256;
+    private static final int DATA_LENGTH = 16;
 
     public BluetoothCommService(Handler handler) {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -77,7 +77,7 @@ public class BluetoothCommService {
                     return;
                 }
             }
-            log("Socket created and connected: " + btSocket);
+            log("Socket created and connected");
             connected();
         }
     }
