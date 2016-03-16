@@ -3,7 +3,7 @@
  * 13 Mar 2016
  * code for rear arduino, send error message on condition
  */
-//#include <thermistor.h>
+//#include "thermistor.h"
 #include <mcp_can.h>
 #include <SPI.h>
 
