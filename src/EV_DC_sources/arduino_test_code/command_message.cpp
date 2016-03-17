@@ -89,12 +89,14 @@ command_message generate_command_message(float input_voltage, float brake_voltag
 #else // x
     output_current = input_voltage;
 #endif
-    float result_current = output_current * current_coeff * 10;
-    
-    if (BRAKE_SUBTRACT_COEFF * brake_voltage > result_current * BRAKE_MAX_FRACTION)
-        return command_message(0, 0, false, true, false, 0); //TODO!
 
-    return command_message(result_current - BRAKE_SUBTRACT_COEFF * brake_voltage,
+    float result_current = output_current * current_coeff * 10;
+    float result_braked = result_current - BRAKE_SUBTRACT_COEFF * brake_voltage;
+    
+    if (!regen && result_braked < 0)
+      result_braked = 0;
+
+    return command_message(result_braked,
         0, false, true, false, 0);
 
 #undef CALCULATE_DIVISOR
