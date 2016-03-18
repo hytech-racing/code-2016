@@ -47,23 +47,18 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
 
   
   RPi::giveProgression(lilEngineThatCAN,0);
+  EVDC::calmTheFreakDown(lilEngineThatCAN);
   delay(2000); // I want a delay for all the other systems to boot up.
 
   
   while(progressBlock) {
     if(millis() > progressionTimer) {
-      RPi::giveProgression(lilEngineThatCAN,2); 
+      RPi::giveProgression(lilEngineThatCAN,2);
+       EVDC::calmTheFreakDown(lilEngineThatCAN);
+ 
       progressionTimer += 100;
     } 
-    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&len, msgReceive);
-      if(lilEngineThatCAN.getCanId() == 0xDC) {
-        int buttons = EVDC::getButtons(msgReceive);
-      }
-      if((buttons & 0x02) == 0x02) { // if the progress button is pressed
-        progressBlock == false;
-      }
-    }
+    if(
   }
   
   progressBlock = true;
@@ -81,6 +76,8 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
     while(progressBlock) {
       if(millis() > progressionTimer) {
         RPi::giveProgression(lilEngineThatCAN,2); 
+        EVDC::calmTheFreakDown(lilEngineThatCAN);
+
         progressionTimer += 100;
       }
       if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
