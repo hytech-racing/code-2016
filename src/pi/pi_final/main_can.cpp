@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -34,6 +35,9 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame);
 void print(canframe_t* frame);
 
 int main() {
+    std::ofstream logfile;
+    logfile.open("logs.txt", std::ios::out | std::ios::app);
+
     CAN can;
     BT bt(10);
     bt.connect();
@@ -48,15 +52,23 @@ int main() {
     while (1) {
         if (can.read(frame) > 0) {
             std::cout << "Error reading message" << std::endl;
-        }
-        if (!process_data_for_sending(bt_buffer, frame)) {
-            bt.send(bt_buffer);
+        } else {
+            if (!process_data_for_sending(bt_buffer, frame)) {
+                bt.send(bt_buffer);
+            }
+            logfile << frame->can_id << ": ";
+            for (uint8_t i = 0; i < 8; ++i) {
+                logfile << frame->data[i] << " ";
+            }
+            logfile << std::endl;
+
         }
         usleep(10000);
     }
 
     free(frame);
     bt.disconnect();
+    logfile.close();
     return 0;
 }
 
