@@ -38,8 +38,10 @@ int BT::read() {
 
 int BT::send(uint8_t *data) {
     write(client, data, DATA_LENGTH);
+    return 0;
 }
 
 int BT::send(uint8_t *data, uint8_t length) {
     write(client, data, length);
+    return 0;
 }

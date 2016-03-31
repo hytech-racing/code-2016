@@ -46,7 +46,7 @@ void setup() {
   
   Serial.println("CAN BUS Shield Init OK");
   
-  send_can_message(command_message(0, 0, false, false, false, 0)); // Send out inverter disable command to release lockout.
+  send_can_message(command_message(0, 0, false, false, false, 0)); // Send out inverter disable command to release lockout.                      
   send_can_message(command_message(0, 0, false, true, false, 0)); // enable inverter
   send_can_message(command_message(0, 0, false, false, false, 0)); // disable inverter again
   

@@ -1,5 +1,5 @@
 
-// list of shortcuts: pins not properly defined. startup sequence might be mess, need to add thermistor checking, add dashboard error lights, 
+// list of shortcuts: startup sequence might be mess, add dashboard error lights, 
 
 #include <SPI.h>
 #include <EEPROM.h>
@@ -73,7 +73,7 @@ MCP_CAN CanBus(9);
 
 void setup() {
   Serial.begin(9600);
-  defineAndSetPinModes();
+  defineAndSetPinModes(); // found in startup.h
   while(CAN_OK != CanBus.begin(CAN_500KBPS)) {
     Serial.println("CAN Bus is not operaitonal");
     delay(10);
@@ -201,16 +201,44 @@ void loop() {
   int coolantThermistor1 = getMultiplexerAnalog(COOLANT_SENSOR_1_SELECT);
   int coolantThermistor2 = getMultiplexerAnalog(COOLANT_SENSOR_2_SELECT);
   int coolantThermistor3 = getMultiplexerAnalog(COOLANT_SENSOR_3_SELECT);
-  long highCoolantTemp = max(checkThermistor(10000, coolantThermistor1), checkThermistor(10000, coolantThermistor2));
+  int highCoolantTemp = max(checkThermistor(10000, coolantThermistor1), checkThermistor(10000, coolantThermistor2));
   highCoolantTemp = max(highCoolantTemp, checkThermistor(10000, coolantThermistor3));
   if(highCoolantTemp > MAXIMUM_COOLANT_TEMPERATURE) {
     shutdownError(CanBus, COOLANT_OVER_TEMP);
   }
-  else if{highCoolantTemp > COOLANT_TEMPERATURE_WARNING) {
+  else if(highCoolantTemp > COOLANT_TEMPERATURE_WARNING) {
     alertError(CanBus, COOLANT_WARNING_TEMP);
   }
   
-  int twelveThermistor2 = getMul
+  int twelveThermistor2 = getMultiplexerAnalog(TWELVE_THERMISTOR2_SELECT);
+  int twelveThermistor1 = getMultiplexerAnalog(TWELVE_THERMISTOR1_SELECT);
+  long highTwelveTemp = max(checkThermistor(10000, twelveThermistor2), checkThermistor(10000, twelveThermistor2);
+  if(highTwelveTemp > MAX_DCDC_TEMP) {
+    shutdownError(CanBus, TWELVE_OVER_TEMP);
+  }
+  else if(highTwelveTemp > WARNING_DCDC_TEMP) {
+    alertError(CanBus, TWELVE_WARNING_TEMP);
+  }
+  
+  int fiveTemp = checkThermistor(10000, getMultiplexerAnalog(FIVE_THERMISTOR_SELECT));
+  if(fiveTemp > MAX_DCDC_TEMP) {
+    shutdownError(CanBus, FIVE_OVER_TEMP);
+  }
+  else if(highTwelveTemp > WARNING_DCDC_TEMP) {
+    alertError(CanBus, FIVE_WARNING_TEMP);
+  }
+  
+  if(analogRead(five_supply_check_2) < 800) { // if the 5 volt dcdc converter is running less than 4 volts
+    alertError(CanBus, FIVE1_VOLTAGE_DIP);
+  }
+  
+  if(getMultiplexerAnalog(FIVE_SUPPLY_CHECK_SELECT) < 800) {
+    alertError(CanBus, FIVE2_VOLTAGE_DIP);
+  }
+  
+  
+  
+    
   
   
   if(BMSstateOfCharge < 10) {

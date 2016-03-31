@@ -11,6 +11,7 @@
 
 namespace EVDC {
 	const int Message = 0x0DC; // get it? because it's short for driver controls XD
+        const int transmitMessage = 0x1DC; // message for transmitting to the EVDC
 	int getError(unsigned char*);
 	int getButtons(unsigned char*);
         int getBrakes(unsigned char*);

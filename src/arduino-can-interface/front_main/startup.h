@@ -47,23 +47,18 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
 
   
   RPi::giveProgression(lilEngineThatCAN,0);
+  EVDC::calmTheFreakDown(lilEngineThatCAN);
   delay(2000); // I want a delay for all the other systems to boot up.
 
   
   while(progressBlock) {
     if(millis() > progressionTimer) {
-      RPi::giveProgression(lilEngineThatCAN,2); 
+      RPi::giveProgression(lilEngineThatCAN,2);
+       EVDC::calmTheFreakDown(lilEngineThatCAN);
+ 
       progressionTimer += 100;
     } 
-    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
-      lilEngineThatCAN.readMsgBuf(&len, msgReceive);
-      if(lilEngineThatCAN.getCanId() == 0xDC) {
-        int buttons = EVDC::getButtons(msgReceive);
-      }
-      if((buttons & 0x02) == 0x02) { // if the progress button is pressed
-        progressBlock == false;
-      }
-    }
+    if(
   }
   
   progressBlock = true;
@@ -81,6 +76,8 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
     while(progressBlock) {
       if(millis() > progressionTimer) {
         RPi::giveProgression(lilEngineThatCAN,2); 
+        EVDC::calmTheFreakDown(lilEngineThatCAN);
+
         progressionTimer += 100;
       }
       if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
@@ -226,17 +223,25 @@ void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
 //const int IMDpin = 3;
 
 void defineAndSetPinModes() {
-  pinMode(IMDpin, INPUT);
-  pinMode(discharge, OUTPUT);
-  pinMode(precharge, OUTPUT);
-  pinMode(TSMasterRelay, OUTPUT);
-  pinMode(AIRdcdc, OUTPUT);
-  pinMode(readyToDriveSound, OUTPUT);
   
-  digitalWrite(discharge, HIGH); // turn it on by default
-  digitalWrite(precharge, LOW);
-  digitalWrite(TSMasterRelay, LOW);
-  digitalWrite(AIRdcdc, HIGH);
-  digitalWrite(readyToDriveSound, LOW);
+  pinMode(readyToDriveSound, OUTPUT);
+  pinMode(AIRdcdc, OUTPUT);
+  pinMode(software_shutdown_control, OUTPUT);
+  pinMode(software_puchbutton_control, OUTPUT);
+  pinMode(start_LED, OUTPUT);
+  pinMode(fan_control, OUTPUT);
+  pinMode(pump_control, OUTPUT);
+  pinMode(IMD_LED, OUTPUT);
+  pinMode(BMS_LED, OUTPUT);
+  pinMode(MULTIPLEXER_SELECT_0, OUTPUT);
+  pinMode(MULTIPLEXER_INPUT, INPUT);
+  pinMode(CONTROL_11, OUTPUT);
+  pinMode(CONTROL_10, OUTPUT);
+  pinMode(IMDpin, INPUT);
+  pinMode(five_supply_check_2, INPUT);
+  pinMode(MULTIPLEXER_SELECT_3, OUTPUT);
+  pinMode(MULTIPLEXER_SELECT_2, OUTPUT);
+  pinMode(MULTIPLEXER_SELECT_1, OUTPUT);
+
   
 }

@@ -9,11 +9,11 @@
 MCP_CAN CAN(SPI_CS_PIN);
 
 void activate_brake_lights() {
-  /* analogWrite(BRAKE_LIGHTS_PIN, 100500); -- placeholder */
+  analogWrite(BRAKE_LIGHTS_PIN, 255); -- placeholder */
 }
 
 float get_input_voltage(int pin, float connected_voltage) {
-    return /*analogRead*/(pin) * (connected_voltage / 1023.0);
+    return analogRead(pin) * (connected_voltage / 1023.0);
 }
 
 void send_can_message(int id, unsigned char *message) {
@@ -46,16 +46,32 @@ void setup() {
   
   Serial.println("CAN BUS Shield Init OK");
   
+  bool good_for_launch = false;
+  
+  while(!good_for_launch) {
+    if(CAN.checkReceive() == CAN_MSGAVAIL) { //Checks if message is available
+      CAN.readMsgBuf(&len, buf); //If so, stores length & value
+      // You have to readMsgBuf before you can get the ID of the message
+      
+      if (CAN.getCanId() == MC_INT_STATES_MESSAGE_ID) // this has the inverter data
+        inverter_enabled = buf[5] % 2; // bit 0 of byte 5 as per specs is the inverter state
+      else if (CAN.getCanId() == MC_INT_STATES_MESSAGE_ID) // init command from main arduino
+        init_confirmed = buf[0] % 2; // or WHATEVER, NEED DATA ON THAT!*****************************************************************************
+    }
+  
+
+  
+  bool inverter_enabled = false;
+  bool init_confirmed = false;
+  // wait for inverter to turn on
+  while (!inverter_enabled || !init_confirmed) { // while it is not enabled, send out enable commands
+    
   send_can_message(command_message(0, 0, false, false, false, 0)); // Send out inverter disable command to release lockout.
   send_can_message(command_message(0, 0, false, true, false, 0)); // enable inverter
   send_can_message(command_message(0, 0, false, false, false, 0)); // disable inverter again
   
   send_can_message(command_message(0, 0, false, true, false, 0)); // enable inverter
-  
-  bool inverter_enabled = false;
-  bool init_confirmed = false;
-  // wait for inverter to turn on
-  while (!inverter_enabled || !init_confirmed) {
+    
     unsigned char len = 0; //Length of received message
     unsigned char buf[8];  //Where the received message will be stored
     

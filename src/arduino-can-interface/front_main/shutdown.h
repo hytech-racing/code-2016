@@ -19,7 +19,7 @@ void shutdownError(MCP_CAN& datCAN, int code) {
   Serial.print("EPIC ERROR -- ");
   Serial.println(code);
   while(1) {
-      EVDC::shutThemAllDown;
+      EVDC::shutThemAllDown(datCAN);
       RPi::giveError(datCAN, code);
       delay(200);
   }
