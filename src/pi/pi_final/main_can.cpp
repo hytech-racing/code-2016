@@ -1,3 +1,5 @@
+#include <chrono>
+#include <ctime>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string>
@@ -48,6 +50,7 @@ int main() {
 
     canframe_t *frame = (canframe_t*) malloc(sizeof(canframe_t));
     uint8_t bt_buffer[BT::DATA_LENGTH];
+    char timestr[20];
 
     while (1) {
         if (can.read(frame) > 0) {
@@ -56,9 +59,16 @@ int main() {
             if (!process_data_for_sending(bt_buffer, frame)) {
                 bt.send(bt_buffer);
             }
+            std::time_t timestamp = std::chrono::system_clock
+                ::to_time_t(std::chrono::system_clock::now());
+            if (std::strftime(timestr, sizeof(timestr), "%T",
+                        std::localtime(&timestamp))) {
+                logfile << timestr << ": ";
+            }
             logfile << frame->can_id << ": ";
             for (uint8_t i = 0; i < 8; ++i) {
-                logfile << frame->data[i] << " ";
+                uint8_t data = frame->data[i];
+                logfile << (int) data << " ";
             }
             logfile << std::endl;
 
