@@ -6,7 +6,7 @@
  * Functions for sending and receiving data from the Motor Controller
  * Shashank S
  */
-
+ 
 namespace MC {
     const int Message_Phase_Temp = 0x0A0;
     float getAveragePhaseTemp(unsigned char *);

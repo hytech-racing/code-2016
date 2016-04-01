@@ -1,7 +1,24 @@
 #include "mc.h"
-#include "stupidmemory.h"
 
 #define max(a,b) ((a)>(b)?(a):(b))
+
+void memcpyInt (short int *dstpp, unsigned char *srcpp) {
+    *dstpp &= int(0);
+    int MSB = int(srcpp[0]);
+    *dstpp |= MSB<<(8);
+    *dstpp |= srcpp[1];
+}
+
+void memcpyLong (unsigned long *dstpp, unsigned char *srcpp) {
+    *dstpp &= int(0);
+    unsigned long MSB = long(srcpp[0]);
+    unsigned long M2SB = long(srcpp[1]);
+    unsigned long L2SB = long(srcpp[2]);
+    *dstpp |= MSB<<(24);
+    *dstpp |= MSB<<(16);
+    *dstpp |= MSB<<(8);
+    *dstpp |= srcpp[3];
+}  
 
 // 0x0A0
 float MC::getAveragePhaseTemp(unsigned char *data) {

@@ -5,7 +5,7 @@
 #include <EEPROM.h>
 // include general logic files
 #include "pinAndErrorDefinitions.h"
-#include "multiplexer.h"
+//#include "multiplexer.h" moved to misc functions
 #include "thermistor.h"
 // include files for car functions
 #include "mcp_can.h"
@@ -17,11 +17,13 @@
 #include "pi.h"
 #include "shutdown.h"
 #include "startup.h"
-// #include "buttons.h" moved to misc functions
+
 
 //#include "IMD.h"     we are going to go off of a digital read of OKHS instead
 
-#define DEBUG_ACTIVATE 42 // declare to be 42 to turn on debug functionality
+#define DEBUG_ACTIVATE 203 // declare to be 42 to turn on debug functionality, 203 for board test
+
+
 
 
 
@@ -68,21 +70,28 @@ long IMDtimer = 0;
   unsigned char msgGive[8]; // buffer for sending messages
   unsigned char len;
 
-MCP_CAN CanBus(9);
+MCP_CAN CanBus(10);
 
 
 void setup() {
   Serial.begin(9600);
+  
   defineAndSetPinModes(); // found in startup.h
+  
+  if(DEBUG_ACTIVATE == 203){
+    testMicroBoard(CanBus);
+  } 
+  
   while(CAN_OK != CanBus.begin(CAN_500KBPS)) {
     Serial.println("CAN Bus is not operaitonal");
     delay(10);
   }
-  if(DEBUG_ACTIVATE != 42) {
-    startupSequence(CanBus);
-  }
-  else {
+  
+  if(DEBUG_ACTIVATE == 42) {
     startupDebug(CanBus);
+  }
+  else{
+    startupSequence(CanBus);
   }
   EEPROM.write(0, 0x00);
   BMS_timeout = millis() + BMS_timeout_limit;
@@ -212,7 +221,7 @@ void loop() {
   
   int twelveThermistor2 = getMultiplexerAnalog(TWELVE_THERMISTOR2_SELECT);
   int twelveThermistor1 = getMultiplexerAnalog(TWELVE_THERMISTOR1_SELECT);
-  long highTwelveTemp = max(checkThermistor(10000, twelveThermistor2), checkThermistor(10000, twelveThermistor2);
+  long highTwelveTemp = max(checkThermistor(10000, twelveThermistor2), checkThermistor(10000, twelveThermistor2));
   if(highTwelveTemp > MAX_DCDC_TEMP) {
     shutdownError(CanBus, TWELVE_OVER_TEMP);
   }
@@ -275,6 +284,7 @@ void loop() {
   
   if(ARerror == 1) {
     alertError(CanBus, AR_BASE_ERROR + ARerror);
+  }
   
   if(ARerror > 1) {
    shutdownError(CanBus, AR_BASE_ERROR + ARerror);

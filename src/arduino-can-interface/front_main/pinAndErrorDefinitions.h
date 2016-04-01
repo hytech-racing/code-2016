@@ -1,3 +1,6 @@
+#ifndef PINDEFINITIONS
+#define PINDEFINITIONS
+
 #define BMS_TIMED_OUT 1
 #define EVDC_TIMED_OUT 2
 #define MC_TIMED_OUT 3
@@ -18,7 +21,7 @@
 #define TWELVE_WARNING_TEMP 29
 #define TWELVE_OVER_TEMP 30
 #define FIVE_OVER_TEMP 31
-#define FIVE_OVER_TEMP 32
+#define FIVE_WARNING_TEMP 32
 #define FIVE1_VOLTAGE_DIP 33
 #define FIVE2_VOLTAGE_DIP 34
 
@@ -34,43 +37,44 @@
 okay, so the software_shutdown_control is turned on. then, the software_pushbutton_control is pulsed on for a second or so. then, AIRdcdc is turned on or off to turn AIRs on or off
 
 */
-const int readyToDriveSound = 0; // ready to derp sound?
-const int AirDCDC = 1;
-const int AIRdcdc = 1;
-const int software_shutdown_control = 2;
-const int software_pushbutton_control = 3;
-const int start_LED = 4;
-const int fan_control = 5;
-const int pump_control = 6;
-const int IMD_LED = 7;
-const int BMS_LED = 8;
-const int MULTIPLEXER_SELECT_0 = 9;
+#define readyToDriveSound  0 // ready to derp sound?
+#define AirDCDC  1
+#define AIRdcdc  1
+#define software_shutdown_control  2
+#define software_pushbutton_control 3
+#define start_LED 4
+#define fan_control 5
+#define pump_control 6
+#define IMD_LED 7
+#define BMS_LED 8
+#define MULTIPLEXER_SELECT_0 9
 // 10,11,and 12, and 13 are SPI for CAN
-const int MULTIPLEXER_INPUT A0;
-const int CONTROL_11 A1;
-const int CONTROL_10 A2;
-const int IMDpin A3;
-const int five_supply_check_2 = A4;
-const int MULTIPLEXER_SELECT_3 = A5;
-const int MULTIPLEXER_SELECT_2 = A6;
-const int MULTIPLEXER_SELECT_1 = A7;
+#define MULTIPLEXER_INPUT A0
+#define CONTROL_11 A1
+#define CONTROL_10 A2
+#define IMDpin A3
+#define five_supply_check_2 A4
+#define MULTIPLEXER_SELECT_3 A5
+#define MULTIPLEXER_SELECT_2 A6
+#define MULTIPLEXER_SELECT_1 A7
 
 // mutiplexer definitions
 
-const char SHUTDOWN_BUTTON_SELECT = 0;
-const char BOOST_BUTTON_SELECT = 1;
-const char CYCLE_BUTTON_SELECT = 2;
-const char TOGGLE_BUTTON_SELECT = 3;
-const char FIVE_SUPPLY_CHECK_SELECT = 4;
-const char TWELVE_THERMISTOR1_SELECT = 5;
-const char TWELVE_THERMISTOR2_SELECT = 6;
-const char FIVE_THERMISTOR_SELECT = 7;
-const char VCC_AIR_DIVIDER_SELECT = 8;
-const char RELAY_THERMISTOR_SELECT = 9;
-const char AIR_UNREGULATED_DIVIDER = 10;
-const char COOLING_SENSOR_1_SELECT = 11;
-const char COOLING_SENSOR_2_SELECT = 12;
-const char COOLING_SENSOR_3_SELECT = 13;
-const char IMD_PWM_LOW_SELECT = 14;
-const char IMD_PWM_HIGH_SELECT = 15;
+#define SHUTDOWN_BUTTON_SELECT 0
+#define BOOST_BUTTON_SELECT 1
+#define CYCLE_BUTTON_SELECT 2
+#define TOGGLE_BUTTON_SELECT 3
+#define FIVE_SUPPLY_CHECK_SELECT 4
+#define TWELVE_THERMISTOR1_SELECT 5
+#define TWELVE_THERMISTOR2_SELECT 6
+#define FIVE_THERMISTOR_SELECT 7
+#define VCC_AIR_DIVIDER_SELECT 8
+#define RELAY_THERMISTOR_SELECT 9
+#define AIR_UNREGULATED_DIVIDER 10
+#define COOLANT_SENSOR_1_SELECT 11
+#define COOLANT_SENSOR_2_SELECT 12
+#define COOLANT_SENSOR_3_SELECT 13
+#define IMD_PWM_LOW_SELECT 14
+#define IMD_PWM_HIGH_SELECT 15
 
+#endif

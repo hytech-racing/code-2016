@@ -1,12 +1,11 @@
-#include <SPI.h>
-#include "mcp_can.h"
-#include "mc.h"
-#include "evdc.h"
-#include "bms.h"
-#include "ar.h"
-#include "pi.h"
-#include "IMD.h"
-//#include "shutdown.h"
+//#include <SPI.h>
+//#include "mcp_can.h"
+//#include "mc.h"
+//#include "evdc.h"
+//#include "bms.h"
+//#include "ar.h"
+//#include "pi.h"
+//#include "IMD.h"
 /*
 startup sequence according to Nathan
 
@@ -58,13 +57,15 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
  
       progressionTimer += 100;
     } 
-    if(
+    if(shutdownButton()) {
+      progressBlock = false;
+    }
   }
   
   progressBlock = true;
   
 
-  if(EEPROM.read(0) == 1) { // for BMS error on last shutdown
+  if((EEPROM.read(0) & 0x01) == 1) { // for BMS error on last shutdown
     float BMSwholePackVoltage = 300;
     float BMSstateOfCharge = 50.0;
     float BMScurrent = 0.0;
@@ -148,16 +149,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
   
   progressBlock = true;
   
-  digitalWrite(AIRdcdc, HIGH);
-  digitalWrite(precharge, HIGH);
-  digitalWrite(discharge, LOW);
-  long prechargeTimer = millis() + 3000;
-  while(prechargeTimer > millis()) {
-      if(millis() > progressionTimer) {
-        RPi::giveProgression(lilEngineThatCAN,2); 
-        progressionTimer += 100;
-      }
-  }
+  
   
   RPi::giveProgression(lilEngineThatCAN, 3);
   buttons = 0;
@@ -174,7 +166,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
         buttons = EVDC::getButtons(msgReceive);
         brakes = EVDC::getBrakes(msgReceive);
       }
-      if(((buttons & 0x02) == 0x02) && (brakes > 25)) { // if the progress button is pressed and brakes are more than 25%
+      if(shutdownButton() && (brakes > 25)) { // if the progress button is pressed and brakes are more than 25%
         progressBlock == false;
       }
     }
@@ -182,10 +174,10 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
   
   progressBlock = true;
   
-  digitalWrite(precharge, LOW);
-  digitalWrite(TSMasterRelay, HIGH);
+  digitalWrite(AirDCDC, HIGH);
   digitalWrite(readyToDriveSound, HIGH);
-  long readyToDriveTimer = millis() + 3000;
+  digitalWrite(software_pushbutton_control, HIGH);
+  long prechargeTimer = millis() + 3000;
   while(prechargeTimer > millis()) {
       if(millis() > progressionTimer) {
         RPi::giveProgression(lilEngineThatCAN,4); 
@@ -193,6 +185,8 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
       }
   }
   digitalWrite(readyToDriveSound, LOW);
+  digitalWrite(software_pushbutton_control, LOW);
+
  
   EVDC::goForLaunch(lilEngineThatCAN);
   RPi::giveProgression(lilEngineThatCAN, 5);
@@ -204,11 +198,10 @@ void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
   Serial.println("starting up DEBUG");
   Serial.println("starting up DEBUG");
   digitalWrite(AIRdcdc, HIGH);  
-  digitalWrite(precharge, HIGH);
-  digitalWrite(discharge, LOW);
+  digitalWrite(software_pushbutton_control, HIGH);
+  digitalWrite(software_shutdown_control, HIGH);
   delay(3000);
-  digitalWrite(TSMasterRelay, HIGH); 
-  digitalWrite(precharge, LOW);
+   digitalWrite(software_shutdown_control, LOW);
   RPi::giveProgression(lilEngineThatCAN,5);
   EVDC::goForLaunch(lilEngineThatCAN);
 
@@ -227,7 +220,7 @@ void defineAndSetPinModes() {
   pinMode(readyToDriveSound, OUTPUT);
   pinMode(AIRdcdc, OUTPUT);
   pinMode(software_shutdown_control, OUTPUT);
-  pinMode(software_puchbutton_control, OUTPUT);
+  pinMode(software_pushbutton_control, OUTPUT);
   pinMode(start_LED, OUTPUT);
   pinMode(fan_control, OUTPUT);
   pinMode(pump_control, OUTPUT);
@@ -235,6 +228,7 @@ void defineAndSetPinModes() {
   pinMode(BMS_LED, OUTPUT);
   pinMode(MULTIPLEXER_SELECT_0, OUTPUT);
   pinMode(MULTIPLEXER_INPUT, INPUT);
+  pinMode(10, OUTPUT);
   pinMode(CONTROL_11, OUTPUT);
   pinMode(CONTROL_10, OUTPUT);
   pinMode(IMDpin, INPUT);

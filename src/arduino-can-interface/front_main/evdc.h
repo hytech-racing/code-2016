@@ -17,4 +17,5 @@ namespace EVDC {
         int getBrakes(unsigned char*);
         void goForLaunch(MCP_CAN&);
         void shutThemAllDown(MCP_CAN&);
+        void calmTheFreakDown(MCP_CAN&);
 }
