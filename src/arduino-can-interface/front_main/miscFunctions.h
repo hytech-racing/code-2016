@@ -131,15 +131,15 @@ void testMicroBoard(MCP_CAN& greenBus) {
     digitalWrite(CONTROL_10, digitalTest);
     Serial.print("IMD pin: ");
     if(digitalRead(IMDpin)) {
-      Serial.println("high");
+      Serial.println(analogRead(IMDpin)); //high
     }
     else {
-      Serial.println("low");
+      Serial.println(analogRead(IMDpin));
     }
     
     Serial.println("analog test");
     Serial.print("five volt check: ");
-    Serial.println(analogRead(five_supply_check_2));
+    Serial.println(analogRead(twenty_four_thermistor));
     Serial.println("multiplexer test");
     for(int i = 0; i < 16; i++) {
       Serial.print(i);
@@ -151,7 +151,7 @@ void testMicroBoard(MCP_CAN& greenBus) {
     digitalWrite(MULTIPLEXER_SELECT_2, digitalTest);
     digitalWrite(MULTIPLEXER_SELECT_3, digitalTest);
     delay(1000);
-   
+    digitalTest = !digitalTest;
   }
 }
 

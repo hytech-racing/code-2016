@@ -232,7 +232,7 @@ void defineAndSetPinModes() {
   pinMode(CONTROL_11, OUTPUT);
   pinMode(CONTROL_10, OUTPUT);
   pinMode(IMDpin, INPUT);
-  pinMode(five_supply_check_2, INPUT);
+  pinMode(twenty_four_thermistor, INPUT);
   pinMode(MULTIPLEXER_SELECT_3, OUTPUT);
   pinMode(MULTIPLEXER_SELECT_2, OUTPUT);
   pinMode(MULTIPLEXER_SELECT_1, OUTPUT);

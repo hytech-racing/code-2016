@@ -237,9 +237,9 @@ void loop() {
     alertError(CanBus, FIVE_WARNING_TEMP);
   }
   
-  if(analogRead(five_supply_check_2) < 800) { // if the 5 volt dcdc converter is running less than 4 volts
-    alertError(CanBus, FIVE1_VOLTAGE_DIP);
-  }
+//  if(analogRead(five_supply_check_2) < 800) { // if the 5 volt dcdc converter is running less than 4 volts
+//    alertError(CanBus, FIVE1_VOLTAGE_DIP);
+//  }
   
   if(getMultiplexerAnalog(FIVE_SUPPLY_CHECK_SELECT) < 800) {
     alertError(CanBus, FIVE2_VOLTAGE_DIP);

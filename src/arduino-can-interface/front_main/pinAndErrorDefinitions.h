@@ -37,26 +37,26 @@
 okay, so the software_shutdown_control is turned on. then, the software_pushbutton_control is pulsed on for a second or so. then, AIRdcdc is turned on or off to turn AIRs on or off
 
 */
-#define readyToDriveSound  0 // ready to derp sound?
+#define readyToDriveSound  0 // good - ready to derp sound?
 #define AirDCDC  1
 #define AIRdcdc  1
-#define software_shutdown_control  2
-#define software_pushbutton_control 3
-#define start_LED 4
-#define fan_control 5
-#define pump_control 6
+#define software_shutdown_control  2 //OKAY
+#define software_pushbutton_control 3 //GOOD
+#define start_LED 4 
+#define fan_control 5 //GOOD
+#define pump_control 6 //GOOD
 #define IMD_LED 7
 #define BMS_LED 8
-#define MULTIPLEXER_SELECT_0 9
+#define MULTIPLEXER_SELECT_0 9 //GOOD
 // 10,11,and 12, and 13 are SPI for CAN
-#define MULTIPLEXER_INPUT A0
-#define CONTROL_11 A1
-#define CONTROL_10 A2
-#define IMDpin A3               // needs to sub in for A6
-#define five_supply_check_2 A4  // needs to sub in for A7 
-#define MULTIPLEXER_SELECT_3 A5
-#define MULTIPLEXER_SELECT_2 A6 // cant be used as digital pin, need to change to A3
-#define MULTIPLEXER_SELECT_1 A7 // cant be used as digital pin, need to change to A4
+#define MULTIPLEXER_INPUT A4
+#define CONTROL_11 A3 //GOOD
+#define CONTROL_10 A5 //GOOD
+#define IMDpin A7               // GOOD - needs to sub in for A6
+#define twenty_four_thermistor A6  // GOOD - needs to sub in for A7 
+#define MULTIPLEXER_SELECT_3 A2 // GOOD
+#define MULTIPLEXER_SELECT_2 A1 // GOOD - cant be used as digital pin, need to change to A3
+#define MULTIPLEXER_SELECT_1 A0 // GOOD - cant be used as digital pin, need to change to A4
 
 // mutiplexer definitions
 
