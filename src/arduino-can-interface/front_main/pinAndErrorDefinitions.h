@@ -52,11 +52,11 @@ okay, so the software_shutdown_control is turned on. then, the software_pushbutt
 #define MULTIPLEXER_INPUT A0
 #define CONTROL_11 A1
 #define CONTROL_10 A2
-#define IMDpin A3
-#define five_supply_check_2 A4
+#define IMDpin A3               // needs to sub in for A6
+#define five_supply_check_2 A4  // needs to sub in for A7 
 #define MULTIPLEXER_SELECT_3 A5
-#define MULTIPLEXER_SELECT_2 A6
-#define MULTIPLEXER_SELECT_1 A7
+#define MULTIPLEXER_SELECT_2 A6 // cant be used as digital pin, need to change to A3
+#define MULTIPLEXER_SELECT_1 A7 // cant be used as digital pin, need to change to A4
 
 // mutiplexer definitions
 
