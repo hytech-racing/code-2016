@@ -23,3 +23,6 @@ clean:
 	-rm -f main_can
 
 remake: clean all
+
+clear_logs:
+	-rm -f logs_*
