@@ -157,7 +157,7 @@ void loop()
     }
     // bit 7 of message: battery error
     // bit 6 of message: thermistor error
-    CAN.sendMsgBuf(0x2A2, 0, 8, msg);
+    CAN.sendMsgBuf(0x020, 0, 8, msg);
 
     /*PRINT STATEMENTS FOR DEBUGGING*/
 //    for(int i = 0; i < 8; i++) {

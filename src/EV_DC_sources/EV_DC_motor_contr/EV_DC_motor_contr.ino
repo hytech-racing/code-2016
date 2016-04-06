@@ -6,10 +6,16 @@
 
 //EV DC - Electric Vehicle Driver Controls
 
+bool use_regen = false; // I know you hate global variables but I had to do this :'(
+bool total_shutdown = false;
+bool run_normal = true;
+long MAIN_TIMEOUT = 0;
+int MAIN_TIMEOUT_LIMIT = 2000; // two seconds
+
 MCP_CAN CAN(SPI_CS_PIN);
 
 void activate_brake_lights() {
-  analogWrite(BRAKE_LIGHTS_PIN, 255); -- placeholder */
+  digitalWrite(BRAKE_LIGHTS_PIN, HIGH); -- placeholder */
 }
 
 float get_input_voltage(int pin, float connected_voltage) {
@@ -38,7 +44,7 @@ void setup() {
   /*
     Initializes CAN controller
   */
-  while (CAN.begin(CAN_RATE) != CAN_OK) { //Communication rate is 250Kbps as per specs
+  while (CAN.begin(CAN_RATE) != CAN_OK) { //Communication rate is 500Kbps as per specs
     Serial.println("CAN BUS Shield init FAIL");
     Serial.println("Init CAN BUS Shield again");
     delay(100);
@@ -47,6 +53,8 @@ void setup() {
   Serial.println("CAN BUS Shield Init OK");
   
   bool good_for_launch = false;
+  bool inverter_enabled = false;
+  bool init_confirmed = false;
   
   while(!good_for_launch) {
     if(CAN.checkReceive() == CAN_MSGAVAIL) { //Checks if message is available
@@ -55,8 +63,8 @@ void setup() {
       
       if (CAN.getCanId() == MC_INT_STATES_MESSAGE_ID) // this has the inverter data
         inverter_enabled = buf[5] % 2; // bit 0 of byte 5 as per specs is the inverter state
-      else if (CAN.getCanId() == MC_INT_STATES_MESSAGE_ID) // init command from main arduino
-        init_confirmed = buf[0] % 2; // or WHATEVER, NEED DATA ON THAT!*****************************************************************************
+      else if (CAN.getCanId() == MAIN_MESSAGE_GET) // init command from main arduino
+        init_confirmed = (buf[0]  == 42); // or WHATEVER, NEED DATA ON THAT!*****************************************************************************
     }
   
 
@@ -64,7 +72,7 @@ void setup() {
   bool inverter_enabled = false;
   bool init_confirmed = false;
   // wait for inverter to turn on
-  while (!inverter_enabled || !init_confirmed) { // while it is not enabled, send out enable commands
+  while (!inverter_enabled || init_confirmed) { // while it is not enabled but main arduino initialization is finished, send out enable commands
     
   send_can_message(command_message(0, 0, false, false, false, 0)); // Send out inverter disable command to release lockout.
   send_can_message(command_message(0, 0, false, true, false, 0)); // enable inverter
@@ -81,24 +89,26 @@ void setup() {
       
       if (CAN.getCanId() == MC_INT_STATES_MESSAGE_ID) // this has the inverter data
         inverter_enabled = buf[5] % 2; // bit 0 of byte 5 as per specs is the inverter state
-      else if (CAN.getCanId() == MC_INT_STATES_MESSAGE_ID) // init command from main arduino
-        init_confirmed = buf[0] % 2; // or WHATEVER, NEED DATA ON THAT!*****************************************************************************
+      else if (CAN.getCanId() == MAIN_MESSAGE_GET) // init command from main arduino
+        init_confirmed = (buf[0] == 42); // or WHATEVER, NEED DATA ON THAT!*****************************************************************************
     }
   }
 }
 
 void loop() {
-  bool use_regen = false;
+  
   unsigned char len = 0; //Length of received message
   unsigned char buf[8];  //Where the received message will be stored
     
-  float brake_input_voltage = get_input_voltage(0xA0, 5.0),
-        accel_input_voltage_1 = get_input_voltage(0xA1, 5.0),
-        accel_input_voltage_2 = get_input_voltage(0xA2, 5.0); // two voltages needed to compare
+  float brake_input_voltage = get_input_voltage(BRAKE_PEDAL, 5.0),
+        accel_input_voltage_1 = get_input_voltage(ACCEL_PEDAL_1, 5.0),
+        accel_input_voltage_2 = get_input_voltage(ACCEL_PEDAL_2, 5.0); // two voltages needed to compare
 
-  if (accel_input_voltage_1 - accel_input_voltage_2 > MAX_VOLTAGE_DIFFERENCE) {
-      return;// and kill the car, because wtf
+  if (abs(accel_input_voltage_1 - accel_input_voltage_2) > MAX_VOLTAGE_DIFFERENCE) {
+      accel_input_voltage_1 = 0;// and kill the car, because wtf
+      accel_input_voltage_2 = 0;
   }
+  
   
   if (brake_input_voltage > BRAKE_MAX_INPUT_VOLTAGE * 0.1) // if brake is larger than 10% of max
     activate_brake_lights();
@@ -117,7 +127,23 @@ void loop() {
       
       if (linear_velocity > 5)
         use_regen = true; // regen only if reported speed is above 5 kmph
-    } else if (CAN.getCanId() == MC_INT_STATES_MESSAGE_ID && !(buf[0] % 2)) // shutdown command from main arduino or WHATEVER, NEED DATA ON THAT!*****************************************************************************
-      return;
-  }
+      else
+        use_regen = false;
+    } 
+    else if (CAN.getCanId() == MAIN_MESSAGE_GET) { // shutdown command from main arduino or WHATEVER, NEED DATA ON THAT!*****************************************************************************
+    MAIN_TIMEOUT = millis() + MAIN_TIMEOUT_LIMIT;
+      if(buf[0] == 42) { // everything is fine
+        run_normal = !total_shutdown;
+      }
+      
+      else if(buf[0] == 25) { // a critical error that is unrecoverable has occurred
+        total_shutdown = true;
+      }
+      
+      else if(buf[0] == 64) {
+        run_normal = false;
+      }
+        
+    
+    }
 }
