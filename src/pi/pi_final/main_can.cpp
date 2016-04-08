@@ -136,7 +136,7 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             // Multiply by 10 to send
             // Circumference = 5.2 ft
             value = ((frame->data[3] << 8) | frame->data[2]);
-            value *= (uint16_t) ((16.0/35.0) * 5.2 * (60.0/5280.0) * 10);
+            //value *= (uint16_t) ((16.0/35.0) * 5.2 * (60.0/5280.0) * 10);
             bt_data[0] = 5;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
