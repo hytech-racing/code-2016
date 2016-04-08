@@ -5,5 +5,5 @@
 namespace RPi {
 	void giveProgression(MCP_CAN&, int);
 	void giveError(MCP_CAN&, int);
-	const int piAddress = 0x314; // it looks kind of like 'pi', right?
+	const int piAddress = 0x083; // 3 is like 'pi', right?
 }

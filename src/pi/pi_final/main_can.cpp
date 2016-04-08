@@ -35,10 +35,32 @@ int running_amp_sum = 0;
 // function prototypes
 int process_data_for_sending(uint8_t* bt_data, canframe_t* frame);
 void print(canframe_t* frame);
+void log_to_file(canframe_t* frame);
+
+std::ofstream log_mc;
+std::ofstream log_bms;
+std::ofstream log_main_ard;
+std::ofstream log_evdc;
+std::ofstream log_rear_ard;
+struct timeval log_mc_prev_time;
+struct timeval log_bms_prev_time;
+struct timeval log_main_ard_prev_time;
+struct timeval log_evdc_prev_time;
+struct timeval log_rear_ard_prev_time;
+char timestr[20];
 
 int main() {
-    std::ofstream logfile;
-    logfile.open("logs.txt", std::ios::out | std::ios::app);
+    log_mc.open("logs_mc.txt", std::ios::out | std::ios::app);
+    log_bms.open("logs_bms.txt", std::ios::out | std::ios::app);
+    log_main_ard.open("logs_main_arduino.txt", std::ios::out | std::ios::app);
+    log_evdc.open("logs_evdc.txt", std::ios::out | std::ios::app);
+    log_rear_ard.open("logs_read_arduino.txt", std::ios::out | std::ios::app);
+
+    gettimeofday(&log_mc_prev_time, NULL);
+    gettimeofday(&log_bms_prev_time, NULL);
+    gettimeofday(&log_main_ard_prev_time, NULL);
+    gettimeofday(&log_evdc_prev_time, NULL);
+    gettimeofday(&log_rear_ard_prev_time, NULL);
 
     CAN can;
     BT bt(10);
@@ -50,35 +72,25 @@ int main() {
 
     canframe_t *frame = (canframe_t*) malloc(sizeof(canframe_t));
     uint8_t bt_buffer[BT::DATA_LENGTH];
-    char timestr[20];
 
     while (1) {
         if (can.read(frame) > 0) {
             std::cout << "Error reading message" << std::endl;
         } else {
-            if (!process_data_for_sending(bt_buffer, frame)) {
+            if (0 == process_data_for_sending(bt_buffer, frame)) {
                 bt.send(bt_buffer);
             }
-            std::time_t timestamp = std::chrono::system_clock
-                ::to_time_t(std::chrono::system_clock::now());
-            if (std::strftime(timestr, sizeof(timestr), "%T",
-                        std::localtime(&timestamp))) {
-                logfile << timestr << ": ";
-            }
-            logfile << frame->can_id << ": ";
-            for (uint8_t i = 0; i < 8; ++i) {
-                uint8_t data = frame->data[i];
-                logfile << (int) data << " ";
-            }
-            logfile << std::endl;
-
+            log_to_file(frame);
         }
-        usleep(10000);
     }
 
     free(frame);
     bt.disconnect();
-    logfile.close();
+    log_mc.close();
+    log_bms.close();
+    log_main_ard.close();
+    log_evdc.close();
+    log_rear_ard.close();
     return 0;
 }
 
@@ -124,7 +136,7 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             // Multiply by 10 to send
             // Circumference = 5.2 ft
             value = ((frame->data[3] << 8) | frame->data[2]);
-            value *= (uint16_t) ((16.0/35.0) * 5.2 * (60.0/5280.0) * 10);
+            //value *= (uint16_t) ((16.0/35.0) * 5.2 * (60.0/5280.0) * 10);
             bt_data[0] = 5;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
@@ -157,4 +169,45 @@ void print(canframe_t* frame) {
     } else {
         std::cout << "Can frame is NULL or has an empty message" << std::endl;
     }
+}
+
+void log_to_file(canframe_t* frame) {
+    std::ofstream* out_file;
+    gettimeofday(&curr_time, NULL);
+    if (frame->can_id < 0x10
+            && (curr_time.tv_sec - log_bms_prev_time.tv_sec) > 0) {
+        out_file = &log_bms;
+        log_bms_prev_time = curr_time;
+    } else if (frame->can_id < 0x30
+            && (curr_time.tv_sec - log_rear_ard_prev_time.tv_sec) > 0) {
+        out_file = &log_rear_ard;
+        log_rear_ard_prev_time = curr_time;
+    } else if (frame->can_id < 0x90
+            && (curr_time.tv_sec - log_main_ard_prev_time.tv_sec) > 0) {
+        out_file = &log_main_ard;
+        log_main_ard_prev_time = curr_time;
+    } else if (frame->can_id < 0xB0
+            && (curr_time.tv_sec - log_mc_prev_time.tv_sec) > 0) {
+        out_file = &log_mc;
+        log_mc_prev_time = curr_time;
+    } else if (frame->can_id < 0xD0
+            && (curr_time.tv_sec - log_evdc_prev_time.tv_sec) > 0) {
+        out_file = &log_evdc;
+        log_evdc_prev_time = curr_time;
+    } else {
+        return;
+    }
+
+    std::time_t timestamp = std::chrono::system_clock
+        ::to_time_t(std::chrono::system_clock::now());
+    if (std::strftime(timestr, sizeof(timestr), "%T",
+                std::localtime(&timestamp))) {
+        *out_file << timestr << ": ";
+    }
+    *out_file << frame->can_id << ": ";
+    for (uint8_t i = 0; i < 8; ++i) {
+        uint8_t data = frame->data[i];
+        *out_file << (int) data << " ";
+    }
+    *out_file << std::endl;
 }

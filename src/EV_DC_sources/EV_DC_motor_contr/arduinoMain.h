@@ -3,7 +3,7 @@
 
 
 namespace AM {
-    int MAIN_MESSSAGE = 0x1DC;
+    int MAIN_MESSSAGE_GET = 0x08D;
     int checkStatus(unsigned char*);
     
 

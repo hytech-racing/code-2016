@@ -1,0 +1,48 @@
+CAN message reference
+general format: byte 1 is the device's 'channel'.
+byte 0 is the channel of the target device (for messages
+to arduinos or the pi) (also there are a few exceptions)
+
+from motor controller: Channel 'A'
+	0x0A0
+	0x0A1
+	0x0A2
+	0x0A4
+	0x0A5
+	0x0A6
+	0x0A7
+	0x0AA - state machine information
+	0x0AB
+	0x0AC
+	
+from BMS: Channel '0'
+	0x001
+	0x002
+	0x003
+	0x004
+	0x005
+	0x006
+	0x007
+	
+from main arduino: Channel '8'
+	0x08C - message to EVDC. byte 0 is 42 to go for launch, 
+		25 to stop motor controller (can be restarted with 42),
+		and 64 to permanently stop motor controller
+	0x083 - message to Raspberry Pi. if byte 1 is 0, then byte 0 is
+		the startup progress state. 
+		If byte 1 is 1, then byte 0 is an error code.
+
+from EVDC: channel 'C'
+	0x0C0 - enable and torque message to motor controller.
+	0x0C8 - state of EVDC. if byte 0 is 0, then EVDC is not launched.
+		if byte 0 is 42, then EVDC is launched.
+	
+from rear arduino: channel '2'
+	0x020 - message to main arduino. 
+		if byte 1 is 1, then there is a thermistor warning. 
+		if byte 1 is 2, then there is a thermistor error. 
+		If byte 0 is 1, then there is a battery warning. 
+		if byte 0 is 2, then there is a battery error.
+	
+	
+		

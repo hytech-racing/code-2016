@@ -18,9 +18,9 @@ MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 void setup()
 {
     Serial.begin(9600);
-    pinMode(A1, OUTPUT);
+    pinMode(A3, OUTPUT);
     pinMode(A5, OUTPUT);
-    pinMode(A3, INPUT);
+    pinMode(A4, INPUT);
 
 START_INIT:
 
@@ -40,57 +40,58 @@ START_INIT:
 unsigned char lockout[8] = {0,0,0,0,0,0,0,0};
 unsigned char enable[8] = {0,0,0,0,0,1,0,0};
 unsigned char msg[8] = {0,0,0,0,1,1,0,0};
-short torque = 0;
+unsigned char bat[8] = {0,195,0,0,0,0,0,0};
+unsigned char temp[8] = {70,0,65,0,0,0,0,0}; 
+byte torque = 0;
 int enabled = 0;
-int pot = 0;
+int pot = 1;
 int value;
 
 void loop() {
-  if (!enabled) {
-    CAN.sendMsgBuf(0x0C0, 0, 8, lockout);
-    Serial.println("inverter disable");
-    char entry;
-    entry = Serial.read();
-    if (entry == 's') {
-      CAN.sendMsgBuf(0x0C0, 0, 8, enable);
-      torque = 0;
-      Serial.println("enabled");
-      enabled = 1;
-    }
-    delay(50);
-  } else {
-//    digitalWrite(A1, HIGH);
-//    digitalWrite(A5, LOW);
-//    if (pot == 1) {
-//      value = analogRead(A3);
-//      if (value < 50) {
-//        torque = 0;
-//      } else {
-//        torque = value;
-//      }
-//      pot = 1;
-//      Serial.print("Using pot ");
+//  if (!enabled) {
+//    CAN.sendMsgBuf(0x0C0, 0, 8, lockout);
+//    Serial.println("inverter disable");
+//    char entry;
+//    entry = Serial.read();
+//    if (entry == 's') {
+//      CAN.sendMsgBuf(0x0C0, 0, 8, enable);
+//      torque = 0;
+//      Serial.println("enabled");
+//      enabled = 1;
 //    }
-    if (Serial.available() > 0) {
-      char entry;
-      entry = Serial.read();
-      if (entry == 'd') {
-        CAN.sendMsgBuf(0x0C0, 0, 8, enable);
-        Serial.println("disable");
-        enabled = 0;
-        pot = 0;
-      } else if (entry == 'e') {
-        CAN.sendMsgBuf(0x0C0, 0, 8, lockout);
-      } else if (entry == 'a') {
-        torque = 120;
-        pot = 0;
-      } else if (entry == 'r') {
-        torque = -100;
-        pot = 0;
-      } else if (entry == 'f') {
+//    delay(50);
+//  } else {
+    digitalWrite(A3, HIGH);
+    digitalWrite(A5, LOW);
+    if (pot == 1) {
+      value = analogRead(A4);
+      if (value < 50) {
         torque = 0;
-        pot = 0;
+      } else {
+        torque = value;
       }
+      pot = 1;
+    }
+//    if (Serial.available() > 0) {
+//      char entry;
+//      entry = Serial.read();
+//      if (entry == 'd') {
+//        CAN.sendMsgBuf(0x0C0, 0, 8, enable);
+//        Serial.println("disable");
+//        enabled = 0;
+//        pot = 0;
+//      } else if (entry == 'e') {
+//        CAN.sendMsgBuf(0x0C0, 0, 8, lockout);
+//      } else if (entry == 'a') {
+//        torque = 120;
+//        pot = 0;
+//      } else if (entry == 'r') {
+//        torque = -100;
+//        pot = 0;
+//      } else if (entry == 'f') {
+//        torque = 0;
+//        pot = 0;
+//      }
 
       /**
        * INPUT SEQUENCE TO TURN ON MOTOR 100% OF THE TIME
@@ -98,13 +99,13 @@ void loop() {
        * Then send real messages (press s)
        * Then send quick disable for lockout (press e)
        */
-    }
-    memcpy(&msg[0], &torque, sizeof(short)); //speed mode (ignore the fact that it's called "torque")
-    Serial.print(msg[0], HEX);
+    memcpy(&msg[2], &torque, sizeof(short)); //speed mode (ignore the fact that it's called "torque")
+    Serial.print(msg[2], HEX);
     Serial.print(" ");
-    Serial.println(msg[1], HEX);
-    CAN.sendMsgBuf(0x0C0, 0, 8, msg);
-    delay(50);
+    Serial.println(msg[3], HEX);
+    CAN.sendMsgBuf(0x0A5, 0, 8, msg);
+    CAN.sendMsgBuf(0x001, 0, 8, bat);
+    CAN.sendMsgBuf(0x004, 0, 8, temp);
+    delay(100);
   }
-}
 

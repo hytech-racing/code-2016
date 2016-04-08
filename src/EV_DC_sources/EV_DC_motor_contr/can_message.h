@@ -1,4 +1,4 @@
-j#ifndef CAN_MESSAGE_H
+#ifndef CAN_MESSAGE_H
 #define CAN_MESSAGE_H
 
 #include <stdint.h>
