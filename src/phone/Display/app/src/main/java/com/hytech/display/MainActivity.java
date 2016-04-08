@@ -1,6 +1,8 @@
 package com.hytech.display;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -11,6 +13,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.github.pavlospt.CircleView;
 
@@ -18,6 +21,8 @@ import com.github.pavlospt.CircleView;
 public class MainActivity extends Activity implements SensorEventListener {
 
     private CircleView odometer;
+    private TextView stateOfCharge;
+    private TextView batteryTemps;
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -30,6 +35,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
         BluetoothCommService bcs = new BluetoothCommService(handler);
@@ -37,17 +43,50 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         initSensors();
         odometer = (CircleView) findViewById(R.id.odometer);
+        stateOfCharge = (TextView) findViewById(R.id.button1);
+        batteryTemps = (TextView) findViewById(R.id.button3);
     }
 
     private final Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message message) {
             byte[] data = (byte[]) message.obj;
-            int val = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
-            odometer.setTitleText("" + val);
+            switch (data[0]) {
+                case 0:
+                    int soc = data[1] & 0xFF;
+                    String sLabel = "Battery: " + soc + "%";
+                    stateOfCharge.setText(sLabel);
+                    break;
+                case 2:
+                    int high = data[1] & 0xFF;
+                    int avg = data[2] & 0xFF;
+                    String bTempLabel = "Battery Temps:\n Avg: " + avg + "° C\n High: " + high
+                            + "° C";
+                    batteryTemps.setText(bTempLabel);
+                    break;
+                case 5:
+                    int speed = ((data[2] & 0xFF) << 8) | (data[1] & 0xFF);
+                    odometer.setTitleText("" + speed);
+                    break;
+                case 0x7F:
+                    btErrorDialog();
+            }
             return false;
         }
     });
+
+    public void btErrorDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage(R.string.bt_err_msg).setTitle(R.string.bt_error);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog error = builder.create();
+        error.show();
+    }
 
     @Override
     public void onSensorChanged(SensorEvent event) {

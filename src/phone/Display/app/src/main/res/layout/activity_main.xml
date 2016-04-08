@@ -13,11 +13,11 @@
             android:layout_weight="1">
             <TextView
                 android:id="@+id/button1"
-                android:text="Testing"
+                android:text="Battery:"
                 style="@style/buttons"
                 android:gravity="top|start"
                 android:background="@color/light_yellow"
-                />
+                android:textSize="25sp" />
             <TextView
                 android:id="@+id/button2"
                 android:text="Testing"
@@ -30,10 +30,10 @@
             android:gravity="center">
             <TextView
                 android:id="@+id/button3"
-                android:text="Testing"
+                android:text="Battery Temps:\n Avg: \n High:"
                 style="@style/buttons"
                 android:gravity="bottom|start"
-                />
+                android:textSize="20sp" />
             <TextView
                 android:id="@+id/button4"
                 android:text="Testing"

@@ -1,5 +1,6 @@
 package com.hytech.display;
 
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -110,9 +111,13 @@ public class BluetoothCommService {
                     btHandler.obtainMessage(0, bytes, 0, buffer)
                             .sendToTarget();
                 } catch (IOException e) {
-                    log(e.getMessage());
+                    log("disconnected? " + e.getMessage());
+                    break;
                 }
             }
+            buffer[0] = 0x7F;
+            btHandler.obtainMessage(0, 1, 0, buffer)
+                    .sendToTarget();
         }
 
         public void write(byte[] buffer) {
