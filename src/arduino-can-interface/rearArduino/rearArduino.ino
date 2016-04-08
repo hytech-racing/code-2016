@@ -142,17 +142,21 @@ void loop()
     /*TODO: check thermistor values */
     for (int i = 0; i < 5; i++) {
         if (checkThermistor(10, th[i]) >= 100) {
-            msg[1] = 2;
+                msg[1] = 2;
         } else if (checkThermistor(10, th[i]) >= 80) {
-            msg[1] = 1;
+            if (msg[1] == 0) {
+                msg[1] = 1;
+            }
         }
     }
     /*Check battery values*/
     for (int i = 0; i < 7; i++) {
         if ((actual[i + 1] - actual[i]) < 2.8) {
-            msg[0] = 2;
+                msg[0] = 2;
         } else if ((actual[i + 1] - actual[i]) < 3.0) {
-            msg[0] = 1;
+            if (msg[0] == 0) {
+                msg[0] = 1;
+            }
         }
     }
     // bit 7 of message: battery error
