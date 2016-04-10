@@ -27,32 +27,33 @@ vroom vroom
 
 Pi Progression Statements:
 0- dude ur in a dope car. this thing lit.
-1- press continue to begin car startup sequence
-2- beginning startup checks
-3- press brake pedal and continue button to start car
-4- car is ready to drive! (while ready to drive sound is going off)
+1- press progress to begin car startup sequence
+2- Testing for BMS Error
+3- press brake pedal and progress button to start car
+4- Precharging the Caps
 5- standard display
+8- shutdown complete. Go Jackets!
 
 
 
 */
 
-void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1 means BMS resset, 2 means IMD reset
+void startupSequence(MCP_CAN& lilEngineThatCAN) {
   unsigned char msgReceive[8];
   unsigned char len;
   boolean progressBlock = true;
-  int buttons = 0;
+  boolean button = false;
   long progressionTimer = millis();
 
-  
-  RPi::giveProgression(lilEngineThatCAN,0);
-  EVDC::calmTheFreakDown(lilEngineThatCAN);
-  delay(2000); // I want a delay for all the other systems to boot up.
-
+  for(int i = 0; i < 20; i++) {
+    RPi::giveProgression(lilEngineThatCAN,0);
+    EVDC::calmTheFreakDown(lilEngineThatCAN);
+    delay(100); // I want a delay for all the other systems to boot up.
+  }
   
   while(progressBlock) {
     if(millis() > progressionTimer) {
-      RPi::giveProgression(lilEngineThatCAN,2);
+      RPi::giveProgression(lilEngineThatCAN,1);
        EVDC::calmTheFreakDown(lilEngineThatCAN);
  
       progressionTimer += 100;
@@ -109,7 +110,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
         } // end switch
       } // end "if available can message"
     
-      if(BMS_Message_Checker == 0x1F) {
+      if(BMS_Message_Checker == 0x1F) {  // if all messages have been seen
         progressBlock = false;
       }
       
@@ -151,8 +152,8 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
   
   
   
-  RPi::giveProgression(lilEngineThatCAN, 3);
-  buttons = 0;
+  
+  button = 0;
   int brakes;
   while(progressBlock) {
     if(millis() > progressionTimer) {
@@ -162,8 +163,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) { // 0 means a normal startup, 1
     if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
       lilEngineThatCAN.readMsgBuf(&len, msgReceive);
 
-      if(lilEngineThatCAN.getCanId() == 0xDC) {
-        buttons = EVDC::getButtons(msgReceive);
+      if(lilEngineThatCAN.getCanId() == EVDC::Message) {
         brakes = EVDC::getBrakes(msgReceive);
       }
       if(shutdownButton() && (brakes > 25)) { // if the progress button is pressed and brakes are more than 25%

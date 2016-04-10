@@ -34,8 +34,8 @@ from main arduino: Channel '8'
 
 from EVDC: channel 'C'
 	0x0C0 - enable and torque message to motor controller.
-	0x0C8 - state of EVDC. if byte 0 is 0, then EVDC is not launched.
-		if byte 0 is 42, then EVDC is launched.
+	0x0C8 - state of EVDC and brakes. if byte 0 is 0, then EVDC is not launched.
+		if byte 0 is 42, then EVDC is launched. byte 1 is brake level, from 0 to 100
 	
 from rear arduino: channel '2'
 	0x020 - message to main arduino. 

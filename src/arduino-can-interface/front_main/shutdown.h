@@ -1,9 +1,18 @@
 
 
 void shutDownNormal(MCP_CAN& datCAN) {
-  RPi::giveProgression(datCAN, 8);
+  for(int i = 0; i < 10; i++) { // wait a second to shut everything down
+    EVDC::shutThemAllDown(datCAN);
+    RPi::giveProgression(datCAN, 8);
+    delay(100);
+  }
   digitalWrite(AIRdcdc, LOW);
   digitalWrite(software_shutdown_control, LOW);
+  while(1) {
+      EVDC::shutThemAllDown(datCAN);
+      RPi::giveProgression(datCAN, 8);
+      delay(200);
+  }
 
 }
 

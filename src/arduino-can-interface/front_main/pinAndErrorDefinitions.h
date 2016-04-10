@@ -11,10 +11,10 @@
 
 #define CELL_CRITICAL_LOW 9
 #define TOO_MUCH_CURRENT 10
-#define HIGH_PHASE_TEMP 11
+#define HIGH_PHASE_TEMP 11 // IGBT modules overheat
 #define HIGH_MOTOR_TEMP 12
-#define EVDC_BASE_ERROR 13 // 13 to 18
-#define AR_BASE_ERROR 19 // 19 to 25
+#define EVDC_PEDAL_ERROR 13 // 13 to 18
+#define AR_BASE_ERROR 19 // 19 to 25 - 20 is overheat, 21 is too low, 22 is heat warning, 23 is low warning
 #define IMD_BASE_ERROR 26
 #define COOLANT_WARNING_TEMP 27
 #define COOLANT_OVER_TEMP 28
