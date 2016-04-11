@@ -121,6 +121,9 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             // TODO TALK TO ANDREW
             // Startup State (0x10, 0)
             // Error Messages (0x10, 1)
+            bt_data[0] = 3;
+            memcpy(&bt_data[1], &frame->data[0], sizeof(uint8_t));
+            memcpy(&bt_data[2], &frame->data[1], sizeof(uint8_t));
             break;
         case 0xA2:
             // Motor Temp (0xA2, 4-5)

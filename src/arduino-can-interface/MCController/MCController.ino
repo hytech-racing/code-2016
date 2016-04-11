@@ -40,11 +40,15 @@ START_INIT:
 unsigned char lockout[8] = {0,0,0,0,0,0,0,0};
 unsigned char enable[8] = {0,0,0,0,0,1,0,0};
 unsigned char msg[8] = {0,0,0,0,1,1,0,0};
-unsigned char bat[8] = {0,195,0,0,0,0,0,0};
+unsigned char bat[8] = {0,150,0,0,0,0,0,0};
 unsigned char temp[8] = {70,0,65,0,0,0,0,0}; 
+unsigned char sseq[8] = {0,0,0,0,0,0,0,0};
 byte torque = 0;
 int enabled = 0;
+int bPercent = 0;
+bool up = true;
 int pot = 1;
+int state = 0;
 int value;
 
 void loop() {
@@ -71,6 +75,13 @@ void loop() {
         torque = value;
       }
       pot = 1;
+    }
+    char entry = Serial.read();
+    if (entry == 'p') {
+      state++;
+      if (state > 5) {
+        state = 8;
+      }
     }
 //    if (Serial.available() > 0) {
 //      char entry;
@@ -100,12 +111,12 @@ void loop() {
        * Then send quick disable for lockout (press e)
        */
     memcpy(&msg[2], &torque, sizeof(short)); //speed mode (ignore the fact that it's called "torque")
-    Serial.print(msg[2], HEX);
-    Serial.print(" ");
-    Serial.println(msg[3], HEX);
+    memcpy(&bat[1], &bPercent, sizeof(short));
+    Serial.println(state);
     CAN.sendMsgBuf(0x0A5, 0, 8, msg);
     CAN.sendMsgBuf(0x001, 0, 8, bat);
     CAN.sendMsgBuf(0x004, 0, 8, temp);
-    delay(100);
+    CAN.sendMsgBuf(0x010, 0, 8, sseq);
+    delay(20);
   }
 
