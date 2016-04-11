@@ -45,7 +45,6 @@ unsigned char temp[8] = {70,0,65,0,0,0,0,0};
 unsigned char sseq[8] = {0,0,0,0,0,0,0,0};
 byte torque = 0;
 int enabled = 0;
-int bPercent = 0;
 bool up = true;
 int pot = 1;
 int state = 0;
@@ -111,12 +110,12 @@ void loop() {
        * Then send quick disable for lockout (press e)
        */
     memcpy(&msg[2], &torque, sizeof(short)); //speed mode (ignore the fact that it's called "torque")
-    memcpy(&bat[1], &bPercent, sizeof(short));
+    memcpy(&sseq[0], &state, sizeof(short));
     Serial.println(state);
     CAN.sendMsgBuf(0x0A5, 0, 8, msg);
     CAN.sendMsgBuf(0x001, 0, 8, bat);
     CAN.sendMsgBuf(0x004, 0, 8, temp);
     CAN.sendMsgBuf(0x010, 0, 8, sseq);
-    delay(20);
+    delay(100);
   }
 
