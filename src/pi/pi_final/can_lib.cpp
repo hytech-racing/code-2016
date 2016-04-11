@@ -31,6 +31,7 @@ CAN::CAN() {
 }
 
 int CAN::read(canframe_t* read_frame) {
+    bzero(&recv_frame, sizeof(recv_frame));
     int nbytes;
 
     FD_ZERO(&rdfs);
