@@ -1,0 +1,39 @@
+Pi Progression statements
+
+0- dude ur in a dope car. this thing lit.
+1- press progress to begin car startup sequence
+2- Testing for BMS Error
+3- press brake pedal and progress button to start car
+4- Precharging the Caps
+5- standard display
+8- shutdown complete. Go Jackets!
+
+Pi Error Statements
+
+ 1- BMS Timed Out
+ 2- EVDC Timed Out
+ 3- Motor Controller Timed Out
+ 4- Rear Arduino Timed Out
+ 5- Low Main Battery
+ 6- Critically Low Main Battery
+ 7- Main Battery Overheat
+ 8- 
+ 9- Main Battery Low Cell
+10- Current Draw Too High
+11- Motor Controller Overheat
+12- Motor Overheat
+13- Pedal Error
+20- Rear Battery Overheat
+21- Rear Battery Critically Low
+22- Rear Battery High Temperature
+23- Rear Battery Low
+26- IMD error
+27- Coolant High Temperature
+28- Coolant Overheat
+29- 12V DCDC High Temperature
+30- 12v DCDC Overheat
+31- 5v DCDC High Temperature
+32- 5v DCDC Overheat
+33- 5v1 Voltage Dip
+34- 5v2 Voltage Dip
+

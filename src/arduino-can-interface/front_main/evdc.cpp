@@ -5,7 +5,7 @@ int EVDC::getError(unsigned char* data) {
 }
 
 int EVDC::getButtons(unsigned char* data) {
-  return int(data[1]); // lsb is shutdown button, 2ndlsb is progress button
+  return int(data[3]); // lsb is shutdown button, 2ndlsb is progress button
 }
 
 int EVDC::getBrakes(unsigned char* data) { // from 0 to 100

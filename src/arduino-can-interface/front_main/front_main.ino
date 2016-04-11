@@ -65,6 +65,8 @@ int ARerror = 0;
 int IMDerror = 0;
 long IMDtimer = 0;
 
+int shutdownCounter = 0;
+
 
   unsigned char msgReceive[8]; // buffer for getting messages
   unsigned char msgGive[8]; // buffer for sending messages
@@ -85,7 +87,12 @@ void setup() {
   while(CAN_OK != CanBus.begin(CAN_500KBPS)) {
     Serial.println("CAN Bus is not operaitonal");
     delay(10);
+    BMSlightOn();
+    IMDlightOn();
   }
+  
+  BMSlightOff();
+  IMDlightOff();
   
   if(DEBUG_ACTIVATE == 42) {
     startupDebug(CanBus);
@@ -148,7 +155,7 @@ void loop() {
           break;
           //MOTOR CONTROLLER MESSAGES  MOTOR CONTROLLER MESSAGES  MOTOR CONTROLLER MESSAGES  MOTOR CONTROLLER MESSAGES
         case MC::Message_Phase_Temp:
-          //MCmotortemp = MC::getMotorTemp(msgReceive);
+          MCmotortemp = MC::getMotorTemp(msgReceive);
           MCphasetemp = MC::getMaxPhaseTemp(msgReceive);
           //MCcurrent = MC::getCurrent(msgReceive);
           MC_Message_Checker |= 0x01; 
@@ -204,6 +211,7 @@ void loop() {
   
   if(digitalRead(IMDpin)) {
    IMDerror = 1;
+
   }
   
   
@@ -233,13 +241,10 @@ void loop() {
   if(fiveTemp > MAX_DCDC_TEMP) {
     shutdownError(CanBus, FIVE_OVER_TEMP);
   }
-  else if(highTwelveTemp > WARNING_DCDC_TEMP) {
+  else if(fiveTemp > WARNING_DCDC_TEMP) {
     alertError(CanBus, FIVE_WARNING_TEMP);
   }
   
-//  if(analogRead(five_supply_check_2) < 800) { // if the 5 volt dcdc converter is running less than 4 volts
-//    alertError(CanBus, FIVE1_VOLTAGE_DIP);
-//  }
   
   if(getMultiplexerAnalog(FIVE_SUPPLY_CHECK_SELECT) < 800) {
     alertError(CanBus, FIVE2_VOLTAGE_DIP);
@@ -274,7 +279,7 @@ void loop() {
   }
   
   if(EVDCerror > 1) {
-   shutdownError(CanBus, EVDC_BASE_ERROR + EVDCerror);
+   shutdownError(CanBus, EVDC_PEDAL_ERROR);
   }
   
   if(EVDCerror == 1) {
@@ -291,16 +296,18 @@ void loop() {
   }
   
   if(IMDerror > 0){
-    if(DEBUG_ACTIVATE != 42) {
-      shutdownError(CanBus, IMD_BASE_ERROR + IMDerror);
-    }
-    else {
-      alertError(CanBus, IMD_BASE_ERROR + IMDerror);
-    }
+      shutdownError(CanBus, IMD_BASE_ERROR);
+    
   }
   
-  if((EVDCbuttons & 0x01) == 0x01) { // if the shutdown button is pushed
-   shutDownNormal(CanBus);
+  if(shutdownButton()) { // if the shutdown button is pushed for about 1 second
+    shutdownCounter++;
+    if(shutdownCounter > 10) {
+      shutDownNormal(CanBus);
+    }
+  }
+  else {
+    shutdownCounter = 0;
   }
   
 }
