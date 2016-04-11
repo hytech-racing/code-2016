@@ -75,6 +75,18 @@ int shutdownCounter = 0;
 MCP_CAN CanBus(10);
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 void setup() {
   Serial.begin(9600);
   
@@ -109,6 +121,21 @@ void setup() {
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void loop() {
   
   // the basic premise is that I get the data from the CANBUS and
@@ -116,6 +143,7 @@ void loop() {
   
   Serial.println("loop start");
   RPi::giveProgression(CanBus, 5);
+  EVDC::goForLaunch(CanBus);
   CANtimer = millis() + 100;
   while(CANtimer > millis()) { // the loop listens to CAN for 100 ms in order to make sure all messages are read
     while(CAN_MSGAVAIL == CanBus.checkReceive()) {
@@ -252,8 +280,6 @@ void loop() {
   
   
   
-    
-  
   
   if(BMSstateOfCharge < 10) {
    alertError(CanBus, LOW_SOC);
@@ -284,7 +310,6 @@ void loop() {
   
   if(EVDCerror == 1) {
     alertError(CanBus, EVDC_BASE_ERROR + EVDCerror);
-    EVDC::goForLaunch(CanBus);
   }
   
   if(ARerror == 1) {
