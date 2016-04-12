@@ -52,20 +52,20 @@ public class MainActivity extends Activity implements SensorEventListener {
         public boolean handleMessage(Message message) {
             byte[] data = (byte[]) message.obj;
             switch (data[0]) {
-                case 0:
+                case 1:
                     int soc = data[1] & 0xFF;
                     String sLabel = "Battery: " + soc + "%";
                     stateOfCharge.setText(sLabel);
                     break;
-                case 2:
-                    int high = data[1] & 0xFF;
-                    int avg = data[2] & 0xFF;
+                case 4:
+                    int high = data[4] & 0xFF;
+                    int avg = data[5] & 0xFF;
                     String bTempLabel = "Battery Temps:\n Avg: " + avg + "° C\n High: " + high
                             + "° C";
                     batteryTemps.setText(bTempLabel);
                     break;
-                case 5:
-                    int speed = ((data[2] & 0xFF) << 8) | (data[1] & 0xFF);
+                case 10:
+                    int speed = ((data[11] & 0xFF) << 8) | (data[10] & 0xFF);
                     odometer.setTitleText("" + speed);
                     break;
                 case 0x7F:
