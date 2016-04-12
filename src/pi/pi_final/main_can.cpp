@@ -11,8 +11,7 @@
 #include <signal.h>
 #include <sys/time.h>
 
-#include "can_lib.h"
-#include "bt_lib.h"
+#include "can_lib.h" #include "bt_lib.h"
 
 #define RED_CONSOLE "\033[31;1m"
 #define GREEN_CONSOLE "\033[32;1m"

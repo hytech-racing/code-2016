@@ -8,53 +8,58 @@
     <TableLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:background="@android:color/black"
         android:stretchColumns="*">
         <TableRow
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:gravity="top">
             <TextView
-                android:id="@+id/button1"
+                android:id="@+id/batt_soc"
                 android:text="Battery:"
-                style="@style/buttons"
+                android:textColor="@android:color/white"
                 android:gravity="top|start"
-                android:background="@color/light_yellow"
                 android:textSize="25sp" />
             <TextView
                 android:id="@+id/button2"
                 android:text="Testing"
-                style="@style/buttons"
-                android:gravity="top|end"
-                />
+                android:textColor="@android:color/white"
+                android:gravity="top|end" />
         </TableRow>
         <TableRow
             android:layout_weight="1"
-            android:gravity="center">
+            android:gravity="bottom"
+            android:padding="@dimen/spacing_1.0">
             <TextView
-                android:id="@+id/button3"
-                android:text="Battery Temps:\n Avg: \n High:"
-                style="@style/buttons"
+                android:id="@+id/batt_temp"
+                android:text="Battery Temps:\nAvg: \nHigh:"
+                android:textColor="@android:color/white"
                 android:gravity="bottom|start"
                 android:textSize="20sp" />
             <TextView
                 android:id="@+id/button4"
                 android:text="Testing"
-                style="@style/buttons"
-                android:gravity="bottom|end"
-                android:background="@color/light_yellow"
-                />
+                android:textColor="@android:color/white"
+                android:gravity="bottom|end" />
         </TableRow>
     </TableLayout>
 
-    <com.github.pavlospt.CircleView
-        android:id="@+id/odometer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:titleText="42"
-        app:titleColor="@android:color/white"
-        app:titleSize="160sp"
-        app:backgroundColorValue="@color/blue"
-        app:fillColor="@color/light_blue"
-        app:strokeColorValue="@android:color/transparent"
-        app:subtitleText=""
-        />
+    <com.github.lzyzsd.circleprogress.ArcProgress
+        android:id="@+id/charge_meter"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_centerInParent="true"
+        app:arc_bottom_text_size="45sp"
+        app:arc_unfinished_color="#2FFF"
+        app:arc_stroke_width="16dp"
+        app:arc_text_size="0sp"
+        app:arc_suffix_text_size="0sp" />
+
+    <TextView
+        android:id="@+id/speed_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#DDD"
+        android:textSize="120sp"
+        android:layout_centerInParent="true" />
 
 </RelativeLayout>
