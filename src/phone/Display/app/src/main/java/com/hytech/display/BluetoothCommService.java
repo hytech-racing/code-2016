@@ -1,6 +1,5 @@
 package com.hytech.display;
 
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -21,7 +20,7 @@ public class BluetoothCommService {
     private SetupConnection btSetupConnection;
     private CommunicationThread btCommunicationThread;
 
-    private static final String LOG_TAG = "RETRYING";
+    private static final String LOG_TAG = "BT_COMM";
     // Laptop Address
     // private static final String SERVER_ADDR = "A0:A8:CD:B5:52:97";
     // RPi Address
@@ -37,14 +36,28 @@ public class BluetoothCommService {
     }
 
     public synchronized void start() {
+        if (btCommunicationThread != null) {
+            btCommunicationThread.interrupt();
+            btCommunicationThread = null;
+        }
         btSetupConnection = new SetupConnection();
+//        log("Connecting");
         btSetupConnection.start();
     }
 
     public synchronized void connected() {
-        btSetupConnection = null;
+        if (btSetupConnection != null) {
+            btSetupConnection.interrupt();
+            btSetupConnection = null;
+        }
         btCommunicationThread = new CommunicationThread();
+//        log("Talking");
         btCommunicationThread.start();
+    }
+
+    public synchronized void disconnected() {
+//        log("Disconnected");
+        start();
     }
 
     private class SetupConnection extends Thread {
@@ -52,33 +65,37 @@ public class BluetoothCommService {
         public void run() {
             if (!btAdapter.isEnabled()) btAdapter.enable();
             while (!btAdapter.isEnabled());
-            log("Bluetooth enabled");
             BluetoothDevice btServer = btAdapter.getRemoteDevice(SERVER_ADDR);
             btAdapter.cancelDiscovery();
-            try {
-                btSocket = btServer.createInsecureRfcommSocketToServiceRecord(
-                        UUID.fromString(B_UUID));
-            } catch (Exception e) {
-                log("Socket creation failed");
-                return;
-            }
-            try {
-                btSocket.connect();
-            } catch (IOException e) {
-                log("Socket connection method #1 failed");
+            while (btSocket == null || !btSocket.isConnected()) {
                 try {
-                    btSocket = (BluetoothSocket) btServer.getClass()
-                            .getMethod("createRfcommSocket",
-                                    new Class[] {int.class}).invoke(btServer,
-                                    PORT);
-                    btSocket.connect();
+                    btSocket = btServer
+                            .createInsecureRfcommSocketToServiceRecord(
+                            UUID.fromString(B_UUID));
+                } catch (Exception e) {
+                    continue;
                 }
-                catch (Exception e2) {
-                    log("Socket connection method #2 failed");
-                    return;
+                try {
+                    btSocket.connect();
+                } catch (IOException e) {
+                    try {
+                        btSocket = (BluetoothSocket) btServer.getClass()
+                                .getMethod("createRfcommSocket",
+                                        new Class[] {int.class})
+                                .invoke(btServer, PORT);
+                        btSocket.connect();
+                    }
+                    catch (Exception e2) {
+//                        log("Connection Failed");
+                        try {
+                            btSocket.close();
+                        } catch (IOException e3) {
+//                            log("Couldn't close socket");
+                        }
+                    }
                 }
             }
-            log("Socket created and connected");
+//            log("Socket created and connected");
             connected();
         }
     }
@@ -94,46 +111,50 @@ public class BluetoothCommService {
                 tmpIn = btSocket.getInputStream();
                 tmpOut = btSocket.getOutputStream();
             } catch (IOException e) {
-                log("IO streams creation failed");
+//                log("IO streams creation failed");
             }
             btReader = tmpIn;
             btWriter = tmpOut;
-            log("IO streams created");
+//            log("IO streams created");
         }
 
         @Override
         public void run() {
             byte[] buffer = new byte[DATA_LENGTH];
             int bytes;
-            while (true) {
+            boolean running = true;
+            while (running) {
                 try {
                     bytes = btReader.read(buffer);
-                    btHandler.obtainMessage(0, bytes, 0, buffer)
-                            .sendToTarget();
+                    btHandler.obtainMessage(0, bytes, 0, buffer).sendToTarget();
                 } catch (IOException e) {
-                    log("disconnected? " + e.getMessage());
-                    break;
+                    buffer[0] = MainActivity.BT_DISCONNECT;
+                    btHandler.obtainMessage(0, 1, 0, buffer).sendToTarget();
+                    try {
+                        btReader.close();
+                        btWriter.close();
+                    } catch (IOException e1) {
+                        log("Couldn't close streams");
+                    }
+                    running = false;
                 }
             }
-            buffer[0] = 0x7F;
-            btHandler.obtainMessage(0, 1, 0, buffer)
-                    .sendToTarget();
+            disconnected();
         }
 
         public void write(byte[] buffer) {
             try {
                 btWriter.write(buffer);
-                btHandler.obtainMessage(0, 0, 0, buffer)
-                        .sendToTarget();
-            } catch (IOException e) {
-            }
+            } catch (IOException e) { }
         }
     }
 
     public void write(byte[] out) {
-        CommunicationThread r;
-        r = btCommunicationThread;
-        r.write(out);
+        if (btCommunicationThread != null) {
+            btCommunicationThread.write(out);
+        } else {
+            log("BT_COMM_THREAD is null");
+        }
     }
 
     public static void log(String message) {
