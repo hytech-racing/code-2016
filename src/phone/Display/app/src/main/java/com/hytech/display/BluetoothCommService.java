@@ -9,6 +9,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.UUID;
 
 public class BluetoothCommService {
@@ -28,7 +29,7 @@ public class BluetoothCommService {
     private static final String B_UUID = "00001101-0000-1000-8000-00805F9B34FB";
     private static final int PORT = 10;
 
-    private static final int DATA_LENGTH = 16;
+    private static final int DATA_LENGTH = 4;
 
     public BluetoothCommService(Handler handler) {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -126,6 +127,9 @@ public class BluetoothCommService {
             while (running) {
                 try {
                     bytes = btReader.read(buffer);
+                    if (buffer[0] == 10) {
+                        log(Arrays.toString(buffer));
+                    }
                     btHandler.obtainMessage(0, bytes, 0, buffer).sendToTarget();
                 } catch (IOException e) {
                     buffer[0] = MainActivity.BT_DISCONNECT;
