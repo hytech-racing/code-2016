@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#000</color>
-    <color name="dark_gray">#444</color>
-    <color name="light_yellow">#aa0</color>
-
-    <color name="blue">#55A</color>
-    <color name="light_blue">#99F</color>
+    <color name="green">#4CAF50</color>
+    <color name="yellow">#EEFF41</color>
+    <color name="orange">#FFA000</color>
+    <color name="red">#F44336</color>
 </resources>
