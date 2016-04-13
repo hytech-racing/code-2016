@@ -9,7 +9,7 @@
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10r
-const int SPI_CS_PIN = 10;
+const int SPI_CS_PIN = 9;
 
 MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
@@ -162,6 +162,7 @@ void loop()
     // bit 7 of message: battery error
     // bit 6 of message: thermistor error
     CAN.sendMsgBuf(0x020, 0, 8, msg);
+    Serial.println("message sent");
 
     /*PRINT STATEMENTS FOR DEBUGGING*/
 //    for(int i = 0; i < 8; i++) {

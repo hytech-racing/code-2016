@@ -28,7 +28,7 @@ from main arduino: Channel '8'
 	0x08C - message to EVDC. byte 0 is 42 to go for launch, 
 		25 to stop motor controller (can be restarted with 42),
 		and 64 to permanently stop motor controller
-	0x083 - message to Raspberry Pi. if byte 1 is 0, then byte 0 is
+	0x010 - message to Raspberry Pi. if byte 1 is 0, then byte 0 is
 		the startup progress state. 
 		If byte 1 is 1, then byte 0 is an error code.
 
@@ -36,6 +36,7 @@ from EVDC: channel 'C'
 	0x0C0 - enable and torque message to motor controller.
 	0x0C8 - state of EVDC and brakes. if byte 0 is 0, then EVDC is not launched.
 		if byte 0 is 42, then EVDC is launched. byte 1 is brake level, from 0 to 100
+		if byte 2 is 1 if there is a pedal error
 	
 from rear arduino: channel '2'
 	0x020 - message to main arduino. 
