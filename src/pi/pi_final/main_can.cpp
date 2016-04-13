@@ -101,35 +101,35 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
         case 0x01:
             // State of Charge
             value = frame->data[1] / 2;
-            bt_data[0] = 1;
+            bt_data[0] = 0;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
         case 0x02:
             // Time Left (0x02, 6-7)
             value = ((frame->data[7] << 8) | frame->data[6]);
             value /= (running_amp_sum / 100);
-            bt_data[0] = 2;
-            memcpy(&bt_data[2], &value, sizeof(value));
+            bt_data[0] = 1;
+            memcpy(&bt_data[1], &value, sizeof(value));
             break;
         case 0x04:
             // Avg and High Battery Temp (0x04, 0,2)
-            bt_data[0] = 4;
-            memcpy(&bt_data[4], &frame->data[2], sizeof(uint8_t));
-            memcpy(&bt_data[5], &frame->data[0], sizeof(uint8_t));
+            bt_data[0] = 2;
+            memcpy(&bt_data[1], &frame->data[2], sizeof(uint8_t));
+            memcpy(&bt_data[2], &frame->data[0], sizeof(uint8_t));
             break;
         case 0x10:
             // TODO TALK TO ANDREW
             // Startup State (0x10, 0)
             // Error Messages (0x10, 1)
-            bt_data[0] = 6;
-            memcpy(&bt_data[6], &frame->data[0], sizeof(uint8_t));
-            memcpy(&bt_data[7], &frame->data[1], sizeof(uint8_t));
+            bt_data[0] = 3;
+            memcpy(&bt_data[1], &frame->data[0], sizeof(uint8_t));
+            memcpy(&bt_data[2], &frame->data[1], sizeof(uint8_t));
             break;
         case 0xA2:
             // Motor Temp (0xA2, 4-5)
             value = ((frame->data[5] << 8) | frame->data[4]) / 10;
-            bt_data[0] = 8;
-            memcpy(&bt_data[8], &value, sizeof(value));
+            bt_data[0] = 4;
+            memcpy(&bt_data[1], &value, sizeof(value));
             break;
         case 0xA5:
             // TODO CALCULATIONS
@@ -139,9 +139,10 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             // Multiply by 10 to send
             // Circumference = 5.2 ft
             value = ((frame->data[3] << 8) | frame->data[2]);
-            //value *= (uint16_t) ((16.0/35.0) * 5.2 * (60.0/5280.0) * 10);
-            bt_data[0] = 10;
-            memcpy(&bt_data[10], &value, sizeof(value));
+            value = (uint16_t) (value * (16.0/35) * 5.2 * (60.0/5280));
+            std::cout << value << std::endl;
+            bt_data[0] = 5;
+            memcpy(&bt_data[1], &value, sizeof(value));
             break;
         case 0xA6:
             // Current current draw (0xA6, 6-7)
@@ -155,7 +156,6 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
                 prev_time = curr_time;
             }
             return -1;
-            break;
         default:
             return -1;
     }
@@ -165,7 +165,7 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
 void print(canframe_t* frame) {
     if (frame && frame->can_dlc > 0) {
         for (uint8_t i = 0; i < frame->can_dlc; ++i) {
-            std::cout << CONSOLE_COLORS[rand() % 4];
+            //std::cout << CONSOLE_COLORS[rand() % 4];
             std::cout << (int) frame->data[i] << " ";
         }
         std::cout << NO_COLOR_CONSOLE << std::endl;
