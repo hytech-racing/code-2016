@@ -42,6 +42,7 @@ unsigned char enable[8] = {0,0,0,0,0,1,0,0};
 unsigned char msg[8] = {0,0,0,0,1,1,0,0};
 unsigned char bat[8] = {0,150,0,0,0,0,0,0};
 unsigned char temp[8] = {70,0,65,0,0,0,0,0}; 
+unsigned char mTemp[8] = {0,0,0,0,0,0,0,0};
 unsigned char sseq[8] = {0,0,0,0,0,0,0,0};
 short torque = 0;
 int enabled = 0;
@@ -89,6 +90,8 @@ void loop() {
         state = 0;
       }
     }
+    int avg = random(1, 100);
+    int high = random(avg, 100);
 //    if (Serial.available() > 0) {
 //      char entry;
 //      entry = Serial.read();
@@ -109,6 +112,7 @@ void loop() {
 //        torque = 0;
 //        pot = 0;
 //      }
+    int motor = 800;
 
       /**
        * INPUT SEQUENCE TO TURN ON MOTOR 100% OF THE TIME
@@ -118,15 +122,22 @@ void loop() {
        */
     memcpy(&msg[2], &torque, sizeof(short)); //speed mode (ignore the fact that it's called "torque")
     memcpy(&sseq[0], &state, sizeof(byte));
+    memcpy(&mTemp[4], &motor, sizeof(short));
+    
     for (int i = 0; i < 8; i++) {
       Serial.print(msg[i]);
       Serial.print(" ");
     }
     Serial.println();
+    CAN.sendMsgBuf(0x0A2, 0, 8, mTemp);
+    delay(50);
     CAN.sendMsgBuf(0x0A5, 0, 8, msg);
+    delay(50);
     CAN.sendMsgBuf(0x001, 0, 8, bat);
+    delay(50);
     CAN.sendMsgBuf(0x004, 0, 8, temp);
+    delay(50);
     CAN.sendMsgBuf(0x010, 0, 8, sseq);
-    delay(100);
+    delay(50);
   }
 
