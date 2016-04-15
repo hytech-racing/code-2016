@@ -3,4 +3,5 @@
     <string name="bt_error">Connection Lost</string>
     <string name="bt_err_msg">Error reading message from Bluetooth</string>
     <string name="ok">OK</string>
+    <string name="default_value">---</string>
 </resources>

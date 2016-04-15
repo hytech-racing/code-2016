@@ -3,45 +3,94 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@android:color/black"
     tools:context=".MainActivity">
 
-    <TableLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:background="@android:color/black"
-        android:stretchColumns="*">
-        <TableRow
-            android:layout_weight="1"
-            android:gravity="top">
-            <TextView
-                android:id="@+id/batt_soc"
-                android:text="Battery:"
-                android:textColor="@android:color/white"
-                android:gravity="top|start"
-                android:textSize="25sp" />
-            <TextView
-                android:id="@+id/button2"
-                android:text="Testing"
-                android:textColor="@android:color/white"
-                android:gravity="top|end" />
-        </TableRow>
-        <TableRow
-            android:layout_weight="1"
-            android:gravity="bottom"
-            android:padding="@dimen/spacing_1.0">
-            <TextView
-                android:id="@+id/batt_temp"
-                android:text="Battery Temps:\nAvg: \nHigh:"
-                android:textColor="@android:color/white"
-                android:gravity="bottom|start"
-                android:textSize="20sp" />
-            <TextView
-                android:id="@+id/button4"
-                android:text="Testing"
-                android:textColor="@android:color/white"
-                android:gravity="bottom|end" />
-        </TableRow>
-    </TableLayout>
+    <TextView
+        android:id="@+id/batt_time_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/default_value"
+        android:textColor="@android:color/white"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/motor_torque"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/default_value"
+        android:textColor="@android:color/white"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:textSize="25sp" />
+
+    <LinearLayout
+        android:id="@+id/batt_temps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <TextView
+            android:id="@+id/batt_temp_high"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/default_value"
+            android:textColor="@color/red"
+            android:textSize="40sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" / "
+            android:textColor="@color/orange"
+            android:textSize="40sp" />
+
+        <TextView
+            android:id="@+id/batt_temp_avg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/default_value"
+            android:textColor="@color/yellow"
+            android:textSize="28sp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Battery (°C)"
+        android:textColor="@color/gray"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_above="@id/batt_temps"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/motor_temp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/default_value"
+        android:textColor="@color/red"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:textSize="40sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Motor (°C)"
+        android:textColor="@color/gray"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_above="@id/motor_temp"
+        android:textSize="20sp" />
 
     <com.github.lzyzsd.circleprogress.ArcProgress
         android:id="@+id/charge_meter"
@@ -52,14 +101,19 @@
         app:arc_unfinished_color="#2FFF"
         app:arc_stroke_width="16dp"
         app:arc_text_size="0sp"
+        app:arc_progress="0"
+        app:arc_text_color="@color/red"
+        app:arc_finished_color="@color/red"
+        app:arc_bottom_text="@string/default_value"
         app:arc_suffix_text_size="0sp" />
 
     <TextView
         android:id="@+id/speed_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#DDD"
+        android:textColor="@color/off_white"
         android:textSize="120sp"
+        android:text="@string/default_value"
         android:layout_centerInParent="true" />
 
 </RelativeLayout>

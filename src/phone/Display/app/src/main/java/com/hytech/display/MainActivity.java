@@ -31,15 +31,17 @@ public class MainActivity extends Activity implements SensorEventListener {
     public static final byte BT_CAR_STARTUP_STATE = 3;
     public static final byte BT_MOTOR_TEMP = 4;
     public static final byte BT_CAR_SPEED = 5;
+    public static final byte BT_CAR_TORQUE = 6;
     public static final byte BT_DISCONNECT = 0x7F;
     // endregion
 
-    private ArcProgress chargeMeter;
     private int currentProgressColor = RED;
-
+    private ArcProgress chargeMeter;
     private TextView speedView;
-    private TextView batterySOC;
-    private TextView battTemps;
+
+    private TextView battTempHigh;
+    private TextView battTempAvg;
+    private TextView motorTemp;
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -70,11 +72,6 @@ public class MainActivity extends Activity implements SensorEventListener {
         bcs.start();
 
         initSensors();
-        chargeMeter = (ArcProgress) findViewById(R.id.charge_meter);
-        speedView = (TextView) findViewById(R.id.speed_view);
-        batterySOC = (TextView) findViewById(R.id.batt_soc);
-        battTemps = (TextView) findViewById(R.id.batt_temp);
-
         initDefaultUI();
     }
 
@@ -97,18 +94,19 @@ public class MainActivity extends Activity implements SensorEventListener {
                     }
                     break;
                 case BT_BATT_HI_AVG_TEMP:
-                    int high = data[1] & 0xFF;
-                    int avg = data[2] & 0xFF;
-                    String bTempLabel = "Battery Temps:\nAvg: " + avg
-                            + " °C\nHigh: " + high + " °C";
-                    battTemps.setText(bTempLabel);
+                    battTempHigh.setText(String.valueOf(data[1] & 0xFF));
+                    battTempAvg.setText(String.valueOf(data[2] & 0xFF));
                     break;
                 case BT_CAR_STARTUP_STATE:
                     handleStartupCode(data[1]);
                     break;
+                case BT_MOTOR_TEMP:
+                    int temp = ((data[2] & 0xFF) << 8) | (data[1] & 0xFF);
+                    motorTemp.setText(String.valueOf(temp));
+                    break;
                 case BT_CAR_SPEED:
                     int speed = ((data[2] & 0xFF) << 8) | (data[1] & 0xFF);
-                    speedView.setText("" + speed);
+                    speedView.setText(String.valueOf(speed));
                     break;
                 case BT_DISCONNECT:
                     initDefaultUI();
@@ -169,11 +167,11 @@ public class MainActivity extends Activity implements SensorEventListener {
     }
 
     private void initDefaultUI() {
-        chargeMeter.setProgress(0);
-        chargeMeter.setBottomText("---");
-        chargeMeter.setTextColor(RED);
-        chargeMeter.setFinishedStrokeColor(RED);
-        speedView.setText("---");
+        chargeMeter = (ArcProgress) findViewById(R.id.charge_meter);
+        speedView = (TextView) findViewById(R.id.speed_view);
+        battTempHigh = (TextView) findViewById(R.id.batt_temp_high);
+        battTempAvg = (TextView) findViewById(R.id.batt_temp_avg);
+        motorTemp = (TextView) findViewById(R.id.motor_temp);
     }
 
     @Override
