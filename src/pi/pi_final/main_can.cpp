@@ -11,7 +11,8 @@
 #include <signal.h>
 #include <sys/time.h>
 
-#include "can_lib.h" #include "bt_lib.h"
+#include "can_lib.h"
+#include "bt_lib.h"
 
 #define RED_CONSOLE "\033[31;1m"
 #define GREEN_CONSOLE "\033[32;1m"
@@ -111,10 +112,10 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
         case 0x04:
-            // Avg and High Battery Temp (0x04, 0,2)
+            // High and Avg Battery Temp (0x04, 0,2)
             bt_data[0] = 2;
-            memcpy(&bt_data[1], &frame->data[2], sizeof(uint8_t));
-            memcpy(&bt_data[2], &frame->data[0], sizeof(uint8_t));
+            memcpy(&bt_data[1], &frame->data[0], sizeof(uint8_t));
+            memcpy(&bt_data[2], &frame->data[2], sizeof(uint8_t));
             break;
         case 0x10:
             // TODO TALK TO ANDREW
@@ -139,8 +140,12 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             // Circumference = 5.2 ft
             value = ((frame->data[3] << 8) | frame->data[2]);
             value = (uint16_t) (value * (16.0/35) * 5.2 * (60.0/5280));
-            std::cout << value << std::endl;
             bt_data[0] = 5;
+            memcpy(&bt_data[1], &value, sizeof(value));
+            break;
+        case 0xAC:
+            value = ((frame->data[3] << 8) | frame->data[2]) / 10;
+            bt_data[0] = 6;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
         case 0xA6:
