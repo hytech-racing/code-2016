@@ -18,19 +18,29 @@ void shutDownNormal(MCP_CAN& datCAN) {
 
 void shutdownError(MCP_CAN& datCAN, int code) {
   RPi::giveError(datCAN, code);
-  //MC::shutThemAllDown(datCAN); //  "shut them ALL down!!!"
-  EVDC::shutThemAllDown(datCAN);//    - C-3PO, on trash compactors containing friends
+  
+  if(code == 1 || code == 6 || code == 7 || code == 9 || code == 10) {    // 1, 6,7, 9, 10 are BMS errors and write to EEPROM
+    EEPROM.write(0, 0x01);
+    BMSlightOn();
+  }
+  if(code == 26) { // IMD error
+    IMDlightOn();
+  }
+    
   digitalWrite(software_shutdown_control, LOW);
   digitalWrite(AIRdcdc, LOW);
   Serial.print("EPIC ERROR -- ");
   Serial.println(code);
-  while(1) {
-      EVDC::shutThemAllDown(datCAN);
+    
+  while(DEBUG_ACTIVATE != 42) { // return if debug mode is on.
+                                    //  "shut them ALL down!!!"
+      EVDC::shutThemAllDown(datCAN);//    - C-3PO, on trash compactors containing friends
       RPi::giveError(datCAN, code);
       delay(200);
   }
-
+  digitalWrite(readyToDriveSound, HIGH); // even if in debug mode, turn on RTD sound so that people know there is an error
 }
+
 void alertError(MCP_CAN& datCAN, int code) { // alert errors are for things not serious enough to shut down 
   RPi::giveError(datCAN, code);
   Serial.print("ALERT ERROR -- ");
