@@ -135,6 +135,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) {
        progressBlock = true;
       }
     } // end "while progress block"
+    EEPROM.write(0,0x00);
   } // end "if bms error last time"
   
   progressBlock = true;
