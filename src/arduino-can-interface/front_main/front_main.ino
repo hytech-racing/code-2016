@@ -1,5 +1,17 @@
 
-// list of shortcuts: startup sequence might be mess, add dashboard error lights, 
+// list of shortcuts: startup sequence might be mess,
+
+
+
+#define DEBUG_ACTIVATE 203 // declare to be 42 to turn on debug functionality, 203 for board test
+/*
+Debug mode does the following things:
+skips startup sequence
+does not turn off AIRs in case of an error - turns on RTD sound instead for a few seconds
+does not stop all car functionality
+
+
+*/
 
 #include <SPI.h>
 #include <EEPROM.h>
@@ -21,13 +33,40 @@
 
 //#include "IMD.h"     we are going to go off of a digital read of OKHS instead
 
-#define DEBUG_ACTIVATE 203 // declare to be 42 to turn on debug functionality, 203 for board test
 
+
+#define PRINT_MODE 0 // declare to be 64 to turn on printing 
+long printTimer;
+#define PRINT_DELAY 1000 // 1 second between prints
+/* 
+print mode does the following things:
+
+sets serial rate to 115200 bits per second
+
+prints several variables once every second, including:
+
+motor temperature
+IGBT temperature
+BMS pack voltage
+BMS state of charge
+BMS current 
+highest cell temperature
+BMS current limit (in actual amps)
+button states
+EVDC error
+Rear arduino error
+IMD state
+various thermistor temperatures
+
+
+
+*/
 
 
 
 
 long CANtimer;
+#define MESSAGE_ACQUIRE_DELAY 100
 
 long BMS_timeout;
 long BMS_timeout_limit = 2000; // 2000 ms
@@ -58,7 +97,6 @@ float MCrpm = 0.0;
 float MCcurrent = 0.0;
 
 int EVDCerror  = 0;
-int EVDCbuttons = 0;
 
 int ARerror = 0;
 
@@ -88,8 +126,13 @@ MCP_CAN CanBus(10);
 
 
 void setup() {
-  Serial.begin(9600);
-  
+  if(PRINT_MODE == 64) {
+    Serial.begin(115200);
+  }
+  else {
+    Serial.begin(9600);
+  }
+    
   defineAndSetPinModes(); // found in startup.h
   
   if(DEBUG_ACTIVATE == 203){
@@ -144,7 +187,7 @@ void loop() {
   Serial.println("loop start");
   RPi::giveProgression(CanBus, 5);
   EVDC::goForLaunch(CanBus);
-  CANtimer = millis() + 100;
+  CANtimer = millis() + MESSAGE_ACQUIRE_DELAY;
   while(CANtimer > millis()) { // the loop listens to CAN for 100 ms in order to make sure all messages are read
     while(CAN_MSGAVAIL == CanBus.checkReceive()) {
       CanBus.readMsgBuf(&len, msgReceive);
@@ -174,7 +217,6 @@ void loop() {
           //EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  EVDC and REAR MESSAGES  
         case EVDC::Message:
           EVDCerror = EVDC::getError(msgReceive);
-          EVDCbuttons = EVDC::getButtons(msgReceive);
           EVDC_timeout = millis() + EVDC_timeout_limit;
           break;
         case AR::Message:
@@ -237,7 +279,7 @@ void loop() {
   //ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  ERROR CHECKING  
  
   
-  if(digitalRead(IMDpin)) {
+  if(!digitalRead(IMDpin)) {
    IMDerror = 1;
 
   }
@@ -304,25 +346,21 @@ void loop() {
    shutdownError(CanBus, HIGH_MOTOR_TEMP);
   }
   
-  if(EVDCerror > 1) {
-   shutdownError(CanBus, EVDC_PEDAL_ERROR);
+  
+  
+  if((EVDCerror & 0x01) == 0x01) {
+    alertError(CanBus, EVDC_PEDAL_ERROR);
   }
   
-  if(EVDCerror == 1) {
-    alertError(CanBus, EVDC_BASE_ERROR + EVDCerror);
+  if(ARerror == 1 || ARerror == 2) {
+    shutdownError(CanBus, AR_BASE_ERROR + ARerror);
   }
-  
-  if(ARerror == 1) {
-    alertError(CanBus, AR_BASE_ERROR + ARerror);
-  }
-  
-  if(ARerror > 1) {
-   shutdownError(CanBus, AR_BASE_ERROR + ARerror);
+  else if(ARerror > 2) {
+   alertError(CanBus, AR_BASE_ERROR + ARerror);
   }
   
   if(IMDerror > 0){
-      shutdownError(CanBus, IMD_BASE_ERROR);
-    
+      shutdownError(CanBus, IMD_BASE_ERROR); 
   }
   
   if(shutdownButton()) { // if the shutdown button is pushed for about 1 second
@@ -335,4 +373,74 @@ void loop() {
     shutdownCounter = 0;
   }
   
-}
+  
+  //PRINTING STUFF***************************************************************************************************************
+  if(PRINT_MODE == 64 && millis() > printTimer) {
+    printTimer = millis() + PRINT_DELAY;
+    Serial.println("igbt and motor temps");
+    Serial.println(MCphasetemp);
+    Serial.println(MCmotortemp);
+    Serial.println("BMS data");
+    Serial.print(BMSwholePackVoltage);
+    Serial.println(" volts, pack");
+    Serial.print(BMSstateOfCharge);
+    Serial.println(" percent");
+    Serial.print(BMScurrent);
+    Serial.println(" amps");
+    Serial.print(BMShighestTemp);
+    Serial.println(" degrees C, battery");
+    Serial.print(BMSlowcellvoltage);
+    Serial.println(" volts, low cell");
+    Serial.print(BMScurrentLimitKW);
+    Serial.println(" amps, limit");
+    Serial.print("rear error: ");
+    Serial.println(ARerror);
+    Serial.print("EVDC error: ");
+    Serial.println(EVDCerror);
+    Serial.print("shutdown cycle boost toggle");
+    if(shutdownButton()) {
+      Serial.println("1 ");
+    }
+    else {
+      Serial.println("0 ");
+    }
+    
+    if(boostButton()) {
+      Serial.println("1 ");
+    }
+    else {
+      Serial.println("0 ");
+    }
+    
+    if(cycleButton()) {
+      Serial.println("1 ");
+    }
+    else {
+      Serial.println("0 ");
+    }
+    
+    if(toggleButton()) {
+      Serial.println("1 ");
+    }
+    else {
+      Serial.println("0 ");
+    }
+    
+    Serial.print("IMD: ");
+    if(analogRead(IMDpin) > 500) {
+      Serial.println("1");
+    }
+    else {
+      Serial.println("0");
+    }
+    Serial.print(highTwelveTemp);
+    Serial.println(" degrees C, 12v DCDC");
+    Serial.print(fiveTemp);
+    Serial.println(" degrees C, 5v DCDC");
+    Serial.println(" ");
+    Serial.println(" ");
+    Serial.println(" ");
+  } // end "if print mode on"
+    
+
+} // end of void loop

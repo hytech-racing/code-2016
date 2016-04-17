@@ -1,7 +1,13 @@
-#include "EVDC.h"
+#include "evdc.h"
 
-int EVDC::getError(unsigned char* data) {
-  return int(data[0]);
+int EVDC::getError(unsigned char* data) { // first bit is high if there is a pedal error. second bit is high if the EVDC is not launched
+  int intToReturn;
+  intToReturn = data[2]; // will be 1 if pedal error exists
+  
+  if(data[0] != 42) {
+    intToReturn += 2;
+  }
+  
 }
 
 int EVDC::getButtons(unsigned char* data) {
@@ -9,7 +15,7 @@ int EVDC::getButtons(unsigned char* data) {
 }
 
 int EVDC::getBrakes(unsigned char* data) { // from 0 to 100
-  return int(data[2]);
+  return int(data[1]);
 }
 
 void EVDC::goForLaunch(MCP_CAN& CanYouDoTheCANCAN) {
