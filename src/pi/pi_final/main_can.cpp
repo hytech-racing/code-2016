@@ -30,7 +30,7 @@ struct timeval prev_time;
 struct timeval curr_time;
 uint16_t amp_history[TIME_LEFT_HIST_LEN];
 uint8_t amp_insert_pos = 0;
-int running_amp_sum = 0;
+int running_amp_sum = 1;
 
 // function prototypes
 int process_data_for_sending(uint8_t* bt_data, canframe_t* frame);
@@ -49,12 +49,17 @@ struct timeval log_evdc_prev_time;
 struct timeval log_rear_ard_prev_time;
 char timestr[20];
 
+std::string base_log_dir = "/home/pi/logs/";
+
 int main() {
-    log_mc.open("logs_mc.txt", std::ios::out | std::ios::app);
-    log_bms.open("logs_bms.txt", std::ios::out | std::ios::app);
-    log_main_ard.open("logs_main_arduino.txt", std::ios::out | std::ios::app);
-    log_evdc.open("logs_evdc.txt", std::ios::out | std::ios::app);
-    log_rear_ard.open("logs_read_arduino.txt", std::ios::out | std::ios::app);
+    log_mc.open(base_log_dir + "logs_mc.txt", std::ios::out | std::ios::app);
+    log_bms.open(base_log_dir + "logs_bms.txt", std::ios::out | std::ios::app);
+    log_main_ard.open(base_log_dir + "logs_main_arduino.txt",
+            std::ios::out | std::ios::app);
+    log_evdc.open(base_log_dir + "logs_evdc.txt",
+            std::ios::out | std::ios::app);
+    log_rear_ard.open(base_log_dir + "logs_read_arduino.txt",
+            std::ios::out | std::ios::app);
 
     gettimeofday(&log_mc_prev_time, NULL);
     gettimeofday(&log_bms_prev_time, NULL);
@@ -78,7 +83,10 @@ int main() {
             std::cout << "Error reading message" << std::endl;
         } else {
             if (0 == process_data_for_sending(bt_buffer, frame)) {
-                bt.send(bt_buffer);
+                if (bt.send(bt_buffer) == -1) {
+                    std::cout << "Attempting to reconnect" << std::endl;
+                    bt.connect();
+                }
             }
             log_to_file(frame);
         }
@@ -104,35 +112,26 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             bt_data[0] = 0;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
-        case 0x02:
-            // Time Left (0x02, 6-7)
-            value = ((frame->data[7] << 8) | frame->data[6]);
-            value /= (running_amp_sum / 100);
-            bt_data[0] = 1;
-            memcpy(&bt_data[1], &value, sizeof(value));
-            break;
         case 0x04:
             // High and Avg Battery Temp (0x04, 0,2)
-            bt_data[0] = 2;
+            bt_data[0] = 1;
             memcpy(&bt_data[1], &frame->data[0], sizeof(uint8_t));
             memcpy(&bt_data[2], &frame->data[2], sizeof(uint8_t));
             break;
         case 0x10:
-            // TODO TALK TO ANDREW
             // Startup State (0x10, 0)
             // Error Messages (0x10, 1)
-            bt_data[0] = 3;
+            bt_data[0] = 2;
             memcpy(&bt_data[1], &frame->data[0], sizeof(uint8_t));
             memcpy(&bt_data[2], &frame->data[1], sizeof(uint8_t));
             break;
         case 0xA2:
             // Motor Temp (0xA2, 4-5)
             value = ((frame->data[5] << 8) | frame->data[4]) / 10;
-            bt_data[0] = 4;
+            bt_data[0] = 3;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
         case 0xA5:
-            // TODO CALCULATIONS
             // Speed (0xA5, 2-3)
             // RPM * (16/35) * 5.2 = feet / min
             // * 60/5280 = mph
@@ -140,26 +139,21 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             // Circumference = 5.2 ft
             value = ((frame->data[3] << 8) | frame->data[2]);
             value = (uint16_t) (value * (16.0/35) * 5.2 * (60.0/5280));
-            bt_data[0] = 5;
+            bt_data[0] = 4;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
         case 0xAC:
+            // Feedback Torque (0xAC, 2-3)
             value = ((frame->data[3] << 8) | frame->data[2]) / 10;
-            bt_data[0] = 6;
+            bt_data[0] = 5;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
         case 0xA6:
-            // Current current draw (0xA6, 6-7)
+            // Current Draw (0xA6, 6-7)
             value = ((frame->data[7] << 8) | frame->data[6]);
-            gettimeofday(&curr_time, NULL);
-            if ((curr_time.tv_sec - prev_time.tv_sec) > 0) {
-                running_amp_sum -= amp_history[amp_insert_pos];
-                running_amp_sum += value;
-                amp_history[amp_insert_pos++] = value;
-                amp_insert_pos %= TIME_LEFT_HIST_LEN;
-                prev_time = curr_time;
-            }
-            return -1;
+            bt_data[0] = 6;
+            memcpy(&bt_data[1], &value, sizeof(value));
+            break;
         default:
             return -1;
     }
