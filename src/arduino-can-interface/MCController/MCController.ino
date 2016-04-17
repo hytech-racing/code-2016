@@ -1,4 +1,4 @@
-/**
+ /**
  * Ryan Gallaway
  * 16 Feb 2016
  * Motor Controller Controller Motor
@@ -40,16 +40,19 @@ START_INIT:
 unsigned char lockout[8] = {0,0,0,0,0,0,0,0};
 unsigned char enable[8] = {0,0,0,0,0,1,0,0};
 unsigned char msg[8] = {0,0,0,0,1,1,0,0};
-unsigned char bat[8] = {0,150,0,0,0,0,0,0};
+unsigned char bat[8] = {0,0,0,0,0,0,0,0};
 unsigned char temp[8] = {70,0,65,0,0,0,0,0}; 
 unsigned char mTemp[8] = {0,0,0,0,0,0,0,0};
 unsigned char sseq[8] = {0,0,0,0,0,0,0,0};
+unsigned char ah[8] = {0,0,0,0,0,0,200,0};
+unsigned char draw[8] = {0,0,0,0,0,0,0,0};
 short torque = 0;
 int enabled = 0;
 bool up = true;
 int pot = 1;
 int state = 0;
 int value;
+int charge = 0;
 
 void loop() {
 //  if (!enabled) {
@@ -65,6 +68,17 @@ void loop() {
 //    }
 //    delay(50);
 //  } else {
+    if (up) {
+      charge += 5;
+      if (charge >= 200) {
+        up = false;
+      }
+    } else {
+      charge -= 5;
+      if (charge <= 0) {
+        up = true;
+      }
+    }
     digitalWrite(A3, HIGH);
     digitalWrite(A5, LOW);
     if (pot == 1) {
@@ -113,6 +127,7 @@ void loop() {
 //        pot = 0;
 //      }
     int motor = 800;
+    short current = -100;
 
       /**
        * INPUT SEQUENCE TO TURN ON MOTOR 100% OF THE TIME
@@ -123,21 +138,21 @@ void loop() {
     memcpy(&msg[2], &torque, sizeof(short)); //speed mode (ignore the fact that it's called "torque")
     memcpy(&sseq[0], &state, sizeof(byte));
     memcpy(&mTemp[4], &motor, sizeof(short));
+    memcpy(&draw[6], &current, sizeof(short));
+    memcpy(&bat[1], &charge, sizeof(byte));
     
-    for (int i = 0; i < 8; i++) {
-      Serial.print(msg[i]);
-      Serial.print(" ");
-    }
-    Serial.println();
+    Serial.println(bat[1], HEX);
     CAN.sendMsgBuf(0x0A2, 0, 8, mTemp);
-    delay(50);
+    delay(10);
     CAN.sendMsgBuf(0x0A5, 0, 8, msg);
-    delay(50);
+    delay(10);
     CAN.sendMsgBuf(0x001, 0, 8, bat);
-    delay(50);
+    delay(10);
     CAN.sendMsgBuf(0x004, 0, 8, temp);
-    delay(50);
+    delay(10);
     CAN.sendMsgBuf(0x010, 0, 8, sseq);
-    delay(50);
+    delay(10);
+    CAN.sendMsgBuf(0x0A6, 0, 8, draw);
+    delay(10);
   }
 
