@@ -142,16 +142,10 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             bt_data[0] = 4;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
-        case 0xAC:
-            // Feedback Torque (0xAC, 2-3)
-            value = ((frame->data[3] << 8) | frame->data[2]) / 10;
-            bt_data[0] = 5;
-            memcpy(&bt_data[1], &value, sizeof(value));
-            break;
         case 0xA6:
             // Current Draw (0xA6, 6-7)
             value = ((frame->data[7] << 8) | frame->data[6]);
-            bt_data[0] = 6;
+            bt_data[0] = 5;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
         default:
