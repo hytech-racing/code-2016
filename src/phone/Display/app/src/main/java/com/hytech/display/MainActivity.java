@@ -33,8 +33,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     public static final byte BT_CAR_STARTUP_STATE = 2;
     public static final byte BT_MOTOR_TEMP = 3;
     public static final byte BT_CAR_SPEED = 4;
-    public static final byte BT_CAR_TORQUE = 5;
-    public static final byte BT_CAR_CURRENT_DRAW = 6;
+    public static final byte BT_CAR_CURRENT_DRAW = 5;
     public static final byte BT_DISCONNECT = 0x7F;
     // endregion
 
@@ -43,7 +42,6 @@ public class MainActivity extends Activity implements SensorEventListener {
     private TextView speedView;
 
     private TextView motorCurrent;
-    private TextView motorTorque;
     private TextView battTempHigh;
     private TextView battTempAvg;
     private TextView motorTemp;
@@ -80,7 +78,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         btByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
         initSensors();
-        initDefaultUI();
+        bindUIElements();
     }
 
     // region [ BT DATA HANDLER ]
@@ -117,13 +115,11 @@ public class MainActivity extends Activity implements SensorEventListener {
                 case BT_CAR_SPEED:
                     speedView.setText(String.valueOf(value));
                     break;
-                case BT_CAR_TORQUE:
-                    break;
                 case BT_CAR_CURRENT_DRAW:
                     motorCurrent.setText(String.valueOf(value / 10));
                     break;
                 case BT_DISCONNECT:
-                    initDefaultUI();
+                    setDefaultValues();
                     break;
             }
             return true;
@@ -180,13 +176,24 @@ public class MainActivity extends Activity implements SensorEventListener {
         infoDisplay.show();
     }
 
-    private void initDefaultUI() {
+    private void bindUIElements() {
         chargeMeter = (ArcProgress) findViewById(R.id.charge_meter);
         speedView = (TextView) findViewById(R.id.speed_view);
         battTempHigh = (TextView) findViewById(R.id.batt_temp_high);
         battTempAvg = (TextView) findViewById(R.id.batt_temp_avg);
         motorTemp = (TextView) findViewById(R.id.motor_temp);
         motorCurrent = (TextView) findViewById(R.id.motor_current_draw);
+    }
+
+    private void setDefaultValues() {
+        String defaultString = getResources().getString(R.string.default_value);
+        motorCurrent.setText(defaultString);
+        battTempHigh.setText(defaultString);
+        battTempAvg.setText(defaultString);
+        motorTemp.setText(defaultString);
+        speedView.setText(defaultString);
+        chargeMeter.setBottomText(defaultString);
+        chargeMeter.setProgress(0);
     }
 
     @Override
