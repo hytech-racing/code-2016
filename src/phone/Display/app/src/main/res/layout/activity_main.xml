@@ -7,7 +7,7 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/batt_time_left"
+        android:id="@+id/motor_current_draw"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/default_value"

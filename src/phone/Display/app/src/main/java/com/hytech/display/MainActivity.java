@@ -15,6 +15,9 @@ import android.widget.TextView;
 
 import com.github.lzyzsd.circleprogress.ArcProgress;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 
 public class MainActivity extends Activity implements SensorEventListener {
 
@@ -26,12 +29,12 @@ public class MainActivity extends Activity implements SensorEventListener {
     public int[] PROGRESS_COLORS;
 
     public static final byte BT_BATT_SOC = 0;
-    public static final byte BT_BATT_TIME_LEFT = 1;
-    public static final byte BT_BATT_HI_AVG_TEMP = 2;
-    public static final byte BT_CAR_STARTUP_STATE = 3;
-    public static final byte BT_MOTOR_TEMP = 4;
-    public static final byte BT_CAR_SPEED = 5;
-    public static final byte BT_CAR_TORQUE = 6;
+    public static final byte BT_BATT_HI_AVG_TEMP = 1;
+    public static final byte BT_CAR_STARTUP_STATE = 2;
+    public static final byte BT_MOTOR_TEMP = 3;
+    public static final byte BT_CAR_SPEED = 4;
+    public static final byte BT_CAR_TORQUE = 5;
+    public static final byte BT_CAR_CURRENT_DRAW = 6;
     public static final byte BT_DISCONNECT = 0x7F;
     // endregion
 
@@ -39,6 +42,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     private ArcProgress chargeMeter;
     private TextView speedView;
 
+    private TextView motorCurrent;
+    private TextView motorTorque;
     private TextView battTempHigh;
     private TextView battTempAvg;
     private TextView motorTemp;
@@ -50,6 +55,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     private AlertDialog infoDisplay;
     private byte currentState = -1;
+
+    ByteBuffer btByteBuffer = ByteBuffer.allocate(2);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +77,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         BluetoothCommService bcs = new BluetoothCommService(handler);
         bcs.start();
+        btByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
         initSensors();
         initDefaultUI();
@@ -82,9 +90,12 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         public boolean handleMessage(Message message) {
             byte[] data = (byte[]) message.obj;
+            btByteBuffer.clear();
+            btByteBuffer.put(data, 1, 2);
+            short value = btByteBuffer.getShort(0);
             switch (data[0]) {
                 case BT_BATT_SOC:
-                    int soc = data[1] & 0xFF;
+                    int soc = btByteBuffer.get(0);
                     chargeMeter.setProgress(soc);
                     chargeMeter.setBottomText(soc + "\uFE6A");
                     int newColor = PROGRESS_COLORS[Math.min(3, soc / 25)];
@@ -94,19 +105,22 @@ public class MainActivity extends Activity implements SensorEventListener {
                     }
                     break;
                 case BT_BATT_HI_AVG_TEMP:
-                    battTempHigh.setText(String.valueOf(data[1] & 0xFF));
-                    battTempAvg.setText(String.valueOf(data[2] & 0xFF));
+                    battTempHigh.setText(String.valueOf(btByteBuffer.get(0)));
+                    battTempAvg.setText(String.valueOf(btByteBuffer.get(1)));
                     break;
                 case BT_CAR_STARTUP_STATE:
-                    handleStartupCode(data[1]);
+                    handleStartupCode(btByteBuffer.get(0));
                     break;
                 case BT_MOTOR_TEMP:
-                    int temp = ((data[2] & 0xFF) << 8) | (data[1] & 0xFF);
-                    motorTemp.setText(String.valueOf(temp));
+                    motorTemp.setText(String.valueOf(value));
                     break;
                 case BT_CAR_SPEED:
-                    int speed = ((data[2] & 0xFF) << 8) | (data[1] & 0xFF);
-                    speedView.setText(String.valueOf(speed));
+                    speedView.setText(String.valueOf(value));
+                    break;
+                case BT_CAR_TORQUE:
+                    break;
+                case BT_CAR_CURRENT_DRAW:
+                    motorCurrent.setText(String.valueOf(value / 10));
                     break;
                 case BT_DISCONNECT:
                     initDefaultUI();
@@ -172,6 +186,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         battTempHigh = (TextView) findViewById(R.id.batt_temp_high);
         battTempAvg = (TextView) findViewById(R.id.batt_temp_avg);
         motorTemp = (TextView) findViewById(R.id.motor_temp);
+        motorCurrent = (TextView) findViewById(R.id.motor_current_draw);
     }
 
     @Override
