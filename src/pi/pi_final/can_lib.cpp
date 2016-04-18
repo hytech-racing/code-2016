@@ -6,6 +6,8 @@
 #include <sys/ioctl.h>
 #include <linux/can/raw.h>
 
+#include <iostream>
+
 #include "can_lib.h"
 
 CAN::CAN() {

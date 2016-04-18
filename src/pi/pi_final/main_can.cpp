@@ -148,6 +148,17 @@ int process_data_for_sending(uint8_t* bt_data, canframe_t* frame) {
             bt_data[0] = 5;
             memcpy(&bt_data[1], &value, sizeof(value));
             break;
+        case 0x20:
+            // Rear Low Voltage Voltage (0x20, 2)
+            bt_data[0] = 6;
+            memcpy(&bt_data[1], &frame->data[2], sizeof(uint8_t));
+            break;
+        case 0xC8:
+            // Pedal Values (0xC8, brake: 1, acc: 3, error: 2)
+            bt_data[0] = 7;
+            memcpy(&bt_data[1], &frame->data[1], sizeof(uint8_t));
+            memcpy(&bt_data[2], &frame->data[3], sizeof(uint8_t));
+            break;
         default:
             return -1;
     }
