@@ -5,15 +5,19 @@
 
 #define WHEEL_RADIUS 1
 
+#define TEETH_MOTOR 5946 // INCORRECT
+
+#define TEETH_WHEEL 35 // CORRECT
+
 #define SPI_CS_PIN 10
 
 #define BRAKE_LIGHTS_PIN 2
 
-#define BRAKE_PEDAL A0
+#define BRAKE_PEDAL A7 // DESPITE SCHEMATIC THESE ARE CORRECT
 
-#define ACCEL_PEDAL_1 A1
+#define ACCEL_PEDAL_1 A6
 
-#define ACCEL_PEDAL_2 A2
+#define ACCEL_PEDAL_2 A5
 
 #define CAN_RATE CAN_500KBPS
 
@@ -45,7 +49,7 @@
 
 #define ACC2_NO_VAL 0
 
-#define DEBUG_ON 0 // if more than 0, then debug mode is on
+#define DEBUG_ON 42 // if more than 0, then debug mode is on
 
 #define DEBUG_PRINT_DELAY 500  // print debug stuff every 500 ms
 

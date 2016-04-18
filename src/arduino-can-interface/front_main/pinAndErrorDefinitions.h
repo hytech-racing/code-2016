@@ -24,6 +24,8 @@
 #define FIVE_WARNING_TEMP 32
 #define FIVE1_VOLTAGE_DIP 33
 #define FIVE2_VOLTAGE_DIP 34
+#define TWENTYFOUR_WARNING_TEMP 35
+#define TWENTYFOUR_OVER_TEMP 36
 
 #define COOLANT_TEMPERATURE_WARNING 60
 #define MAXIMUM_COOLANT_TEMPERATURE 80
@@ -38,6 +40,7 @@ okay, so the software_shutdown_control is turned on. then, the software_pushbutt
 
 */
 #define readyToDriveSound  0 // good - ready to derp sound?
+#define readyToDerpSound 0
 #define AirDCDC  1
 #define AIRdcdc  1
 #define software_shutdown_control  2 //OKAY
