@@ -84,10 +84,10 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   while(!good_for_launch) {
     
     float brake_input_voltage = get_input_voltage(BRAKE_PEDAL, 5.0); //get brake value for main arduino
-    
-    if(DEBUG_ON > 0 && millis() > debugPrintTimer) {
-      float accel_input_voltage_1 = get_input_voltage(ACCEL_PEDAL_1, 5.0),
+    float accel_input_voltage_1 = get_input_voltage(ACCEL_PEDAL_1, 5.0),
             accel_input_voltage_2 = get_input_voltage(ACCEL_PEDAL_2, 5.0); // two voltages needed to compare
+    if(DEBUG_ON > 0 && millis() > debugPrintTimer) {
+      
       
       Serial.println("raw: brake, then acc_1, then acc_2");
       Serial.println(brake_input_voltage);
@@ -96,7 +96,11 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       debugPrintTimer += DEBUG_PRINT_DELAY;
     }
     
+    accel_input_voltage_1 = mapFloat(brake_input_voltage, ACC1_NO_VAL, ACC1_ALL_VAL, 0, 5.0);
+    accel_input_voltage_2 = mapFloat(brake_input_voltage, ACC2_NO_VAL, ACC2_ALL_VAL, 0, 5.0);
     brake_input_voltage = mapFloat(brake_input_voltage, BRAKE_NO_VAL, BRAKE_ALL_VAL, 0, 5.0);
+    
+    
     
     setupTimer = millis() + 50;
     while(setupTimer > millis()){ //listen to can for 50 milisnencends
@@ -115,6 +119,7 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
     unsigned char message[8];
     message[1] = char(brake_input_voltage * 20.0); // brakes from 0 to 100
+    message[3] char((accel_input_voltage_1 + accel_input_voltage_2)*20.0); // accelerator from 0 to 100
     send_can_message(AM::MAIN_MESSAGE_SEND, message);
        
     bool inverter_enabled = false;
@@ -237,7 +242,8 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if(pedal_error) {
     mainMessage[2] = 1;
   }
-  mainMessage[1] = int(brake_input_voltage * 20.0); // brakes from 0 to 100
+  mainMessage[1] = char(brake_input_voltage * 20.0); // brakes from 0 to 100
+  mainMessage[3] = char((accel_input_voltage_1 + accel_input_voltage_2)*20.0);
   
   
   if(millis() > MAIN_SENDER_TIMER){
@@ -258,12 +264,14 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       can_message::command_data received;
       memcpy(received.bytes, buf, 8); // copy buf to received.bytes
       uint16_t angular_velocity = received.shorts[1]; // bytes 2,3 as per spec
-      float linear_velocity = 2 * MATH_PI * WHEEL_RADIUS * angular_velocity * (60/1000); // this is in kmph
+      float linear_velocity = 2 * MATH_PI * WHEEL_RADIUS * angular_velocity * (60/1000)* (TEETH_MOTOR / TEETH_WHEEL); // this is in kmph
       
-      if (linear_velocity > 5.0)
+      if (linear_velocity > 5.0) {
         use_regen = true; // regen only if reported speed is above 5 kmph
-      else
+      }
+      else {
         use_regen = false;
+      }
     } 
     else if (CAN.getCanId() == AM::MAIN_MESSAGE_GET) { // shutdown command from main arduino or WHATEVER, NEED DATA ON THAT!*****************************************************************************
     MAIN_TIMEOUT = millis() + MAIN_TIMEOUT_LIMIT;

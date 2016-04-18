@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.github.lzyzsd.circleprogress.ArcProgress;
@@ -32,8 +33,10 @@ public class MainActivity extends Activity implements SensorEventListener {
     public static final byte BT_BATT_HI_AVG_TEMP = 1;
     public static final byte BT_CAR_STARTUP_STATE = 2;
     public static final byte BT_MOTOR_TEMP = 3;
-    public static final byte BT_CAR_SPEED = 4;
-    public static final byte BT_CAR_CURRENT_DRAW = 5;
+    public static final byte BT_MOTOR_SPEED = 4;
+    public static final byte BT_MOTOR_CURRENT = 5;
+    public static final byte BT_REAR_VOLTAGE = 6;
+    public static final byte BT_PEDALS = 7;
     public static final byte BT_DISCONNECT = 0x7F;
     // endregion
 
@@ -45,6 +48,10 @@ public class MainActivity extends Activity implements SensorEventListener {
     private TextView battTempHigh;
     private TextView battTempAvg;
     private TextView motorTemp;
+    private TextView rearVoltage;
+
+    private ProgressBar pedalsAccel;
+    private ProgressBar pedalsBrake;
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -53,6 +60,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     private AlertDialog infoDisplay;
     private byte currentState = -1;
+    private byte errorState = -1;
 
     ByteBuffer btByteBuffer = ByteBuffer.allocate(2);
 
@@ -108,15 +116,23 @@ public class MainActivity extends Activity implements SensorEventListener {
                     break;
                 case BT_CAR_STARTUP_STATE:
                     handleStartupCode(btByteBuffer.get(0));
+                    handleErrorCode(btByteBuffer.get(1));
                     break;
                 case BT_MOTOR_TEMP:
                     motorTemp.setText(String.valueOf(value));
                     break;
-                case BT_CAR_SPEED:
+                case BT_MOTOR_SPEED:
                     speedView.setText(String.valueOf(value));
                     break;
-                case BT_CAR_CURRENT_DRAW:
+                case BT_MOTOR_CURRENT:
                     motorCurrent.setText(String.valueOf(value / 10));
+                    break;
+                case BT_REAR_VOLTAGE:
+                    rearVoltage.setText(String.valueOf(btByteBuffer.get(0)));
+                    break;
+                case BT_PEDALS:
+                    pedalsAccel.setProgress(btByteBuffer.get(1));
+                    pedalsBrake.setProgress(btByteBuffer.get(0));
                     break;
                 case BT_DISCONNECT:
                     setDefaultValues();
@@ -166,6 +182,102 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
     }
 
+    public void handleErrorCode(byte errorCode) {
+        if (errorState == errorCode) {
+            return;
+        }
+
+        errorState = errorCode;
+
+        String message = null;
+        switch (errorCode) {
+            case 1:
+                message = "BMS TIMEOUT";
+                break;
+            case 2:
+                message = "EVDC TIMEOUT";
+                break;
+            case 3:
+                message = "Motor Controller TIMEOUT";
+                break;
+            case 4:
+                message = "Rear Arduino TIMEOUT";
+                break;
+            case 5:
+                message = "Main Battery LOW";
+                break;
+            case 6:
+                message = "Main Battery CRITICAL";
+                break;
+            case 7:
+                message = "Main Battery OVERHEAT";
+                break;
+            case 9:
+                message = "Main Battery Cell LOW";
+                break;
+            case 10:
+                message = "Current Draw HIGH";
+                break;
+            case 11:
+                message = "Motor Controller OVERHEAT";
+                break;
+            case 12:
+                message = "Motor OVERHEAT";
+                break;
+            case 13:
+                message = "Pedal ERROR";
+                break;
+            case 20:
+                message = "Rear Battery OVERHEAT";
+                break;
+            case 21:
+                message = "Rear Battery CRITICAL";
+                break;
+            case 22:
+                message = "Rear Battery Temperature HIGH";
+                break;
+            case 23:
+                message = "Rear Battery LOW";
+                break;
+            case 26:
+                message = "IMD ERROR";
+                break;
+            case 27:
+                message = "Coolant Temperature HIGH";
+                break;
+            case 28:
+                message = "Coolant OVERHEAT";
+                break;
+            case 29:
+                message = "12V DC-DC Temperature HIGH";
+                break;
+            case 30:
+                message = "12V DC-DC OVERHEAT";
+                break;
+            case 31:
+                message = "5V DC-DC Temperature HIGH";
+                break;
+            case 32:
+                message = "5V DC-DC OVERHEAT";
+                break;
+            case 33:
+                message = "5V1 DIP";
+                break;
+            case 34:
+                message = "5V2 DIP";
+                break;
+            case 0:
+                if (infoDisplay != null && infoDisplay.isShowing()) {
+                    infoDisplay.dismiss();
+                }
+                break;
+        }
+
+        if (message != null) {
+            btErrorDialog(message);
+        }
+    }
+
     public void btErrorDialog(String message) {
         if (infoDisplay != null && infoDisplay.isShowing()) {
             infoDisplay.dismiss();
@@ -183,6 +295,9 @@ public class MainActivity extends Activity implements SensorEventListener {
         battTempAvg = (TextView) findViewById(R.id.batt_temp_avg);
         motorTemp = (TextView) findViewById(R.id.motor_temp);
         motorCurrent = (TextView) findViewById(R.id.motor_current_draw);
+        rearVoltage = (TextView) findViewById(R.id.rear_voltage);
+        pedalsAccel = (ProgressBar) findViewById(R.id.pedals_accel);
+        pedalsBrake = (ProgressBar) findViewById(R.id.pedals_brake);
     }
 
     private void setDefaultValues() {
@@ -192,8 +307,11 @@ public class MainActivity extends Activity implements SensorEventListener {
         battTempAvg.setText(defaultString);
         motorTemp.setText(defaultString);
         speedView.setText(defaultString);
+        rearVoltage.setText(defaultString);
         chargeMeter.setBottomText(defaultString);
         chargeMeter.setProgress(0);
+        pedalsAccel.setProgress(0);
+        pedalsBrake.setProgress(0);
     }
 
     @Override
@@ -228,8 +346,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
         sensorManager.unregisterListener(this, accelerometer);
     }
 }

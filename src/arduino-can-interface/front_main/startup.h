@@ -11,19 +11,15 @@ startup sequence according to Nathan
 
 we only NEED to check for BMS fault if there was previously a BMS fault
 
+5 buttons: 2 toggle, 2 momentary
 
-so, sequence is: car is switched on
-asks for permission to go forward
-checks BMS for errors if need be
-checks IMD for errors
-AIRs close
-flips precharge
-precharges
-asks if they want to start the car
-if brakes are on, the TSMS relay flips
-RTD sound sounds
-car is ready to drive
-vroom vroom
+3 lights: on, IMD, BMS
+
+toggle ON led 
+
+on startup, flash ON LED, quick on flash after brake+button press, precharge, flash start button after MC gets power, press start button again, start button has solid light, RTD sound, on LED solid, roll  
+
+hold START to shutdown, turn off start LED, flash on LED
 
 Pi Progression Statements:
 0- dude ur in a dope car. this thing lit.
@@ -32,6 +28,8 @@ Pi Progression Statements:
 3- press brake pedal and progress button to start car
 4- Precharging the Caps
 5- standard display
+6- precharge complete. press start button to continue
+7-
 8- shutdown complete. Go Jackets!
 
 
@@ -43,18 +41,35 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) {
   unsigned char len;
   boolean progressBlock = true;
   boolean button = false;
+  boolean lightState;
   long progressionTimer = millis();
 
-  for(int i = 0; i < 20; i++) {
+  for(int i = 0; i < 10; i++) {  // I want a delay for all the other systems to boot up.
+    if(lightState) {
+      startLightOn();
+    }
+    else {
+      startLightOff();
+    }
+    lightState != lightState;
     RPi::giveProgression(lilEngineThatCAN,0);
     EVDC::calmTheFreakDown(lilEngineThatCAN);
-    delay(100); // I want a delay for all the other systems to boot up.
+    delay(100); 
+
   }
   
-  while(progressBlock) {
+  while(progressBlock) { // wait for user input
     if(millis() > progressionTimer) {
       RPi::giveProgression(lilEngineThatCAN,1);
-       EVDC::calmTheFreakDown(lilEngineThatCAN);
+      EVDC::calmTheFreakDown(lilEngineThatCAN);
+      
+      if(lightState) {
+      startLightOn();
+      }
+      else {
+        startLightOff;
+      }
+      lightState != lightState;
  
       progressionTimer += 100;
     } 
@@ -73,7 +88,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) {
     float BMShighestTemp = 20.0;
     float BMSlowcellvoltage = 3.7;
     float BMScurrentLimitKW = 100;
-    float BMS_low_cell_cutoff = 3.0;
+    float BMS_low_cell_cutoff = 2.0;
     int BMS_Message_Checker = 0;
     while(progressBlock) {
       if(millis() > progressionTimer) {
@@ -156,7 +171,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) {
   
   button = 0;
   int brakes;
-  while(progressBlock) {
+  while(progressBlock) { // wait for user input and brakes
     if(millis() > progressionTimer) {
       RPi::giveProgression(lilEngineThatCAN,3); 
       progressionTimer += 100;
@@ -172,49 +187,92 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) {
       }
     }
   }
-  
+  startLightOn();
+  delay(250);
+  startLightOff();
   progressBlock = true;
   
+  
+  float DC_BUS_VOLT;
   digitalWrite(AirDCDC, HIGH);
-  digitalWrite(readyToDriveSound, HIGH);
+  digitalWrite(software_shutdown_control, HIGH);
   digitalWrite(software_pushbutton_control, HIGH);
-  long prechargeTimer = millis() + 3000;
-  while(prechargeTimer > millis()) {
-      if(millis() > progressionTimer) {
-        RPi::giveProgression(lilEngineThatCAN,4); 
-        progressionTimer += 100;
+  while(progressBlock) {
+    
+    if(CAN_MSGAVAIL == lilEngineThatCAN.checkReceive()) {
+      lilEngineThatCAN.readMsgBuf(&len, msgReceive);
+      if(lilEngineThatCAN.getCanId() == EVDC::Message) {
+        DC_BUS_VOLT = MC::getDCBusVoltage(msgReceive);
       }
+      if(DC_BUS_VOLT > 250) { // if the progress button is pressed and brakes are more than 25%
+        progressBlock == false;
+      }
+    }
+  
+    if(millis() > progressionTimer) {
+      RPi::giveProgression(lilEngineThatCAN,4); 
+      progressionTimer += 100;
+    }
   }
-  digitalWrite(readyToDriveSound, LOW);
   digitalWrite(software_pushbutton_control, LOW);
-
- 
+  progressBlock = true;
+  
+  
+  while(progressBlock) { // wait for user input again
+    if(millis() > progressionTimer) {
+      RPi::giveProgression(lilEngineThatCAN,1); 
+      progressionTimer += 100;
+      if(lightState) {
+      startLightOn();
+      }
+      else {
+        startLightOff();
+      }
+      lightState != lightState;
+    }
+    if(shutdownButton()) {
+      progressBlock = false;
+    }
+  }
+  startLightOff();
+  
+  for(int i = 0; i < 30; i++) { // play the ready to drive sound
+    digitalWrite(readyToDerpSound, HIGH);
+    RPi::giveProgression(lilEngineThatCAN, 5);
+    delay(100);
+  }
+  
+  digitalWrite(readyToDriveSound, LOW);
+  
   EVDC::goForLaunch(lilEngineThatCAN);
-  RPi::giveProgression(lilEngineThatCAN, 5);
 }
 
 
+
+
+
+
 void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
+  RPi::giveProgression(lilEngineThatCAN,4);
   Serial.println("starting up DEBUG");
   Serial.println("starting up DEBUG");
   Serial.println("starting up DEBUG");
   digitalWrite(AIRdcdc, HIGH);  
   digitalWrite(software_pushbutton_control, HIGH);
   digitalWrite(software_shutdown_control, HIGH);
+  digitalWrite(readyToDerpSound, HIGH);
   delay(3000);
-   digitalWrite(software_shutdown_control, LOW);
+  digitalWrite(readyToDerpSound, LOW);
+  digitalWrite(software_shutdown_control, LOW);
   RPi::giveProgression(lilEngineThatCAN,5);
   EVDC::goForLaunch(lilEngineThatCAN);
 
 }
   
-//  const int AIRdcdc = 2;
-//const int AIRdcdc = 2;
-//const int readyToDriveSound = 2; // ready to derp sound?
-//const int precharge = 2;
-//const int discharge = 2;
-//const int TSMasterRelay = 2;
-//const int IMDpin = 3;
+
+
+
+
 
 void defineAndSetPinModes() {
   
@@ -229,7 +287,7 @@ void defineAndSetPinModes() {
   pinMode(BMS_LED, OUTPUT);
   pinMode(MULTIPLEXER_SELECT_0, OUTPUT);
   pinMode(MULTIPLEXER_INPUT, INPUT);
-  pinMode(10, OUTPUT);
+  pinMode(10, OUTPUT); // CS pin
   pinMode(CONTROL_11, OUTPUT);
   pinMode(CONTROL_10, OUTPUT);
   pinMode(IMDpin, INPUT);

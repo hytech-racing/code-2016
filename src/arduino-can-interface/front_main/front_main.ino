@@ -1,9 +1,9 @@
 
-// list of shortcuts: startup sequence might be mess,
+// list of shortcuts: startup sequence might be mess, flash start LED when starting up, wait for MC line voltage to stop RTD sound, quick flash after brake+button press, precharge, flash start button after MC gets power, press start button again, start button has solid light, RTD sound,  
 
 
 
-#define DEBUG_ACTIVATE 203 // declare to be 42 to turn on debug functionality, 203 for board test
+#define DEBUG_ACTIVATE 42 // declare to be 42 to turn on debug functionality, 203 for board test
 /*
 Debug mode does the following things:
 skips startup sequence
@@ -89,7 +89,7 @@ float BMScurrent = 0.0;
 float BMShighestTemp = 20.0;
 float BMSlowcellvoltage = 3.7;
 float BMScurrentLimitKW = 100;
-float BMS_low_cell_cutoff = 3.0;
+float BMS_low_cell_cutoff = 2.0;
 
 float MCphasetemp = 20.0;
 float MCmotortemp = 20.0;
@@ -313,6 +313,14 @@ void loop() {
   }
   else if(fiveTemp > WARNING_DCDC_TEMP) {
     alertError(CanBus, FIVE_WARNING_TEMP);
+  }
+  
+  int twentyFourTemp = checkThermistor(10000, analogRead(twenty_four_thermistor));
+  if(twentyFourTemp > MAX_DCDC_TEMP) {
+    shutdownError(CanBus, TWENTYFOUR_OVER_TEMP);
+  }
+  else if(twentyFourTemp > WARNING_DCDC_TEMP) {
+    alertError(CanBus, TWENTYFOUR_WARNING_TEMP);
   }
   
   

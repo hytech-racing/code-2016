@@ -13,6 +13,8 @@ BMSlightOn
 BMSlightOff
 IMDlightOn
 IMDlightOff
+startLightOn
+startLightOff
 shutdownButton
 boostButton
 cycleButton
@@ -24,22 +26,22 @@ testMicroBoard
 
 
 boolean getMultiplexerDigital(char selection) {
-  digitalWrite(MULTIPLEXER_SELECT_0, HIGH);
-  digitalWrite(MULTIPLEXER_SELECT_1, HIGH);
-  digitalWrite(MULTIPLEXER_SELECT_2, HIGH);
-  digitalWrite(MULTIPLEXER_SELECT_3, HIGH);
+  digitalWrite(MULTIPLEXER_SELECT_0, LOW);
+  digitalWrite(MULTIPLEXER_SELECT_1, LOW);
+  digitalWrite(MULTIPLEXER_SELECT_2, LOW);
+  digitalWrite(MULTIPLEXER_SELECT_3, LOW);
   
   if((selection & 0x01) == 0x01) {
-    digitalWrite(MULTIPLEXER_SELECT_0, LOW);
+    digitalWrite(MULTIPLEXER_SELECT_0, HIGH);
   }
   if((selection & 0x02) == 0x02) {
-    digitalWrite(MULTIPLEXER_SELECT_1, LOW);
+    digitalWrite(MULTIPLEXER_SELECT_1, HIGH);
   }
   if((selection & 0x04) == 0x04) {
-    digitalWrite(MULTIPLEXER_SELECT_2, LOW);
+    digitalWrite(MULTIPLEXER_SELECT_2, HIGH);
   }
   if((selection & 0x08) == 0x08) {
-    digitalWrite(MULTIPLEXER_SELECT_3, LOW);
+    digitalWrite(MULTIPLEXER_SELECT_3, HIGH);
   }
   delayMicroseconds(1) ; //for propagation delay
   return digitalRead(MULTIPLEXER_INPUT);
@@ -48,22 +50,22 @@ boolean getMultiplexerDigital(char selection) {
 
 
 int getMultiplexerAnalog(char selection) {
-  digitalWrite(MULTIPLEXER_SELECT_0, HIGH);
-  digitalWrite(MULTIPLEXER_SELECT_1, HIGH);
-  digitalWrite(MULTIPLEXER_SELECT_2, HIGH);
-  digitalWrite(MULTIPLEXER_SELECT_3, HIGH);
+  digitalWrite(MULTIPLEXER_SELECT_0, LOW);
+  digitalWrite(MULTIPLEXER_SELECT_1, LOW);
+  digitalWrite(MULTIPLEXER_SELECT_2, LOW);
+  digitalWrite(MULTIPLEXER_SELECT_3, LOW);
   
   if((selection & 0x01) == 0x01) {
-    digitalWrite(MULTIPLEXER_SELECT_0, LOW);
+    digitalWrite(MULTIPLEXER_SELECT_0, HIGH);
   }
   if((selection & 0x02) == 0x02) {
-    digitalWrite(MULTIPLEXER_SELECT_1, LOW);
+    digitalWrite(MULTIPLEXER_SELECT_1, HIGH);
   }
   if((selection & 0x04) == 0x04) {
-    digitalWrite(MULTIPLEXER_SELECT_2, LOW);
+    digitalWrite(MULTIPLEXER_SELECT_2, HIGH);
   }
   if((selection & 0x08) == 0x08) {
-    digitalWrite(MULTIPLEXER_SELECT_3, LOW);
+    digitalWrite(MULTIPLEXER_SELECT_3, HIGH);
   }
   delayMicroseconds(1) ; //for propagation delay
   return analogRead(MULTIPLEXER_INPUT);
@@ -83,6 +85,14 @@ void IMDlightOn() {
 
 void IMDlightOff() {
   digitalWrite(IMD_LED, LOW);
+}
+
+void startLightOn() {
+  digitalWrite(start_LED, HIGH);
+}
+
+void startLightOff() {
+  digitalWrite(start_LED, LOW);
 }
 
 boolean shutdownButton() {
