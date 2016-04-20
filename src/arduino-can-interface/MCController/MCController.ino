@@ -46,6 +46,8 @@ unsigned char mTemp[8] = {0,0,0,0,0,0,0,0};
 unsigned char sseq[8] = {0,0,0,0,0,0,0,0};
 unsigned char ah[8] = {0,0,0,0,0,0,200,0};
 unsigned char draw[8] = {0,0,0,0,0,0,0,0};
+unsigned char lv[8] = {0,0,20,0,0,0,0,0};
+unsigned char pedals[8] = {0,42,0,42,0,0,0,0};
 short torque = 0;
 int enabled = 0;
 bool up = true;
@@ -142,17 +144,21 @@ void loop() {
     memcpy(&bat[1], &charge, sizeof(byte));
     
     Serial.println(bat[1], HEX);
+    CAN.sendMsgBuf(0x020, 0, 8, lv);
+    delay(20);
+    CAN.sendMsgBuf(0x0C8, 0, 8, pedals);
+    delay(20);
     CAN.sendMsgBuf(0x0A2, 0, 8, mTemp);
-    delay(10);
+    delay(20);
     CAN.sendMsgBuf(0x0A5, 0, 8, msg);
-    delay(10);
+    delay(20);
     CAN.sendMsgBuf(0x001, 0, 8, bat);
-    delay(10);
+    delay(20);
     CAN.sendMsgBuf(0x004, 0, 8, temp);
-    delay(10);
+    delay(20);
     CAN.sendMsgBuf(0x010, 0, 8, sseq);
-    delay(10);
+    delay(20);
     CAN.sendMsgBuf(0x0A6, 0, 8, draw);
-    delay(10);
+    delay(20);
   }
 
