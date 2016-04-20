@@ -1,4 +1,3 @@
-
 // list of shortcuts: startup sequence might be mess, flash start LED when starting up, wait for MC line voltage to stop RTD sound, quick flash after brake+button press, precharge, flash start button after MC gets power, press start button again, start button has solid light, RTD sound,  
 
 
@@ -281,7 +280,6 @@ void loop() {
   
   if(!digitalRead(IMDpin)) {
    IMDerror = 1;
-
   }
   
   
@@ -290,6 +288,18 @@ void loop() {
   int coolantThermistor3 = getMultiplexerAnalog(COOLANT_SENSOR_3_SELECT);
   int highCoolantTemp = max(checkThermistor(10000, coolantThermistor1), checkThermistor(10000, coolantThermistor2));
   highCoolantTemp = max(highCoolantTemp, checkThermistor(10000, coolantThermistor3));
+  
+  int fanAndPumpDuty = map(highCoolantTemp, 20, 60, 64, 255);
+  if(fanAndPumpDuty > 255){
+    fanAndPumpDuty = 255;
+  }
+  if(fanAndPumpDuty < 64) {
+    fanAndPumpDuty = 64;
+  }
+  analogWrite(fan_control, fanAndPumpDuty);
+  analogWrite(pump_control, fanAndPumpDuty); // got myself a bit of a proportional controller here
+  
+  
   if(highCoolantTemp > MAXIMUM_COOLANT_TEMPERATURE) {
     shutdownError(CanBus, COOLANT_OVER_TEMP);
   }
@@ -445,6 +455,10 @@ void loop() {
     Serial.println(" degrees C, 12v DCDC");
     Serial.print(fiveTemp);
     Serial.println(" degrees C, 5v DCDC");
+    Serial.println(coolantThermistor1);
+    Serial.println(coolantThermistor2);
+    Serial.print(coolantThermistor3);
+    Serial.println(" degrees C, coolant 1,2, and 3");
     Serial.println(" ");
     Serial.println(" ");
     Serial.println(" ");

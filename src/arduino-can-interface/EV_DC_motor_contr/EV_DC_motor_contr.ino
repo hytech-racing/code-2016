@@ -119,7 +119,7 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
     unsigned char message[8];
     message[1] = char(brake_input_voltage * 20.0); // brakes from 0 to 100
-    message[3] char((accel_input_voltage_1 + accel_input_voltage_2)*20.0); // accelerator from 0 to 100
+    message[3] = char((accel_input_voltage_1 + accel_input_voltage_2)*20.0); // accelerator from 0 to 100
     send_can_message(AM::MAIN_MESSAGE_SEND, message);
        
     bool inverter_enabled = false;
@@ -190,6 +190,15 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   float brake_input_voltage = get_input_voltage(BRAKE_PEDAL, 5.0),
        accel_input_voltage_1 = get_input_voltage(ACCEL_PEDAL_1, 5.0),
        accel_input_voltage_2 = get_input_voltage(ACCEL_PEDAL_2, 5.0); // two voltages needed to compare
+       
+  if(brake_input_voltage > 4.75 || brake_input_voltage < 0.25) {
+    pedal_error = true;
+  }
+  
+  if(max(accel_input_voltage_1, accel_input_voltage_2) > 4.75 || min(accel_input_voltage_1, accel_input_voltage_2) < 0.25){
+    pedal_error = true;
+  }
+  
   
   if(DEBUG_ON > 0 && millis() > debugPrintTimer) {
         
@@ -220,9 +229,12 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   }
 
   if (abs(accel_input_voltage_1 - accel_input_voltage_2) > MAX_VOLTAGE_DIFFERENCE) {
-      accel_input_voltage_1 = 0;// and kill the car, because wtf
-      accel_input_voltage_2 = 0;
       pedal_error = true;
+  }
+  
+  if(pedal_error){
+    accel_input_voltage_1 = 0;// and kill the car, because wtf
+    accel_input_voltage_2 = 0;
   }
   
   

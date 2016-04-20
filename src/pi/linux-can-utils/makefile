@@ -1,50 +1,97 @@
-
-# Makefile for gertboard test programs
 #
+#  $Id$
 #
-# Copyright (C) Gert Jan van Loo & Myra VanInwegen 2012
-# No rights reserved
-# You may treat this program as if it was in the public domain
+#  Copyright (c) 2002-2005 Volkswagen Group Electronic Research
+#  All rights reserved.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions
+#  are met:
+#  1. Redistributions of source code must retain the above copyright
+#     notice, this list of conditions, the following disclaimer and
+#     the referenced file 'COPYING'.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#  3. Neither the name of Volkswagen nor the names of its contributors
+#     may be used to endorse or promote products derived from this software
+#     without specific prior written permission.
 #
-# Keep things simple for novice users
-# so do not use any implicit rules!
+#  Alternatively, provided that this notice is retained in full, this
+#  software may be distributed under the terms of the GNU General
+#  Public License ("GPL") version 2 as distributed in the 'COPYING'
+#  file from the main directory of the linux kernel source.
 #
-all : candump_ryan candump_lib test_can 
+#  The provided data structures and external interfaces from this code
+#  are not restricted to be used by modules with a GPL compatible license.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+#  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+#  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+#  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+#  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+#  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+#  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+#  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+#  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+#  DAMAGE.
+#
+#  Send feedback to <linux-can@vger.kernel.org>
 
-clean :
-	rm *.o candump_ryan
+DESTDIR =
+PREFIX = /usr/local
 
-candump_ryan : lib.o candump_ryan.o
-	gcc -o main_can lib.o candump_ryan.o
+MAKEFLAGS = -k
 
-candump_lib: lib.o candump_lib.o
-	gcc -o candump_lib lib.o candump_ryan.o
+CFLAGS    = -O2 -Wall -Wno-parentheses -Iinclude \
+	    -fno-strict-aliasing \
+	    -DSO_RXQ_OVFL=40 \
+	    -DPF_CAN=29 \
+	    -DAF_CAN=PF_CAN
 
-test_can: lib.o candump_lib.o test_can.o
-	gcc -o test_can test_can.o
+PROGRAMS_ISOTP = isotpdump isotprecv isotpsend isotpsniffer isotptun isotpserver
+PROGRAMS_CANGW = cangw
+PROGRAMS_SLCAN = slcan_attach slcand
+#PROGRAMS = can-calc-bit-timing candump candump_ryan cansniffer cansend canplayer cangen canbusload\
+	   log2long log2asc asc2log\
+	   canlogserver bcmserver\
+	   $(PROGRAMS_ISOTP)\
+	   $(PROGRAMS_CANGW)\
+	   $(PROGRAMS_SLCAN)\
+	   slcanpty canfdtest
+PROGRAMS = candump_ryan
 
-# The next lines generate the various object files
+all: $(PROGRAMS)
 
-lib.o : lib.c 
-	gcc -c lib.c
+clean:
+	rm -f $(PROGRAMS) *.o
 
-candump_lib.o : candump_lib.c
-	gcc -c candump_lib.c
+install:
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp -f $(PROGRAMS) $(DESTDIR)$(PREFIX)/bin
 
-candump_ryan.o : candump_ryan.c 
-	gcc -c candump_ryan.c
+distclean:
+	rm -f $(PROGRAMS) *.o *~
 
-test_can.o : test_can.c
-	gcc -c test_can.c
+cansend.o:	lib.h
+cangen.o:	lib.h
+candump.o:	lib.h
+candump_ryan.o: lib.h
+canplayer.o:	lib.h
+canlogserver.o:	lib.h
+canbusload.o:	lib.h
+log2long.o:	lib.h
+log2asc.o:	lib.h
+asc2log.o:	lib.h
+
+cansend:	cansend.o	lib.o
+cangen:		cangen.o	lib.o
+candump:	candump.o	lib.o
+candump_ryan: candump_ryan.o lib.o
+canplayer:	canplayer.o	lib.o
+canlogserver:	canlogserver.o	lib.o
+log2long:	log2long.o	lib.o
+log2asc:	log2asc.o	lib.o
+asc2log:	asc2log.o	lib.o
