@@ -238,7 +238,7 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) {
   
   for(int i = 0; i < 30; i++) { // play the ready to drive sound
     digitalWrite(readyToDerpSound, HIGH);
-    RPi::giveProgression(lilEngineThatCAN, 5);
+    RPi::giveProgression(lilEngineThatCAN, 4);
     delay(100);
   }
   
@@ -261,11 +261,14 @@ void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
   digitalWrite(software_pushbutton_control, HIGH);
   digitalWrite(software_shutdown_control, HIGH);
   digitalWrite(readyToDerpSound, HIGH);
-  delay(3000);
+  for(int i = 0; i < 30; i++) {
+    RPi::giveProgression(lilEngineThatCAN,5);
+    EVDC::goForLaunch(lilEngineThatCAN);
+    delay(100);
+  }
   digitalWrite(readyToDerpSound, LOW);
   digitalWrite(software_shutdown_control, LOW);
-  RPi::giveProgression(lilEngineThatCAN,5);
-  EVDC::goForLaunch(lilEngineThatCAN);
+  
 
 }
   

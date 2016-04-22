@@ -10,8 +10,8 @@
  // Error Codes: 2 means there is an error. 1 means that the EVDC is off (has not been launched with the GoForLaunch function)
 
 namespace EVDC {
-	const int Message = 0x0CD; // get it? because it's short for driver controls XD kind of
-        const int transmitMessage = 0x08D; // message for transmitting to the EVDC
+	const int Message = 0x0C8; // get it? because it's short for driver controls XD kind of
+        const int transmitMessage = 0x08C; // message for transmitting to the EVDC
 	int getError(unsigned char*);
 	int getButtons(unsigned char*);
         int getBrakes(unsigned char*);

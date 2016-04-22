@@ -21,7 +21,7 @@ float MC::getInternalMCTemp(char *data) {
     return motorTemp / 10.0f;
 }
 
-float MC::getRPM(char *data) {
+float MC::getRPM(unsigned char *data) {
     short motorSpeed;
     memcpy(&motorSpeed, &data[2], sizeof(short));
     return (float) motorSpeed;

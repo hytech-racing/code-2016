@@ -6,20 +6,13 @@
 class can_message
 {
 public:
-    union command_data
-    {
-        uint8_t bytes[8];
-        uint16_t shorts[4];
-    };
+    
 
     can_message();
     ~can_message();
-
-    int get_id();
-    command_data get_data();
-
-protected:
-    command_data data;
+    
+  public:
+    unsigned char* command_data;
     int id;
 };
 

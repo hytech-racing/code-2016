@@ -18,15 +18,15 @@ public:
         uint16_t new_torque_limit);
     ~command_message();
 
-    uint16_t get_torque();
-    uint16_t get_ang_velocity();
-    bool is_clockwise();
-    bool inverter_enabled();
-    bool discharge_enabled();
-    uint16_t get_new_torque_limit();
+//    uint16_t get_torque();
+//    uint16_t get_ang_velocity();
+//    bool is_clockwise();
+//    bool inverter_enabled();
+//    bool discharge_enabled();
+//    uint16_t get_new_torque_limit();
 
-protected:
-    command_data data;
+  public:
+    unsigned char* command_data;
     int id;
 };
 

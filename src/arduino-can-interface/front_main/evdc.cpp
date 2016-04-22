@@ -8,6 +8,8 @@ int EVDC::getError(unsigned char* data) { // first bit is high if there is a ped
     intToReturn += 2;
   }
   
+  return intToReturn;
+  
 }
 
 int EVDC::getButtons(unsigned char* data) {

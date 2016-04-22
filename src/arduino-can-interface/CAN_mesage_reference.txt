@@ -26,8 +26,8 @@ from BMS: Channel '0'
 	
 from main arduino: Channel '8'
 	0x08C - message to EVDC. byte 0 is 42 to go for launch, 
-		25 to stop motor controller (can be restarted with 42),
-		and 64 to permanently stop motor controller
+		64 to stop motor controller (can be restarted with 42),
+		and 25 to permanently stop motor controller
 	0x010 - message to Raspberry Pi. if byte 1 is 0, then byte 0 is
 		the startup progress state. 
 		If byte 1 is 1, then byte 0 is an error code.

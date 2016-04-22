@@ -33,12 +33,11 @@ MCP_CAN CAN(SPI_CS_PIN);
 */
 
 void send_can_message(int id, unsigned char *message) {
-    if (CAN.sendMsgBuf(id, 0, 8, message) != CAN_OK)
-      Serial.println("Error sending!");
+    CAN.sendMsgBuf(id, 0, 8, message);
 }
 
-void send_can_message(can_message message) {
-    send_can_message(message.get_id(), message.get_data().bytes);
+void send_can_message(can_message message, int id) {
+    send_can_message(id, message.command_data);
 }
 
 
@@ -115,9 +114,15 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       }
     }
     
-    send_can_message(command_message(0, 0, false, false, false, 0)); // Send at least one message to prevent MC shutdown
+    //send_can_message(command_message(0, 0, false, false, false, 0), 0x0C0); // Send at least one message to prevent MC shutdown
+    generate_MC_message(buf,0,brake_input_voltage,false,true,false);
+    send_can_message(0x0C0, buf);
+    
   
     unsigned char message[8];
+    for(int i = 0; i < 8; i++) {
+      message[i] = 0;
+    }
     message[1] = char(brake_input_voltage * 20.0); // brakes from 0 to 100
     message[3] = char((accel_input_voltage_1 + accel_input_voltage_2)*20.0); // accelerator from 0 to 100
     send_can_message(AM::MAIN_MESSAGE_SEND, message);
@@ -127,20 +132,40 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // wait for inverter to turn on
     while (!inverter_enabled && init_confirmed) { // while it is not enabled but main arduino initialization is finished, send out enable commands
       
-      send_can_message(command_message(0, 0, false, false, false, 0)); // Send out inverter disable command to release lockout.
-      send_can_message(command_message(0, 0, false, true, false, 0)); // enable inverter
-      send_can_message(command_message(0, 0, false, false, false, 0)); // disable inverter again
       
-      send_can_message(command_message(0, 0, false, true, false, 0)); // enable inverter
+      generate_MC_message(buf,0,brake_input_voltage,false,true,false);
+      send_can_message(0x0C0, buf);
+      delay(10);
+      generate_MC_message(buf,0,brake_input_voltage,false,true,true);
+      send_can_message(0x0C0, buf);
+      delay(10);
+      generate_MC_message(buf,0,brake_input_voltage,false,true,false);
+      send_can_message(0x0C0, buf);
+      delay(10);
+      generate_MC_message(buf,0,brake_input_voltage,false,true,true);
+      send_can_message(0x0C0, buf);
+      delay(10);
+      
+//      send_can_message(command_message(0, 0, false, false, false, 0), 0x0C0); // Send out inverter disable command to release lockout.
+//      delay(10);
+//      send_can_message(command_message(0, 0, false, true, false, 0), 0x0C0); // enable inverter
+//      delay(10);
+//      send_can_message(command_message(0, 0, false, false, false, 0), 0x0C0); // disable inverter again
+//      delay(10);
+//      send_can_message(command_message(0, 0, false, true, false, 0), 0x0C0); // enable inverter
+//      delay(10);
       
       brake_input_voltage = mapFloat(get_input_voltage(BRAKE_PEDAL, 5.0), BRAKE_NO_VAL, BRAKE_ALL_VAL, 0, 5.0);
       
       unsigned char messageOther[8];
+      for(int i = 0; i < 8; i++) {
+        messageOther[i] = 0;
+      }
       message[1] = int(brake_input_voltage * 20.0); // brakes from 0 to 100
       send_can_message(AM::MAIN_MESSAGE_SEND, messageOther);
       
       unsigned char len = 0; //Length of received message
-      unsigned char buf[8];  //Where the received message will be stored
+      //unsigned char buf[8];  //Where the received message will be stored
       
       setupTimer = millis() + 50;
       while(setupTimer > millis()){ //listen to can for 50 millisecdons
@@ -184,6 +209,10 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   unsigned char len = 0; //Length of received message
   unsigned char buf[8];  //Where the received message will be stored
   unsigned char mainMessage[8];
+  unsigned char MCmessage[8];
+  for(int i = 0; i < 8; i++) {
+    mainMessage[i] = 0;
+  }
   boolean pedal_error = false;
   
   
@@ -219,6 +248,10 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   if(accel_input_voltage_2 < 0) {
     accel_input_voltage_2 = 0;
   }
+  
+  if (abs(accel_input_voltage_1 - accel_input_voltage_2) > MAX_VOLTAGE_DIFFERENCE) {
+      pedal_error = true;
+  }
     
   if(!run_normal) {   
     accel_input_voltage_1 = 0;
@@ -228,9 +261,7 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     mainMessage[0] = 42; // EVDC is running normal
   }
 
-  if (abs(accel_input_voltage_1 - accel_input_voltage_2) > MAX_VOLTAGE_DIFFERENCE) {
-      pedal_error = true;
-  }
+  
   
   if(pedal_error){
     accel_input_voltage_1 = 0;// and kill the car, because wtf
@@ -245,17 +276,14 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     deactivate_brake_lights();
   }
     
-  if(millis() > MC_SENDER_TIMER){
-    send_can_message(generate_command_message((accel_input_voltage_1 + accel_input_voltage_2) / 2, brake_input_voltage, use_regen));
-    MC_SENDER_TIMER += MC_SENDER_DELAY;
-  }
+ 
   
   
   if(pedal_error) {
     mainMessage[2] = 1;
   }
   mainMessage[1] = char(brake_input_voltage * 20.0); // brakes from 0 to 100
-  mainMessage[3] = char((accel_input_voltage_1 + accel_input_voltage_2)*20.0);
+  mainMessage[3] = char((accel_input_voltage_1 + accel_input_voltage_2)*10.0);
   
   
   if(millis() > MAIN_SENDER_TIMER){
@@ -263,6 +291,11 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     MAIN_SENDER_TIMER += MAIN_SENDER_DELAY;
   }
     
+   if(millis() > MC_SENDER_TIMER){
+    generate_MC_message(MCmessage, (accel_input_voltage_1 + accel_input_voltage_2) / 2, brake_input_voltage, use_regen, true, run_normal);
+    send_can_message(MAIN_COMMAND_MESSAGE_ID, MCmessage);
+    MC_SENDER_TIMER += MC_SENDER_DELAY;
+  }
   
   
   
@@ -272,10 +305,7 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     if (CAN.getCanId() == MC_MOTOR_POS_INFO_MESSAGE_ID) {
       MC_TIMEOUT = millis() + MC_TIMEOUT_LIMIT;
-
-      can_message::command_data received;
-      memcpy(received.bytes, buf, 8); // copy buf to received.bytes
-      uint16_t angular_velocity = received.shorts[1]; // bytes 2,3 as per spec
+      float angular_velocity = MC::getRPM(buf);
       float linear_velocity = 2 * MATH_PI * WHEEL_RADIUS * angular_velocity * (60/1000)* (TEETH_MOTOR / TEETH_WHEEL); // this is in kmph
       
       if (linear_velocity > 5.0) {

@@ -10,7 +10,7 @@ namespace MC {
     float getPhaseTemp(char*);
     float getInternalMCTemp(char*);
     float getMotorTemp(char*);
-    float getRPM(char*);
+    float getRPM(unsigned char*);
     float getCurrent(char*);
     float getInverterRunMode(char*);
 

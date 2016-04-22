@@ -34,7 +34,7 @@ does not stop all car functionality
 
 
 
-#define PRINT_MODE 0 // declare to be 64 to turn on printing 
+#define PRINT_MODE 64 // declare to be 64 to turn on printing 
 long printTimer;
 #define PRINT_DELAY 1000 // 1 second between prints
 /* 
@@ -325,13 +325,7 @@ void loop() {
     alertError(CanBus, FIVE_WARNING_TEMP);
   }
   
-  int twentyFourTemp = checkThermistor(10000, analogRead(twenty_four_thermistor));
-  if(twentyFourTemp > MAX_DCDC_TEMP) {
-    shutdownError(CanBus, TWENTYFOUR_OVER_TEMP);
-  }
-  else if(twentyFourTemp > WARNING_DCDC_TEMP) {
-    alertError(CanBus, TWENTYFOUR_WARNING_TEMP);
-  }
+  
   
   
   if(getMultiplexerAnalog(FIVE_SUPPLY_CHECK_SELECT) < 800) {
@@ -395,6 +389,9 @@ void loop() {
   //PRINTING STUFF***************************************************************************************************************
   if(PRINT_MODE == 64 && millis() > printTimer) {
     printTimer = millis() + PRINT_DELAY;
+    Serial.println(" ");
+    Serial.println(" ");
+    Serial.println(" ");
     Serial.println("igbt and motor temps");
     Serial.println(MCphasetemp);
     Serial.println(MCmotortemp);
@@ -415,7 +412,7 @@ void loop() {
     Serial.println(ARerror);
     Serial.print("EVDC error: ");
     Serial.println(EVDCerror);
-    Serial.print("shutdown cycle boost toggle");
+    Serial.println("shutdown cycle boost toggle");
     if(shutdownButton()) {
       Serial.println("1 ");
     }
@@ -455,13 +452,16 @@ void loop() {
     Serial.println(" degrees C, 12v DCDC");
     Serial.print(fiveTemp);
     Serial.println(" degrees C, 5v DCDC");
+    Serial.println("coolant 1,2,3 raw, high");
     Serial.println(coolantThermistor1);
     Serial.println(coolantThermistor2);
-    Serial.print(coolantThermistor3);
-    Serial.println(" degrees C, coolant 1,2, and 3");
+    Serial.println(coolantThermistor3);
+    Serial.print(highCoolantTemp);
+    Serial.println(" degrees C");
     Serial.println(" ");
     Serial.println(" ");
     Serial.println(" ");
+    
   } // end "if print mode on"
     
 
