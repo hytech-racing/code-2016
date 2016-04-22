@@ -2,6 +2,7 @@ package com.hytech.display;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -9,6 +10,8 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.Gravity;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
@@ -85,15 +88,13 @@ public class MainActivity extends Activity implements SensorEventListener {
         bcs.start();
         btByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-        initSensors();
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         bindUIElements();
     }
 
     // region [ BT DATA HANDLER ]
     private final Handler handler = new Handler(new Handler.Callback() {
-
         @Override
-
         public boolean handleMessage(Message message) {
             byte[] data = (byte[]) message.obj;
             btByteBuffer.clear();
@@ -115,8 +116,7 @@ public class MainActivity extends Activity implements SensorEventListener {
                     battTempAvg.setText(String.valueOf(btByteBuffer.get(1)));
                     break;
                 case BT_CAR_STARTUP_STATE:
-                    handleStartupCode(btByteBuffer.get(0));
-                    handleErrorCode(btByteBuffer.get(1));
+                    handleErrorCode(btByteBuffer.get(1), btByteBuffer.get(0));
                     break;
                 case BT_MOTOR_TEMP:
                     motorTemp.setText(String.valueOf(value));
@@ -145,9 +145,11 @@ public class MainActivity extends Activity implements SensorEventListener {
     // endregion
 
     public void handleStartupCode(byte startupCode) {
+        errorState = -1;
         if (currentState == startupCode) {
             return;
         }
+
         currentState = startupCode;
 
         String message = null;
@@ -178,11 +180,11 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
 
         if (message != null) {
-            btErrorDialog(message);
+            btErrorDialog(message, false);
         }
     }
 
-    public void handleErrorCode(byte errorCode) {
+    public void handleErrorCode(byte errorCode, byte startupCode) {
         if (errorState == errorCode) {
             return;
         }
@@ -267,23 +269,30 @@ public class MainActivity extends Activity implements SensorEventListener {
                 message = "5V2 DIP";
                 break;
             case 0:
-                if (infoDisplay != null && infoDisplay.isShowing()) {
-                    infoDisplay.dismiss();
-                }
-                break;
+                handleStartupCode(startupCode);
+                return;
         }
 
+        currentState = -1;
         if (message != null) {
-            btErrorDialog(message);
+            btErrorDialog(message, true);
         }
     }
 
-    public void btErrorDialog(String message) {
+    public void btErrorDialog(String message, boolean error) {
         if (infoDisplay != null && infoDisplay.isShowing()) {
             infoDisplay.dismiss();
         }
+        TextView tv = new TextView(this);
+        tv.setPadding(100, 100, 100, 100);
+        tv.setGravity(Gravity.CENTER);
+        if (error) {
+            tv.setTextColor(RED);
+        }
+        tv.setText(message);
+        tv.setTextSize(24);
         infoDisplay = new AlertDialog.Builder(MainActivity.this)
-            .setMessage(message).setIcon(R.drawable.ic_launcher)
+            .setView(tv)
                 .setCancelable(false).create();
         infoDisplay.show();
     }
@@ -329,18 +338,14 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
     }
 
-    private void initSensors() {
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        accelerometer = sensorManager.getDefaultSensor(
-                Sensor.TYPE_ACCELEROMETER);
-    }
-
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     @Override
     public void onResume() {
         super.onResume();
+        accelerometer = sensorManager.getDefaultSensor(
+                Sensor.TYPE_ACCELEROMETER);
         sensorManager.registerListener(this, accelerometer,
                 SensorManager.SENSOR_DELAY_FASTEST);
     }
