@@ -55,6 +55,7 @@ int pot = 1;
 int state = 0;
 int value;
 int charge = 0;
+int error = 0;
 
 void loop() {
 //  if (!enabled) {
@@ -105,6 +106,12 @@ void loop() {
       } else if (state <= 0) {
         state = 0;
       }
+    } else if (entry == '1') {
+      error = 4;
+    } else if (entry == '2') {
+      error = 20;
+    } else if (entry == '0') {
+      error = 0;
     }
     int avg = random(1, 100);
     int high = random(avg, 100);
@@ -130,6 +137,7 @@ void loop() {
 //      }
     int motor = 800;
     short current = -100;
+    int thr = charge / 2;
 
       /**
        * INPUT SEQUENCE TO TURN ON MOTOR 100% OF THE TIME
@@ -142,23 +150,28 @@ void loop() {
     memcpy(&mTemp[4], &motor, sizeof(short));
     memcpy(&draw[6], &current, sizeof(short));
     memcpy(&bat[1], &charge, sizeof(byte));
-    
-    Serial.println(bat[1], HEX);
+    memcpy(&pedals[3], &thr, sizeof(byte));
+    memcpy(&sseq[1], &error, sizeof(byte));
+
+    Serial.print("Startup: ");
+    Serial.print(sseq[0]);
+    Serial.print("  Error: ");
+    Serial.println(sseq[1]);
     CAN.sendMsgBuf(0x020, 0, 8, lv);
-    delay(20);
+    delay(5);
     CAN.sendMsgBuf(0x0C8, 0, 8, pedals);
-    delay(20);
+    delay(5);
     CAN.sendMsgBuf(0x0A2, 0, 8, mTemp);
-    delay(20);
+    delay(5);
     CAN.sendMsgBuf(0x0A5, 0, 8, msg);
-    delay(20);
+    delay(5);
     CAN.sendMsgBuf(0x001, 0, 8, bat);
-    delay(20);
+    delay(5);
     CAN.sendMsgBuf(0x004, 0, 8, temp);
-    delay(20);
+    delay(5);
     CAN.sendMsgBuf(0x010, 0, 8, sseq);
-    delay(20);
+    delay(5);
     CAN.sendMsgBuf(0x0A6, 0, 8, draw);
-    delay(20);
+    delay(5);
   }
 
