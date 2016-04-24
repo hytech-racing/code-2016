@@ -1,0 +1,9 @@
+1. Set phone hotspot like this:
+    SSID: hytech-debug
+    Password: hytech2016
+
+2. Connect laptop to hytech-debug
+
+3. ssh pi@192.168.43.43
+
+4. That should do it
