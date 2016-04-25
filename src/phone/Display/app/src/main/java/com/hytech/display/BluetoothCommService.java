@@ -21,6 +21,8 @@ public class BluetoothCommService {
     private SetupConnection btSetupConnection;
     private CommunicationThread btCommunicationThread;
 
+    private OnConnectedListener onConnectedListener;
+
     private static final String LOG_TAG = "BT_COMM";
     // Laptop Address
     // private static final String SERVER_ADDR = "A0:A8:CD:B5:52:97";
@@ -31,9 +33,10 @@ public class BluetoothCommService {
 
     private static final int DATA_LENGTH = 4;
 
-    public BluetoothCommService(Handler handler) {
+    public BluetoothCommService(Handler btHandler, OnConnectedListener onConnectedListener) {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-        btHandler = handler;
+        this.btHandler = btHandler;
+        this.onConnectedListener = onConnectedListener;
     }
 
     public synchronized void start() {
@@ -42,8 +45,8 @@ public class BluetoothCommService {
             btCommunicationThread = null;
         }
         btSetupConnection = new SetupConnection();
-//        log("Connecting");
         btSetupConnection.start();
+        log("Starting Connection");
     }
 
     public synchronized void connected() {
@@ -51,13 +54,15 @@ public class BluetoothCommService {
             btSetupConnection.interrupt();
             btSetupConnection = null;
         }
+        onConnectedListener.onConnectedChange(true);
         btCommunicationThread = new CommunicationThread();
-//        log("Talking");
         btCommunicationThread.start();
+        log("Connected");
+        log("Starting Communication");
     }
 
     public synchronized void disconnected() {
-//        log("Disconnected");
+        onConnectedListener.onConnectedChange(false);
         start();
     }
 
@@ -73,6 +78,7 @@ public class BluetoothCommService {
                     btSocket = btServer
                             .createInsecureRfcommSocketToServiceRecord(
                             UUID.fromString(B_UUID));
+                    log("Socket created");
                 } catch (Exception e) {
                     continue;
                 }
@@ -80,6 +86,7 @@ public class BluetoothCommService {
                     btSocket.connect();
                 } catch (IOException e) {
                     try {
+                        log("Connection #1 Failed");
                         btSocket = (BluetoothSocket) btServer.getClass()
                                 .getMethod("createRfcommSocket",
                                         new Class[] {int.class})
@@ -87,16 +94,14 @@ public class BluetoothCommService {
                         btSocket.connect();
                     }
                     catch (Exception e2) {
-//                        log("Connection Failed");
                         try {
+                            log("Connection #2 Failed");
                             btSocket.close();
                         } catch (IOException e3) {
-//                            log("Couldn't close socket");
                         }
                     }
                 }
             }
-//            log("Socket created and connected");
             connected();
         }
     }
@@ -112,11 +117,9 @@ public class BluetoothCommService {
                 tmpIn = btSocket.getInputStream();
                 tmpOut = btSocket.getOutputStream();
             } catch (IOException e) {
-//                log("IO streams creation failed");
             }
             btReader = tmpIn;
             btWriter = tmpOut;
-//            log("IO streams created");
         }
 
         @Override
@@ -151,6 +154,10 @@ public class BluetoothCommService {
                 btWriter.write(buffer);
             } catch (IOException e) { }
         }
+    }
+
+    public interface OnConnectedListener {
+        void onConnectedChange(boolean connected);
     }
 
     public void write(byte[] out) {

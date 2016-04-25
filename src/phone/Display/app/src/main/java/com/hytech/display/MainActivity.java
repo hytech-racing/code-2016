@@ -14,6 +14,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -46,6 +47,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     private int currentProgressColor = RED;
     private ArcProgress chargeMeter;
     private TextView speedView;
+
+    private ImageView connectedView;
 
     private TextView motorCurrent;
     private TextView battTempHigh;
@@ -84,7 +87,23 @@ public class MainActivity extends Activity implements SensorEventListener {
         PROGRESS_COLORS = new int[] {RED, ORANGE, YELLOW, GREEN};
         // endregion
 
-        BluetoothCommService bcs = new BluetoothCommService(handler);
+        BluetoothCommService bcs = new BluetoothCommService(handler,
+                new BluetoothCommService.OnConnectedListener() {
+            @Override
+            public void onConnectedChange(final boolean connected) {
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (connected) {
+                            connectedView.setVisibility(View.VISIBLE);
+                        } else {
+                            connectedView.setVisibility(View.GONE);
+                            setDefaultValues();
+                        }
+                    }
+                });
+            }
+        });
         bcs.start();
         btByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
@@ -307,6 +326,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         rearVoltage = (TextView) findViewById(R.id.rear_voltage);
         pedalsAccel = (ProgressBar) findViewById(R.id.pedals_accel);
         pedalsBrake = (ProgressBar) findViewById(R.id.pedals_brake);
+        connectedView = (ImageView) findViewById(R.id.bt_connected);
     }
 
     private void setDefaultValues() {
