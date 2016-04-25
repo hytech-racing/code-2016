@@ -11,15 +11,15 @@
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
-const int SPI_CS_PIN = 9;
+const int SPI_CS_PIN = 10;
 
 MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
 
 void setup()
 {
     Serial.begin(9600);
-    pinMode(A3, OUTPUT);
-    pinMode(A5, OUTPUT);
+    //pinMode(A3, OUTPUT);
+   // pinMode(A5, OUTPUT);
     pinMode(A4, INPUT);
 
 START_INIT:
@@ -82,8 +82,8 @@ void loop() {
         up = true;
       }
     }
-    digitalWrite(A3, HIGH);
-    digitalWrite(A5, LOW);
+    //digitalWrite(A3, HIGH);
+    //digitalWrite(A5, LOW);
     if (pot == 1) {
       value = analogRead(A4);
       if (value < 50) {
