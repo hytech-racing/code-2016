@@ -41,13 +41,13 @@
 
 #define BRAKE_NO_VAL 0
 
-#define ACC1_ALL_VAL 419
+#define ACC1_ALL_VAL 2.046
 
-#define ACC1_NO_VAL 531
+#define ACC1_NO_VAL 2.593
 
-#define ACC2_ALL_VAL 232
+#define ACC2_ALL_VAL 1.133
 
-#define ACC2_NO_VAL 88
+#define ACC2_NO_VAL 0.43
 
 #define DEBUG_ON 42 // if more than 0, then debug mode is on
 
