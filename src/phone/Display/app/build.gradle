@@ -25,4 +25,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.android.support:design:23.3.0'
     compile 'com.github.lzyzsd:circleprogress:1.1.0'
+    compile 'com.github.nkzawa:socket.io-client:0.3.0'
 }

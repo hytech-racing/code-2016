@@ -19,14 +19,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.github.lzyzsd.circleprogress.ArcProgress;
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 
 public class MainActivity extends Activity implements SensorEventListener {
 
-    // region #CONSTANTS
+    // region # CONSTANTS
     public int GREEN;
     public int YELLOW;
     public int ORANGE;
@@ -68,6 +72,9 @@ public class MainActivity extends Activity implements SensorEventListener {
     private byte currentState = -1;
     private byte errorState = -1;
 
+    private Socket socketIO;
+    private static final String MSG_NAMESPACE = "telemetry";
+
     ByteBuffer btByteBuffer = ByteBuffer.allocate(2);
 
     @Override
@@ -79,12 +86,35 @@ public class MainActivity extends Activity implements SensorEventListener {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
-        // region #SETUP COLORS
+        // region # SETUP COLORS
         GREEN = getResources().getColor(R.color.green);
         YELLOW = getResources().getColor(R.color.yellow);
         ORANGE = getResources().getColor(R.color.orange);
         RED = getResources().getColor(R.color.red);
         PROGRESS_COLORS = new int[] {RED, ORANGE, YELLOW, GREEN};
+        // endregion
+
+        // region # SETUP SOCKET_IO
+        try {
+            socketIO = IO.socket("http://dev.nathancheek.com:3000/telemetrySend");
+        } catch (URISyntaxException e) {
+            BluetoothCommService.log("SocketIO creation failed: " + e.getMessage());
+        }
+
+        socketIO.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                BluetoothCommService.log("SocketIO Connected");
+                socketIO.emit(MSG_NAMESPACE, "Connected");
+            }
+        }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                BluetoothCommService.log("SocketIO Disconnected");
+            }
+        });
+
+        socketIO.connect();
         // endregion
 
         BluetoothCommService bcs = new BluetoothCommService(handler,
@@ -156,7 +186,10 @@ public class MainActivity extends Activity implements SensorEventListener {
                 case BT_DISCONNECT:
                     setDefaultValues();
                     break;
+                default:
+                    return true;
             }
+            socketIO.emit(MSG_NAMESPACE, data[0]);
             return true;
         }
 
