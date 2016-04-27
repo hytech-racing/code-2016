@@ -29,8 +29,14 @@ void shutdownError(MCP_CAN& datCAN, int code) {
     
   digitalWrite(software_shutdown_control, LOW);
   digitalWrite(AIRdcdc, LOW);
-  Serial.print("EPIC ERROR -- ");
-  Serial.println(code);
+  if(PRINT_MODE == 64) {
+    Serial.write(32);
+    Serial.print(code);
+  }
+  else {
+    Serial.print("EPIC ERROR -- ");
+    Serial.println(code);
+  }
     
   while(DEBUG_ACTIVATE != 42) { // return if debug mode is on.
                                     //  "shut them ALL down!!!"
@@ -43,7 +49,13 @@ void shutdownError(MCP_CAN& datCAN, int code) {
 
 void alertError(MCP_CAN& datCAN, int code) { // alert errors are for things not serious enough to shut down 
   RPi::giveError(datCAN, code);
-  Serial.print("ALERT ERROR -- ");
-  Serial.println(code);
+  if(PRINT_MODE == 64) {
+    Serial.write(32);
+    Serial.print(code);
+  }
+  else {
+    Serial.print("EPIC ERROR -- ");
+    Serial.println(code);
+  }
 }
 

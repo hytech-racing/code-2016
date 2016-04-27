@@ -54,7 +54,7 @@ okay, so the software_shutdown_control is turned on. then, the software_pushbutt
 // 10,11,and 12, and 13 are SPI for CAN
 #define MULTIPLEXER_INPUT A4
 #define CONTROL_11 A3 //GOOD
-#define CONTROL_10 A5 //GOOD
+#define toggleButton2Pin A5 //GOOD
 #define IMDpin A7               // GOOD - needs to sub in for A6
 #define twenty_four_thermistor A6  // GOOD - needs to sub in for A7 
 #define MULTIPLEXER_SELECT_3 A2 // GOOD

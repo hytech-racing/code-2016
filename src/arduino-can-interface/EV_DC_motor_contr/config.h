@@ -13,12 +13,6 @@
 
 #define BRAKE_LIGHTS_PIN 2
 
-#define BRAKE_PEDAL A7 // DESPITE SCHEMATIC THESE ARE CORRECT
-
-#define ACCEL_PEDAL_1 A6
-
-#define ACCEL_PEDAL_2 A5
-
 #define CAN_RATE CAN_500KBPS
 
 #define COMMAND_MESSAGE_ID 0x252
@@ -37,17 +31,23 @@
 
 #define MAX_VOLTAGE_DIFFERENCE 0.5 // 10% I believe
 
+#define BRAKE_PEDAL A7 // DESPITE SCHEMATIC THESE ARE CORRECT
+
+#define ACCEL_PEDAL_1 A6
+
+#define ACCEL_PEDAL_2 A5
+
 #define BRAKE_ALL_VAL 5.0
 
 #define BRAKE_NO_VAL 0
 
-#define ACC1_ALL_VAL 5.0
+#define ACC1_ALL_VAL 419
 
-#define ACC1_NO_VAL 0
+#define ACC1_NO_VAL 531
 
-#define ACC2_ALL_VAL 5.0
+#define ACC2_ALL_VAL 232
 
-#define ACC2_NO_VAL 0
+#define ACC2_NO_VAL 88
 
 #define DEBUG_ON 42 // if more than 0, then debug mode is on
 

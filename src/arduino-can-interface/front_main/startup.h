@@ -235,16 +235,20 @@ void startupSequence(MCP_CAN& lilEngineThatCAN) {
     }
   }
   startLightOff();
-  
-  for(int i = 0; i < 30; i++) { // play the ready to drive sound
-    digitalWrite(readyToDerpSound, HIGH);
+
+
+  readyToDerpOn();
+  for(int i = 0; i < 35; i++) { // play the ready to drive sound
+    
     RPi::giveProgression(lilEngineThatCAN, 4);
+    if(i > 30) {
+        EVDC::goForLaunch(lilEngineThatCAN); // go for launch 3 seconds in
+    }
     delay(100);
   }
   
-  digitalWrite(readyToDriveSound, LOW);
+  readyToDerpOff();
   
-  EVDC::goForLaunch(lilEngineThatCAN);
 }
 
 
@@ -260,16 +264,20 @@ void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
   digitalWrite(AIRdcdc, HIGH);  
   digitalWrite(software_pushbutton_control, HIGH);
   digitalWrite(software_shutdown_control, HIGH);
-  digitalWrite(readyToDerpSound, HIGH);
-  for(int i = 0; i < 30; i++) {
+  readyToDerpOn();
+  startLightOn();
+  for(int i = 0; i < 35; i++) {
     RPi::giveProgression(lilEngineThatCAN,5);
-    EVDC::goForLaunch(lilEngineThatCAN);
+    if(i > 30) {
+      EVDC::goForLaunch(lilEngineThatCAN);
+    }
     delay(100);
   }
   digitalWrite(readyToDerpSound, LOW);
   digitalWrite(software_shutdown_control, LOW);
-  
-
+  startLightOff();
+  readyToDerpOff();
+ 
 }
   
 
@@ -292,7 +300,7 @@ void defineAndSetPinModes() {
   pinMode(MULTIPLEXER_INPUT, INPUT);
   pinMode(10, OUTPUT); // CS pin
   pinMode(CONTROL_11, OUTPUT);
-  pinMode(CONTROL_10, OUTPUT);
+  pinMode(toggleButton2Pin, INPUT);
   pinMode(IMDpin, INPUT);
   pinMode(twenty_four_thermistor, INPUT);
   pinMode(MULTIPLEXER_SELECT_3, OUTPUT);
