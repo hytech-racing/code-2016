@@ -2,7 +2,7 @@
 
 
 
-#define DEBUG_ACTIVATE 0 // declare to be 42 to turn on debug functionality, 203 for board test
+#define DEBUG_ACTIVATE 42 // declare to be 42 to turn on debug functionality, 203 for board test
 /*
 Debug mode does the following things:
 skips startup sequence
