@@ -96,7 +96,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         // region # SETUP SOCKET_IO
         try {
-            socketIO = IO.socket("http://dev.nathancheek.com:3000/telemetrySend");
+            socketIO = IO.socket("http://hytech-telemetry.herokuapp.com/");
         } catch (URISyntaxException e) {
             BluetoothCommService.log("SocketIO creation failed: " + e.getMessage());
         }
@@ -105,7 +105,6 @@ public class MainActivity extends Activity implements SensorEventListener {
             @Override
             public void call(Object... args) {
                 BluetoothCommService.log("SocketIO Connected");
-                socketIO.emit(MSG_NAMESPACE, "Connected");
             }
         }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
             @Override
@@ -189,7 +188,7 @@ public class MainActivity extends Activity implements SensorEventListener {
                 default:
                     return true;
             }
-            socketIO.emit(MSG_NAMESPACE, data[0]);
+            socketIO.emit(MSG_NAMESPACE, data);
             return true;
         }
 
