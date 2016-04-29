@@ -15,10 +15,13 @@ IMDlightOn
 IMDlightOff
 startLightOn
 startLightOff
+readyToDerpOn
+readyToDerpOff
 shutdownButton
 boostButton
 cycleButton
 toggleButton
+toggleButton2
 memcpyInt
 memcpyLong
 testMicroBoard
@@ -95,20 +98,41 @@ void startLightOff() {
   digitalWrite(start_LED, LOW);
 }
 
+void readyToDerpOn() {
+  Serial.end();
+  pinMode(readyToDerpSound, OUTPUT);
+  digitalWrite(readyToDerpSound, HIGH);
+}
+
+void readyToDerpOff() {
+  digitalWrite(readyToDerpSound, LOW);
+  pinMode(readyToDerpSound, INPUT);
+  if(PRINT_MODE == 64) {
+    Serial.begin(115200);
+  }
+  else {
+    Serial.begin(9600);
+  }
+} 
+
 boolean shutdownButton() {
-  return getMultiplexerDigital(SHUTDOWN_BUTTON_SELECT);
+  return !getMultiplexerDigital(SHUTDOWN_BUTTON_SELECT);
 }
 
 boolean boostButton() {
-  return getMultiplexerDigital(BOOST_BUTTON_SELECT);
+  return !getMultiplexerDigital(BOOST_BUTTON_SELECT);
 }
 
 boolean cycleButton() {
-  return getMultiplexerDigital(CYCLE_BUTTON_SELECT);
+  return !getMultiplexerDigital(CYCLE_BUTTON_SELECT);
 }
 
 boolean toggleButton() {
-  return getMultiplexerDigital(TOGGLE_BUTTON_SELECT);
+  return !getMultiplexerDigital(TOGGLE_BUTTON_SELECT);
+}
+
+boolean toggleButton2() {
+  return !digitalRead(toggleButton2Pin);
 }
 
 
@@ -122,13 +146,27 @@ void testMicroBoard(MCP_CAN& greenBus) {
     delay(10);
   }
   
-  pinMode(10, INPUT);
+  digitalWrite(AirDCDC, HIGH);
+  digitalWrite(software_shutdown_control, HIGH);
+  digitalWrite(software_pushbutton_control, HIGH);
+  delay(1000);
+  digitalWrite(software_pushbutton_control, LOW);
+  
+  
+  
+  readyToDerpOn();
+  delay(3000);
+  readyToDerpOff();
+  
+  
+  
+  //pinMode(10, INPUT);
   delay(100);
   Serial.println("Can Bus init success");
   boolean digitalTest = true;
   while(1) {
     Serial.println("digital test");
-    digitalWrite(readyToDriveSound, digitalTest);
+    //digitalWrite(readyToDriveSound, digitalTest);
     digitalWrite(AirDCDC, digitalTest);
     digitalWrite(software_shutdown_control, digitalTest);
     digitalWrite(software_pushbutton_control, digitalTest);
@@ -138,15 +176,23 @@ void testMicroBoard(MCP_CAN& greenBus) {
     digitalWrite(IMD_LED, digitalTest);
     digitalWrite(BMS_LED, digitalTest);
     digitalWrite(CONTROL_11, digitalTest);
-    digitalWrite(CONTROL_10, digitalTest);
+    
     Serial.print("IMD pin: ");
     if(digitalRead(IMDpin)) {
-      Serial.println(analogRead(IMDpin)); //high
-    }
+      Serial.print("ON "); //high
+    } 
     else {
-      Serial.println(analogRead(IMDpin));
+      Serial.print("OFF ");
     }
-    
+    Serial.println(analogRead(IMDpin));
+
+    Serial.print("toggle button 2 ");
+    if(toggleButton2()) {
+      Serial.println("on");
+    }
+    else{
+      Serial.println("off");
+    }
     Serial.println("analog test");
     Serial.print("five volt check: ");
     Serial.println(analogRead(twenty_four_thermistor));

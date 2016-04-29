@@ -79,6 +79,8 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   bool good_for_launch = false;
   bool inverter_enabled = false;
   bool init_confirmed = false;
+
+  pinMode(BRAKE_LIGHTS_PIN, OUTPUT);
   
   while(!good_for_launch) {
     
@@ -230,7 +232,8 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   
   if(DEBUG_ON > 0 && millis() > debugPrintTimer) {
-        
+    //activate_brake_lights();
+    digitalWrite(BRAKE_LIGHTS_PIN, HIGH);
     Serial.println("raw: brake, then acc_1, then acc_2");
     Serial.println(brake_input_voltage);
     Serial.println(accel_input_voltage_1);
@@ -273,7 +276,7 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     activate_brake_lights();
   }
   else {
-    deactivate_brake_lights();
+    //deactivate_brake_lights();
   }
     
  

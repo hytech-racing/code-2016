@@ -12,31 +12,9 @@ does not stop all car functionality
 
 */
 
-#include <SPI.h>
-#include <EEPROM.h>
-// include general logic files
-#include "pinAndErrorDefinitions.h"
-//#include "multiplexer.h" moved to misc functions
-#include "thermistor.h"
-// include files for car functions
-#include "mcp_can.h"
-#include "miscFunctions.h"
-#include "mc.h"
-#include "evdc.h"
-#include "bms.h"
-#include "ar.h"
-#include "pi.h"
-#include "shutdown.h"
-#include "startup.h"
-
-
-//#include "IMD.h"     we are going to go off of a digital read of OKHS instead
-
-
-
 #define PRINT_MODE 64 // declare to be 64 to turn on printing 
 long printTimer;
-#define PRINT_DELAY 1000 // 1 second between prints
+#define PRINT_DELAY 500 // 1 second between prints
 /* 
 print mode does the following things:
 
@@ -60,6 +38,30 @@ various thermistor temperatures
 
 
 */
+
+#include <SPI.h>
+#include <EEPROM.h>
+// include general logic files
+#include "pinAndErrorDefinitions.h"
+//#include "multiplexer.h" moved to misc functions
+#include "thermistor.h"
+// include files for car functions
+#include "mcp_can.h"
+#include "miscFunctions.h"
+#include "mc.h"
+#include "evdc.h"
+#include "bms.h"
+#include "ar.h"
+#include "pi.h"
+#include "shutdown.h"
+#include "startup.h"
+
+
+//#include "IMD.h"     we are going to go off of a digital read of OKHS instead
+
+
+
+
 
 
 
@@ -182,8 +184,9 @@ void loop() {
   
   // the basic premise is that I get the data from the CANBUS and
   // load it into variables. Then, I check the data for plausibility
-  
-  Serial.println("loop start");
+  if(PRINT_MODE != 64){
+    Serial.println("loop start");
+  }
   RPi::giveProgression(CanBus, 5);
   EVDC::goForLaunch(CanBus);
   CANtimer = millis() + MESSAGE_ACQUIRE_DELAY;
@@ -283,29 +286,21 @@ void loop() {
   }
   
   
-  int coolantThermistor1 = getMultiplexerAnalog(COOLANT_SENSOR_1_SELECT);
-  int coolantThermistor2 = getMultiplexerAnalog(COOLANT_SENSOR_2_SELECT);
-  int coolantThermistor3 = getMultiplexerAnalog(COOLANT_SENSOR_3_SELECT);
-  int highCoolantTemp = max(checkThermistor(10000, coolantThermistor1), checkThermistor(10000, coolantThermistor2));
-  highCoolantTemp = max(highCoolantTemp, checkThermistor(10000, coolantThermistor3));
-  
-  int fanAndPumpDuty = map(highCoolantTemp, 20, 60, 64, 255);
-  if(fanAndPumpDuty > 255){
-    fanAndPumpDuty = 255;
-  }
-  if(fanAndPumpDuty < 64) {
-    fanAndPumpDuty = 64;
-  }
-  analogWrite(fan_control, fanAndPumpDuty);
-  analogWrite(pump_control, fanAndPumpDuty); // got myself a bit of a proportional controller here
+//  int coolantThermistor1 = getMultiplexerAnalog(COOLANT_SENSOR_1_SELECT);
+//  int coolantThermistor2 = getMultiplexerAnalog(COOLANT_SENSOR_2_SELECT);
+//  int coolantThermistor3 = getMultiplexerAnalog(COOLANT_SENSOR_3_SELECT);
+//  int highCoolantTemp = max(checkThermistor(10000, coolantThermistor1), checkThermistor(10000, coolantThermistor2));
+//  highCoolantTemp = max(highCoolantTemp, checkThermistor(10000, coolantThermistor3));
+//  
   
   
-  if(highCoolantTemp > MAXIMUM_COOLANT_TEMPERATURE) {
-    shutdownError(CanBus, COOLANT_OVER_TEMP);
-  }
-  else if(highCoolantTemp > COOLANT_TEMPERATURE_WARNING) {
-    alertError(CanBus, COOLANT_WARNING_TEMP);
-  }
+//  
+//  if(highCoolantTemp > MAXIMUM_COOLANT_TEMPERATURE) {
+//    shutdownError(CanBus, COOLANT_OVER_TEMP);
+//  }
+//  else if(highCoolantTemp > COOLANT_TEMPERATURE_WARNING) {
+//    alertError(CanBus, COOLANT_WARNING_TEMP);
+//  }
   
   int twelveThermistor2 = getMultiplexerAnalog(TWELVE_THERMISTOR2_SELECT);
   int twelveThermistor1 = getMultiplexerAnalog(TWELVE_THERMISTOR1_SELECT);
@@ -358,6 +353,16 @@ void loop() {
    shutdownError(CanBus, HIGH_MOTOR_TEMP);
   }
   
+  int highCoolantSystemTemp = max(MCphasetemp, MCmotortemp);
+  int fanAndPumpDuty = map(highCoolantSystemTemp, 20, 60, 64, 255); //full power at 60 degrees C, quarter power at 20 degrees
+  if(fanAndPumpDuty > 255){
+    fanAndPumpDuty = 255;
+  }
+  if(fanAndPumpDuty < 0) {
+    fanAndPumpDuty = 0;
+  }
+  analogWrite(fan_control, fanAndPumpDuty);
+  analogWrite(pump_control, fanAndPumpDuty); // got myself a bit of a proportional controller here
   
   
   if((EVDCerror & 0x01) == 0x01) {
@@ -377,7 +382,7 @@ void loop() {
   
   if(shutdownButton()) { // if the shutdown button is pushed for about 1 second
     shutdownCounter++;
-    if(shutdownCounter > 10) {
+    if(shutdownCounter > 30) {
       shutDownNormal(CanBus);
     }
   }
@@ -452,12 +457,12 @@ void loop() {
     Serial.println(" degrees C, 12v DCDC");
     Serial.print(fiveTemp);
     Serial.println(" degrees C, 5v DCDC");
-    Serial.println("coolant 1,2,3 raw, high");
-    Serial.println(coolantThermistor1);
-    Serial.println(coolantThermistor2);
-    Serial.println(coolantThermistor3);
-    Serial.print(highCoolantTemp);
-    Serial.println(" degrees C");
+//    Serial.println("coolant 1,2,3 raw, high");
+//    Serial.println(coolantThermistor1);
+//    Serial.println(coolantThermistor2);
+//    Serial.println(coolantThermistor3);
+//    Serial.print(highCoolantTemp);
+//    Serial.println(" degrees C");
     Serial.println(" ");
     Serial.println(" ");
     Serial.println(" ");
