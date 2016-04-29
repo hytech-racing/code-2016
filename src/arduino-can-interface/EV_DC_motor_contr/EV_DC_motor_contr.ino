@@ -230,7 +230,7 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   
   if(DEBUG_ON > 0 && millis() > debugPrintTimer) {
-        
+    activate_brake_lights();
     Serial.println("raw: brake, then acc_1, then acc_2");
     Serial.println(brake_input_voltage);
     Serial.println(accel_input_voltage_1);

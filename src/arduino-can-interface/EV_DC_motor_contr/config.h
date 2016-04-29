@@ -31,15 +31,15 @@
 
 #define MAX_VOLTAGE_DIFFERENCE 0.5 // 10% I believe
 
-#define BRAKE_PEDAL A7 // DESPITE SCHEMATIC THESE ARE CORRECT
+#define BRAKE_PEDAL A5 // DESPITE SCHEMATIC THESE ARE CORRECT (actually, no, they were wrong...)
 
 #define ACCEL_PEDAL_1 A6
 
-#define ACCEL_PEDAL_2 A5
+#define ACCEL_PEDAL_2 A7
 
-#define BRAKE_ALL_VAL 5.0
+#define BRAKE_ALL_VAL 2.44
 
-#define BRAKE_NO_VAL 0
+#define BRAKE_NO_VAL 1.6
 
 #define ACC1_ALL_VAL 2.046
 
