@@ -81,6 +81,7 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   bool init_confirmed = false;
 
   pinMode(BRAKE_LIGHTS_PIN, OUTPUT);
+  digitalWrite(BRAKE_LIGHTS_PIN, LOW);
   
   while(!good_for_launch) {
     
@@ -88,7 +89,6 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     float accel_input_voltage_1 = get_input_voltage(ACCEL_PEDAL_1, 5.0),
             accel_input_voltage_2 = get_input_voltage(ACCEL_PEDAL_2, 5.0); // two voltages needed to compare
     if(DEBUG_ON > 0 && millis() > debugPrintTimer) {
-      
       
       Serial.println("raw: brake, then acc_1, then acc_2");
       Serial.println(brake_input_voltage);
@@ -101,8 +101,6 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     accel_input_voltage_2 = mapFloat(brake_input_voltage, ACC2_NO_VAL, ACC2_ALL_VAL, 0, 5.0);
     brake_input_voltage = mapFloat(brake_input_voltage, BRAKE_NO_VAL, BRAKE_ALL_VAL, 0, 5.0);
     
-    
-    
     setupTimer = millis() + 50;
     while(setupTimer > millis()){ //listen to can for 50 milisnencends
       if(CAN.checkReceive() == CAN_MSGAVAIL) { //Checks if message is available
@@ -114,6 +112,13 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         else if (CAN.getCanId() == AM::MAIN_MESSAGE_GET) // init command from main arduino
           init_confirmed = (buf[0]  == 42); // or WHATEVER, NEED DATA ON THAT!**
       }
+    }
+   
+    if (brake_input_voltage > BRAKE_MAX_INPUT_VOLTAGE * 0.1) { // if brake is larger than 10% of max
+      activate_brake_lights();
+    }
+    else {
+      deactivate_brake_lights();
     }
     
     //send_can_message(command_message(0, 0, false, false, false, 0), 0x0C0); // Send at least one message to prevent MC shutdown
@@ -158,7 +163,14 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //      delay(10);
       
       brake_input_voltage = mapFloat(get_input_voltage(BRAKE_PEDAL, 5.0), BRAKE_NO_VAL, BRAKE_ALL_VAL, 0, 5.0);
-      
+
+    if (brake_input_voltage > BRAKE_MAX_INPUT_VOLTAGE * 0.1) { // if brake is larger than 10% of max
+      activate_brake_lights();
+    }
+    else {
+      deactivate_brake_lights();
+    }
+    
       unsigned char messageOther[8];
       for(int i = 0; i < 8; i++) {
         messageOther[i] = 0;
@@ -232,8 +244,6 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   
   if(DEBUG_ON > 0 && millis() > debugPrintTimer) {
-    //activate_brake_lights();
-    digitalWrite(BRAKE_LIGHTS_PIN, HIGH);
     Serial.println("raw: brake, then acc_1, then acc_2");
     Serial.println(brake_input_voltage);
     Serial.println(accel_input_voltage_1);
@@ -276,7 +286,7 @@ void loop() { // BEGIN LOOP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     activate_brake_lights();
   }
   else {
-    //deactivate_brake_lights();
+    deactivate_brake_lights();
   }
     
  

@@ -104,14 +104,13 @@ void loop() {
       deactivate_brake_lights();
     }
     float percent = (accel_input_voltage_1 + accel_input_voltage_2) / 5;
-    int spd = (int) (percent * 500);
     torque = compute_torque((accel_input_voltage_1 + accel_input_voltage_2) / 2, brake_input_voltage, true);
 
 
-    memcpy(&msg[2], &spd, sizeof(short));
-    Serial.print(msg[2]);
+    memcpy(&msg[0], &torque, sizeof(short));
+    Serial.print(msg[0]);
     Serial.print(" ");
-    Serial.print(msg[3]);
+    Serial.print(msg[1]);
     CAN.sendMsgBuf(0x0C0, 0, 8, msg);
     delay(50);
   }

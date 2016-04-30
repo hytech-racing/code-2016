@@ -13,7 +13,7 @@
 // v0.9b and v1.0 is default D10
 const int SPI_CS_PIN = 9;
 
-MCP_CAN CAN(SPI_CS_PIN);                                    // Set CS pin
+MCP_CAN CAN(10);                                    // Set CS pin
 
 void setup()
 {
