@@ -20,7 +20,7 @@ MCP_CAN CAN(SPI_CS_PIN);
 int sent = 0;
 
 void setup() {
-  Serial.begin(9600); //initialize serial for PC communication
+  Serial.begin(115200); //initialize serial for PC communication
 
   /*
     Initializes CAN controller

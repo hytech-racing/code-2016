@@ -13,8 +13,7 @@ does not stop all car functionality
 */
 
 #define PRINT_MODE 64 // declare to be 64 to turn on printing 
-long printTimer;
-#define PRINT_DELAY 500 // 1 second between prints
+#define PRINT_DELAY 300 // 1 second between prints
 /* 
 print mode does the following things:
 
@@ -64,10 +63,10 @@ various thermistor temperatures
 
 
 
-
+long printTimer;
 
 long CANtimer;
-#define MESSAGE_ACQUIRE_DELAY 100
+#define MESSAGE_ACQUIRE_DELAY 200
 
 long BMS_timeout;
 long BMS_timeout_limit = 2000; // 2000 ms
@@ -383,7 +382,7 @@ void loop() {
   if(shutdownButton()) { // if the shutdown button is pushed for about 1 second
     shutdownCounter++;
     if(shutdownCounter > 30) {
-      shutDownNormal(CanBus);
+      //shutDownNormal(CanBus);
     }
   }
   else {
@@ -392,7 +391,7 @@ void loop() {
   
   
   //PRINTING STUFF***************************************************************************************************************
-  if(PRINT_MODE == 64 && millis() > printTimer) {
+  if((PRINT_MODE == 64) && (millis() > printTimer)) {
     printTimer = millis() + PRINT_DELAY;
     Serial.println(" ");
     Serial.println(" ");
@@ -447,12 +446,8 @@ void loop() {
     }
     
     Serial.print("IMD: ");
-    if(analogRead(IMDpin) > 500) {
-      Serial.println("1");
-    }
-    else {
-      Serial.println("0");
-    }
+    Serial.println(analogRead(IMDpin));
+    
     Serial.print(highTwelveTemp);
     Serial.println(" degrees C, 12v DCDC");
     Serial.print(fiveTemp);
