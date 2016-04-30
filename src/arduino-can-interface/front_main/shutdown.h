@@ -1,6 +1,7 @@
 
 
 void shutDownNormal(MCP_CAN& datCAN) {
+  Serial.println("shutting down normal");
   for(int i = 0; i < 10; i++) { // wait a second to shut everything down
     EVDC::shutThemAllDown(datCAN);
     RPi::giveProgression(datCAN, 8);
@@ -27,8 +28,7 @@ void shutdownError(MCP_CAN& datCAN, int code) {
     IMDlightOn();
   }
     
-  digitalWrite(software_shutdown_control, LOW);
-  digitalWrite(AIRdcdc, LOW);
+  
   if(PRINT_MODE == 64) {
     Serial.write(32);
     Serial.print(code);
@@ -42,6 +42,8 @@ void shutdownError(MCP_CAN& datCAN, int code) {
                                     //  "shut them ALL down!!!"
       EVDC::shutThemAllDown(datCAN);//    - C-3PO, on trash compactors containing friends
       RPi::giveError(datCAN, code);
+      digitalWrite(software_shutdown_control, LOW);
+      digitalWrite(AIRdcdc, LOW);
       delay(200);
   }
   digitalWrite(readyToDriveSound, HIGH); // even if in debug mode, turn on RTD sound so that people know there is an error

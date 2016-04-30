@@ -271,9 +271,12 @@ void startupDebug( MCP_CAN& lilEngineThatCAN) { //  safety checks? Pshhh
     if(i > 30) {
       EVDC::goForLaunch(lilEngineThatCAN);
     }
+    else{
+      EVDC::calmTheFreakDown(lilEngineThatCAN);
+    }
     delay(100);
   }
-  digitalWrite(readyToDerpSound, LOW);
+  readyToDerpOff();
   digitalWrite(software_shutdown_control, LOW);
   startLightOff();
   readyToDerpOff();
