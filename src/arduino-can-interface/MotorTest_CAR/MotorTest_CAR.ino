@@ -60,6 +60,16 @@ START_INIT:
         delay(100);
         goto START_INIT;
     }
+
+    pinMode(software_shutdown_control, OUTPUT);
+    pinMode(software_pushbutton_control, OUTPUT);
+    pinMode(AIRdcdc, OUTPUT);
+
+    digitalWrite(software_shutdown_control, HIGH);
+    digitalWrite(software_pushbutton_control, HIGH);
+    delay(1000);
+    digitalWrite(software_pushbutton_control, LOW);
+    digitalWrite(AIRdcdc, HIGH);
 }
 
 void loop() {
@@ -74,6 +84,9 @@ void loop() {
       Serial.println("enabled");
       enabled = 1;
     }
+    if (entry == 'p') {
+      digitalWrite(AIRdcdc, LOW);
+    }
     delay(50);
   } else {
     char entry = Serial.read();
@@ -85,26 +98,35 @@ void loop() {
     if (shutdownButton() || entry == 'e') {
       CAN.sendMsgBuf(0x0C0, 0, 8, lockout);
     }
-    float brake_input_voltage = get_input_voltage(BRAKE_PEDAL, 5.0),
-       accel_input_voltage_1 = get_input_voltage(ACCEL_PEDAL_1, 5.0),
-       accel_input_voltage_2 = get_input_voltage(ACCEL_PEDAL_2, 5.0); // two voltages needed to compare
-    brake_input_voltage = mapFloat(brake_input_voltage, BRAKE_NO_VAL, BRAKE_ALL_VAL, 0, 5.0); // map recieved voltages to true voltages
-    accel_input_voltage_1 = mapFloat(brake_input_voltage, ACC1_NO_VAL, ACC1_ALL_VAL, 0, 5.0);
-    accel_input_voltage_2 = mapFloat(brake_input_voltage, ACC2_NO_VAL, ACC2_ALL_VAL, 0, 5.0);
-    if(accel_input_voltage_1 < 0) {
-      accel_input_voltage_1 = 0;
+    if (entry == 'g') { 
+      torque = 20;
     }
-    if(accel_input_voltage_2 < 0) {
-      accel_input_voltage_2 = 0;
+    if (entry == 'h') {
+      torque = 0;
     }
-    if (brake_input_voltage > BRAKE_MAX_INPUT_VOLTAGE * 0.1) { // if brake is larger than 10% of max
-      activate_brake_lights();
+    if (entry == 'p') {
+      digitalWrite(AIRdcdc, LOW);
     }
-    else {
-      deactivate_brake_lights();
-    }
-    float percent = (accel_input_voltage_1 + accel_input_voltage_2) / 5;
-    torque = compute_torque((accel_input_voltage_1 + accel_input_voltage_2) / 2, brake_input_voltage, true);
+//    float brake_input_voltage = get_input_voltage(BRAKE_PEDAL, 5.0),
+//       accel_input_voltage_1 = get_input_voltage(ACCEL_PEDAL_1, 5.0),
+//       accel_input_voltage_2 = get_input_voltage(ACCEL_PEDAL_2, 5.0); // two voltages needed to compare
+//    brake_input_voltage = mapFloat(brake_input_voltage, BRAKE_NO_VAL, BRAKE_ALL_VAL, 0, 5.0); // map recieved voltages to true voltages
+//    accel_input_voltage_1 = mapFloat(brake_input_voltage, ACC1_NO_VAL, ACC1_ALL_VAL, 0, 5.0);
+//    accel_input_voltage_2 = mapFloat(brake_input_voltage, ACC2_NO_VAL, ACC2_ALL_VAL, 0, 5.0);
+//    if(accel_input_voltage_1 < 0) {
+//      accel_input_voltage_1 = 0;
+//    }
+//    if(accel_input_voltage_2 < 0) {
+//      accel_input_voltage_2 = 0;
+//    }
+//    if (brake_input_voltage > BRAKE_MAX_INPUT_VOLTAGE * 0.1) { // if brake is larger than 10% of max
+//      activate_brake_lights();
+//    }
+//    else {
+//      deactivate_brake_lights();
+//    }
+//    float percent = (accel_input_voltage_1 + accel_input_voltage_2) / 5;
+//    torque = compute_torque((accel_input_voltage_1 + accel_input_voltage_2) / 2, brake_input_voltage, true);
 
 
     memcpy(&msg[0], &torque, sizeof(short));
