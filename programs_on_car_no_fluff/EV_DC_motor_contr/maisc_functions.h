@@ -50,7 +50,53 @@ int compute_torque(float input_voltage, float brake_voltage, boolean regen) {
     if(unit_input_voltage < 0) {
       unit_input_voltage = 0;
     }
-   // int divisor = 1;
+   
+    unit_input_voltage = -1.0 * unit_input_voltage * unit_input_voltage + 2*unit_input_voltage; // y = -x^2 + 2x
+    Serial.print("unit_input after curve: ");
+    Serial.println(unit_input_voltage);
+    
+
+    float output_torque = unit_input_voltage * 165; // our limit is 160, but might as well go overboard so that we know we can get max torque.
+                                                    // the motor controller will limit the torque
+    
+    if(brake_voltage > BRAKE_LIGHT_THRESHOLD) { // brakes on
+      if(regen){
+        output_torque = 0- mapFloat(brake_voltage, BRAKE_LIGHT_THRESHOLD, 5.0, 0.0, 1.0)*20; // 20 Nm of braking? sounds like a plan
+      }
+      else{
+        output_torque = 0;
+      }
+    }
+    
+    output_torque *= 10; // because of the MC protocol
+    
+    return int(output_torque);
+}
+
+void generate_MC_message(unsigned char* message, int thatTorque, boolean backwards, boolean enable) {
+  Serial.print("torque: ");
+  Serial.println(thatTorque);
+  message[0] = thatTorque & 0xFF;
+  message[1] = thatTorque>>(8);
+  message[2] = 0;
+  message[3] = 0;
+  message[4] = char(backwards);
+  message[5] = char(enable);
+  message[6] = 0;
+  message[7] = 0;
+}
+
+float getBMScurrent(unsigned char* data) {
+    unsigned char high = data[2];
+    unsigned char low = data[3];
+
+    float current = (high << 8) | low;
+    return current / 10; // units are 0.1A
+}
+  
+  // other torque curves ot use
+  
+  // int divisor = 1;
 
 //#define CALCULATE_DIVISOR for (divisor = 1;\
 //    input_voltage > 0.99; input_voltage /= 10, divisor *= 10);
@@ -84,39 +130,4 @@ int compute_torque(float input_voltage, float brake_voltage, boolean regen) {
 //        * unit_input_voltage * unit_input_voltage
 //        * (2 - unit_input_voltage);
 //#else // x
-    unit_input_voltage = -1.0 * unit_input_voltage * unit_input_voltage + 2*unit_input_voltage;
-    Serial.print("unit_input after curve: ");
-    Serial.println(unit_input_voltage);
-//#endif
-
-    float output_torque = unit_input_voltage * 165; // our limit is 160, but might as well go overboard
-    
-    if(brake_voltage > BRAKE_LIGHT_THRESHOLD) { // brakes on
-      if(regen){
-        output_torque = 0- mapFloat(brake_voltage, BRAKE_LIGHT_THRESHOLD, 5.0, 0.0, 1.0)*MAX_REGEN_CURRENT*current_coefficient; // 20 Nm of braking? sounds like a plan
-      }
-      else{
-        output_torque = 0;
-      }
-    }
-    
-    output_torque *= 10; // because of the MC protocol
-    
-    return int(output_torque);
-}
-
-void generate_MC_message(unsigned char* message, float input_voltage, float brake_voltage, boolean regen, boolean backwards, boolean enable) {
-  int thatTorque = compute_torque(input_voltage, brake_voltage, regen);
-  Serial.print("torque: ");
-  Serial.println(thatTorque);
-  message[0] = thatTorque & 0xFF;
-  message[1] = thatTorque>>(8);
-  message[2] = 0;
-  message[3] = 0;
-  message[4] = char(backwards);
-  message[5] = char(enable);
-  message[6] = 0;
-  message[7] = 0;
-}
-  
   

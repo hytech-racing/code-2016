@@ -319,7 +319,7 @@ void loop() {
   
   
   
-  if(ARerror == 1) { // if the thermistors are too low
+  if(ARerror == 1) { // if the thermistors are too hot
    shutdownError(CanBus, AR_BASE_ERROR + ARerror);
   }
   

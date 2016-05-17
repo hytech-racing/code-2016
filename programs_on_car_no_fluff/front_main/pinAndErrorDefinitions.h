@@ -40,11 +40,11 @@
 okay, so the software_shutdown_control is turned on. then, the software_pushbutton_control is pulsed on for a second or so. then, AIRdcdc is turned on or off to turn AIRs on or off
 
 */
-#define readyToDriveSound  0 // good - ready to derp sound?
+#define readyToDriveSound 0 // good - ready to derp sound?
 #define readyToDerpSound 0
-#define AirDCDC  1
-#define AIRdcdc  1
-#define software_shutdown_control  2 //OKAY
+#define AirDCDC 1
+#define AIRdcdc 1
+#define software_shutdown_control 2 //OKAY
 #define software_pushbutton_control 3 //GOOD
 #define start_LED 4 
 #define fan_control 6 //GOOD -- 150 is a fair value to use

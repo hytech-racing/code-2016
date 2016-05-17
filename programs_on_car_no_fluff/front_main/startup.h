@@ -58,7 +58,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) {
 #define software_pushbutton_control 3 
 
   digitalWrite(AIRdcdc, LOW);
-  digitalWrite(software_shutdown_contol, LOW);
+  digitalWrite(software_shutdown_control, LOW);
   digitalWrite(software_pushbutton_control, LOW);
   
   startLightOn();
@@ -104,19 +104,18 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) {
 
 // here I check for brakes and the button to be pressed in order to turn on the tractive system.
   
-  button = 0;
   int brakes = 0;
   
   while(progressBlock) {
     if(millis() > progressionTimer) {
       RPi::giveProgression(lilEngineThatCAN,3); 
       EVDC::calmTheFreakDown(lilEngineThatCAN, 71);
-      lightState = 1-lightstate;
-      if(lightstate > 0) {
-        startLightOn()
+      lightState = 1-lightState;
+      if(lightState > 0) {
+        startLightOn();
       }
       else{
-        startLightOff()
+        startLightOff();
       }
       progressionTimer += 100;
     } 
@@ -132,6 +131,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) {
       progressBlock = false;
       Serial.println("both conditions met");    
     }
+  }
   
   
   //here I turn on the high voltage system and wait for the DC bus voltage to be higher than

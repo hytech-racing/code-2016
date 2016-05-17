@@ -21,6 +21,8 @@ int launchParameter = 0;
 int messagePrinterCounter = 0;
 
 long MC_TIMEOUT = 0;
+int torque_reduction = 0;
+float DCbusCurrent = 0;
 long MAIN_TIMEOUT = 0;
 long MAIN_SENDER_TIMER = 0;
 long MC_SENDER_TIMER = 0;
@@ -84,6 +86,7 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   CAN.init_Filt(1, 0, MC_MOTOR_POS_INFO_MESSAGE_ID);
   CAN.init_Filt(2, 0, AM::MAIN_MESSAGE_GET);
   CAN.init_Filt(3, 0, 0x0AB);
+  CAN.init_Filt(4, 0, BMS_CURRENT_MESSAGE);
   
   digitalWrite(TWELVE_ON_PIN, HIGH); // turns on motor controller DCDC converters
 
@@ -115,17 +118,17 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     // the values shouldn't above 5 volts or below 0 volts
     
-    if(accel_input_voltage > 5.0) {
+    if(accel_input_voltage_1 > 5.0) {
       accel_input_voltage_1 = 5.0;
     }
-    else if(accel_input_voltage < 0) {
+    else if(accel_input_voltage_1 < 0) {
       accel_input_voltage_1 = 0;
     }
     
     if(accel_input_voltage_2 > 5.0) {
       accel_input_voltage_2 = 5.0;
     }
-    else if(accel_input_voltage < 0) {
+    else if(accel_input_voltage_2 < 0) {
       accel_input_voltage_2 = 0;
     }
     
@@ -163,7 +166,7 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     // here I send a disable message so that the motor controller does not time out
     
-    generate_MC_message(buf,0,brake_input_voltage,false,true,false);
+    generate_MC_message(buf,0,false,false);
     send_can_message(0x0C0, buf);
     
     // here I send a message to the main arduino giving it pedal values
@@ -202,20 +205,20 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       Serial.println("waiting for motor controller");
       
       // to undo the lockout on the motor controller, you
-      // have to send one disable command amid a series of disable commands
+      // have to send one disable command amid a series of enable commands
       
       for(int i = 0; i < 10; i++) {
-        generate_MC_message(buf,0,brake_input_voltage,false,false,true); // many enable command
+        generate_MC_message(buf,0,false,true); // many enable commands
         send_can_message(0x0C0, buf);
         delay(10);
       }
         
-      generate_MC_message(buf,0,brake_input_voltage,false,false,false);//this is the disable command
+      generate_MC_message(buf,0,false,false);//this is the disable command
       send_can_message(0x0C0, buf);
       delay(40);
         
       for(int i = 0; i < 10; i++) {
-        generate_MC_message(buf,0,brake_input_voltage,false,false,true); // more enable commands
+        generate_MC_message(buf,0,false,true); // more enable commands
         send_can_message(0x0C0, buf);
         delay(10);
       }
@@ -230,7 +233,7 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
       if(DEBUG_ON > 0 && millis() > debugPrintTimer) {
         Serial.println("raw: brake, then acc_1, then acc_2");
-        Serial.println(brake_input_voltage
+        Serial.println(brake_input_voltage);
         Serial.println(accel_input_voltage_1);
         Serial.println(accel_input_voltage_2);
       
@@ -257,17 +260,17 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
       // adjust brake values between 0 and 5 volts
     
-      if(accel_input_voltage > 5.0) {
+      if(accel_input_voltage_1 > 5.0) {
         accel_input_voltage_1 = 5.0;
       }
-      else if(accel_input_voltage < 0) {
+      else if(accel_input_voltage_1 < 0) {
         accel_input_voltage_1 = 0;
       }
     
       if(accel_input_voltage_2 > 5.0) {
         accel_input_voltage_2 = 5.0;
       }
-      else if(accel_input_voltage < 0) {
+      else if(accel_input_voltage_2 < 0) {
         accel_input_voltage_2 = 0;
       }
     
@@ -474,7 +477,7 @@ void loop() {
   
   if(brake_input_voltage > BRAKE_LIGHT_THRESHOLD) { // lols brake lights
     activate_brake_lights();
-    }
+  }
   else {
     deactivate_brake_lights();
   }
@@ -494,13 +497,10 @@ void loop() {
     mainMessage[0] = 42; // if no problem, tell main arduino that EVDC is running normal
   }
   
-  if(pedal_error){ // if there is a pedal issue, then set the pedal signals to 0
+  if(pedal_error){ // if there is a pedal issue, then set the pedal signals to 0.
+                   // also tell main ardunio that there is a pedal error
     accel_input_voltage_1 = 0;
     accel_input_voltage_2 = 0;
-  }
-
-   
-  if(pedal_error) { // tell the main arduino that there is a pedal error
     mainMessage[2] = 1;
     Serial.println("pedal error");
   }
@@ -520,12 +520,36 @@ void loop() {
   nextAccelerator /= 3;
   accelFilter[1] = accelFilter[0];
   accelFilter[0] = min(accel_input_voltage_1, accel_input_voltage_2);
+  
+ // here I conpute the torque value for the next command message
+  
+  int nextTorque;
+  nextTorque = compute_torque(nextAccelerator, brake_input_voltage, use_regen);
+  
+  // the motor controller does not have a DC bus current limit, so I have to implement a limit myself
+  // what I do here is, if he current is above 160 amps, the torque is repeatedly reduced. If the current
+  // is less than 160, the reduction is repeatedly taken away
+  
+  if(DCbusCurrent > 160) {
+    int error = DCbusCurrent - 160; 
+    torque_reduction += error*2; // reduce by .2 nm for every amp above 160 amps every loop (so ~50 times per second)
+  }
+  else if(torque_reduction > 0) {
+    int error = 160-DCbusCurrent;
+    torque_reduction -= error*4; // remove reduction if current is less than 160 amps. The removal is faster than the reduction
+  }
+  
+  if(torque_reduction < 0) {
+    torque_reduction = 0;
+  }
+  
+  nextTorque -= torque_reduction;
     
  // here I make and send the motor controller message. the parameters are
- // a char pointer to load, acc pedal value, brake pedal value, regen, move in reverse, enable
+ // a char pointer to load, acc pedal value, brake pedal value, regen, move in reverse, enable  
     
   if(millis() > MC_SENDER_TIMER){   
-    generate_MC_message(MCmessage, nextAccelerator, brake_input_voltage, use_regen, false, run_normal);
+    generate_MC_message(MCmessage, nextTorque, false, run_normal);
     send_can_message(MAIN_COMMAND_MESSAGE_ID, MCmessage);
     MC_SENDER_TIMER += MC_SENDER_DELAY;
   }
@@ -533,7 +557,7 @@ void loop() {
   //  here I listen to CAN to get motor speed, motor states, print out errors, 
   //  and check for disable messages from the main arduino
   
-  long CANtimer = millis() + 20;
+  long CANtimer = millis() + 20; // listen to CAN for 20 ms
   while(CANtimer > millis()) { 
   if(CAN.checkReceive() == CAN_MSGAVAIL) {
     CAN.readMsgBuf(&len, buf); 
@@ -560,8 +584,11 @@ void loop() {
       }
       Serial.println(" ");
     }
+    else if(CAN.getCanId() == BMS_CURRENT_MESSAGE) { // load DC current into variable
+      DCbusCurrent = getBMScurrent(buf);
+    }
     else if(CAN.getCanId() == 0x0AB) { // print out controller error messages
-     Serial.print("ERROR mesage ");j;
+     Serial.print("ERROR mesage ");
      for(int i = 0; i < 8; i++) {
         Serial.print(buf[i]);
         Serial.print(" ");
@@ -585,7 +612,8 @@ void loop() {
     } // end of "if can message available"
   }// end of "while can timer is on"
   
-  if(millis() > MAIN_TIMEOUT || millis() > MC_TIMEOUT) {
+  if(millis() > MAIN_TIMEOUT || millis() > MC_TIMEOUT) { // stop operation if the main
+                                                         // or motor controller time out
     run_normal = false;
   }
   
