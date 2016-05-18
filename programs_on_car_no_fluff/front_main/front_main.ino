@@ -65,7 +65,6 @@ int oldPumpDuty = 0;
 boolean precharging = false;
 
 unsigned char msgReceive[8]; // buffer for getting messages
-unsigned char msgGive[8]; // buffer for sending messages
 unsigned char len;
 
 long CANtimer;
