@@ -80,7 +80,7 @@ int main() {
 
     while (1) {
         if (can.read(frame) > 0) {
-            std::cout << "Error reading message" << std::endl;
+            std::cout << "Error reading message or no message to read" << std::endl;
         } else {
             if (0 == process_data_for_sending(bt_buffer, frame)) {
                 if (bt.send(bt_buffer) == -1) {

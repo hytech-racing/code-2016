@@ -56,8 +56,11 @@ int CAN::read(canframe_t* read_frame) {
         if (nbytes < sizeof(canframe_t)) {
             return 3;
         }
-    }
 
+        if (recv_frame.can_id == 0) {
+            return 4;
+        }
+    }
     memcpy(read_frame, &recv_frame, sizeof(canframe_t));
     return 0;
 }
