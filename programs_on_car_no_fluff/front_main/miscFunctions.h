@@ -21,10 +21,9 @@ shutdownButton
 boostButton
 cycleButton
 toggleButton
-toggleButton2
-memcpyInt
-memcpyLong
+newBoostButton
 testMicroBoard
+checkThermistor
 */
 
 

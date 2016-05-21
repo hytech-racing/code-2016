@@ -329,5 +329,16 @@ void loop() {
   if(IMDerror == 1){ // if the IMD pin is low
     shutdownError(CanBus, IMD_BASE_ERROR); 
   }
+ 
+ // TEMPORARY DEBUG THING
+ 
+  if(EVDCerror == 1) { // turn on both lights if there is a pedal error.
+    IMDlightOn();
+    BMSlightOn();
+  }
+  else{
+    IMDlightOff();
+    BMSlightOff();
+  }
   
 } // end of void loop

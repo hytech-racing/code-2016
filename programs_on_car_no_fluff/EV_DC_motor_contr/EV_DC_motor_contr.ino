@@ -398,7 +398,7 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void loop() { 
   
-  // the loop is pretty basic- get pedal values, process them, and then send commands
+  // the loop is pretty basic- get any CAN messages I need, get pedal values, process them, and then send commands
   // to the motor controller
   
   unsigned char len = 0; 
@@ -410,6 +410,60 @@ void loop() {
     mainMessage[i] = 0;
   }
   
+  long CANtimer = millis() + 20; // listen to CAN for 20 ms
+  while(CANtimer > millis()) { 
+  if(CAN.checkReceive() == CAN_MSGAVAIL) {
+    CAN.readMsgBuf(&len, buf); 
+    if (CAN.getCanId() == MC_MOTOR_POS_INFO_MESSAGE_ID) {// if it is a motor position
+                                                         // message, calculate
+                                                         // ground speed
+      MC_TIMEOUT = millis() + MC_TIMEOUT_LIMIT;
+      float angular_velocity = MC::getRPM(buf);
+      float linear_velocity = 2 * MATH_PI * WHEEL_RADIUS * angular_velocity * (60/1000)* (TEETH_MOTOR / TEETH_WHEEL); // this is in kmph
+       
+      if (linear_velocity > 5.0) {
+        use_regen = regen_button; // regen only if reported speed is above 5 kmph
+      }
+      else {
+        use_regen = false;
+      }
+    } 
+    else if(CAN.getCanId() == MC_INT_STATES_MESSAGE_ID) { // print out controller states message
+      Serial.print("motor mesage ");
+      for(int i = 0; i < 8; i++) {
+        Serial.print(buf[i]);
+        Serial.print(" ");
+      }
+      Serial.println(" ");
+    }
+    else if(CAN.getCanId() == BMS_CURRENT_MESSAGE) { // load DC current into variable
+      DCbusCurrent = getBMScurrent(buf);
+    }
+    else if(CAN.getCanId() == 0x0AB) { // print out controller error messages
+     Serial.print("ERROR mesage ");
+     for(int i = 0; i < 8; i++) {
+        Serial.print(buf[i]);
+        Serial.print(" ");
+      }
+      Serial.println(" ");
+    }
+    else if (CAN.getCanId() == AM::MAIN_MESSAGE_GET) { // get shutdown message
+                                                       // and regen value from main
+                                                       // arduino
+      MAIN_TIMEOUT = millis() + MAIN_TIMEOUT_LIMIT;
+      if(buf[0] == 42) { // everything is fine
+        run_normal = true; // 
+      }
+      else { // something is wrong
+        run_normal = false;
+      }
+        
+      regen_button = AM::getRegenButton(buf);
+    
+      }
+    } // end of "if can message available"
+  }// end of "while can timer is on"
+  
   // get pedal values
   
   float brake_input_voltage = get_input_voltage(BRAKE_PEDAL, 5.0);
@@ -419,11 +473,11 @@ void loop() {
   // if one of the pedal wires is broken, then it will read 5v or 0 volts.
   // so, if you see one of those errors, set a flag
        
-  if(brake_input_voltage > 4.75 || brake_input_voltage < 0.25) {                                         
+  if(brake_input_voltage > 4.75 || brake_input_voltage < 0.10) {                                         
     pedal_error = true;
   }
   
-  if(max(accel_input_voltage_1, accel_input_voltage_2) > 4.75 || min(accel_input_voltage_1, accel_input_voltage_2) < 0.25){
+  if(max(accel_input_voltage_1, accel_input_voltage_2) > 4.75 || min(accel_input_voltage_1, accel_input_voltage_2) < 0.10){
     pedal_error = true;
   }
   
@@ -489,9 +543,13 @@ void loop() {
     pedal_error = true;
   }
   
+  float operating_accel_1 = accel_input_voltage_1; // these values are set to 0 if there is an error
+  float operating_accel_2 = accel_input_voltage_2; // so that the pedal values before errors can still be sent to
+                                                   // the main arduino
+  
   if(!run_normal) { // set pedal signals to be 0 if there is a stand-by condition
-    accel_input_voltage_1 = 0;
-    accel_input_voltage_2 = 0; 
+    operating_accel_1 = 0;
+    operating_accel_2 = 0; 
   }
   else {
     mainMessage[0] = 42; // if no problem, tell main arduino that EVDC is running normal
@@ -499,8 +557,8 @@ void loop() {
   
   if(pedal_error){ // if there is a pedal issue, then set the pedal signals to 0.
                    // also tell main ardunio that there is a pedal error
-    accel_input_voltage_1 = 0;
-    accel_input_voltage_2 = 0;
+    operating_accel_1 = 0;
+    operating_accel_2 = 0;
     mainMessage[2] = 1;
     Serial.println("pedal error");
   }
@@ -516,10 +574,10 @@ void loop() {
   // here I implement a 3-point running averager in order
   // to filter the pedal values a bit
   
-  float nextAccelerator = min(accel_input_voltage_1, accel_input_voltage_2) + accelFilter[0] + accelFilter[1];
+  float nextAccelerator = min(operating_accel_1, operating_accel_2) + accelFilter[0] + accelFilter[1];
   nextAccelerator /= 3;
   accelFilter[1] = accelFilter[0];
-  accelFilter[0] = min(accel_input_voltage_1, accel_input_voltage_2);
+  accelFilter[0] = min(operating_accel_1, operating_accel_2);
   
  // here I conpute the torque value for the next command message
   
@@ -557,60 +615,7 @@ void loop() {
   //  here I listen to CAN to get motor speed, motor states, print out errors, 
   //  and check for disable messages from the main arduino
   
-  long CANtimer = millis() + 20; // listen to CAN for 20 ms
-  while(CANtimer > millis()) { 
-  if(CAN.checkReceive() == CAN_MSGAVAIL) {
-    CAN.readMsgBuf(&len, buf); 
-    
-    if (CAN.getCanId() == MC_MOTOR_POS_INFO_MESSAGE_ID) {// if it is a motor position
-                                                         // message, calculate
-                                                         // ground speed
-      MC_TIMEOUT = millis() + MC_TIMEOUT_LIMIT;
-      float angular_velocity = MC::getRPM(buf);
-      float linear_velocity = 2 * MATH_PI * WHEEL_RADIUS * angular_velocity * (60/1000)* (TEETH_MOTOR / TEETH_WHEEL); // this is in kmph
-       
-      if (linear_velocity > 5.0) {
-        use_regen = regen_button; // regen only if reported speed is above 5 kmph
-      }
-      else {
-        use_regen = false;
-      }
-    } 
-    else if(CAN.getCanId() == MC_INT_STATES_MESSAGE_ID) { // print out controller states message
-      Serial.print("motor mesage ");
-      for(int i = 0; i < 8; i++) {
-        Serial.print(buf[i]);
-        Serial.print(" ");
-      }
-      Serial.println(" ");
-    }
-    else if(CAN.getCanId() == BMS_CURRENT_MESSAGE) { // load DC current into variable
-      DCbusCurrent = getBMScurrent(buf);
-    }
-    else if(CAN.getCanId() == 0x0AB) { // print out controller error messages
-     Serial.print("ERROR mesage ");
-     for(int i = 0; i < 8; i++) {
-        Serial.print(buf[i]);
-        Serial.print(" ");
-      }
-      Serial.println(" ");
-    }
-    else if (CAN.getCanId() == AM::MAIN_MESSAGE_GET) { // get shutdown message
-                                                       // and regen value from main
-                                                       // arduino
-      MAIN_TIMEOUT = millis() + MAIN_TIMEOUT_LIMIT;
-      if(buf[0] == 42) { // everything is fine
-        run_normal = true; // 
-      }
-      else { // something is wrong
-        run_normal = false;
-      }
-        
-      regen_button = AM::getRegenButton(buf);
-    
-      }
-    } // end of "if can message available"
-  }// end of "while can timer is on"
+  
   
   if(millis() > MAIN_TIMEOUT || millis() > MC_TIMEOUT) { // stop operation if the main
                                                          // or motor controller time out
