@@ -564,7 +564,7 @@ void loop() {
   }
   
   mainMessage[1] = char(brake_input_voltage * 20.0); // brakes from 0 to 100
-  mainMessage[3] = char(min(accel_input_voltage_1, accel_input_voltage_2)*20.0); // accelerator from 0 to 100
+  mainMessage[3] = char((accel_input_voltage_1 + accel_input_voltage_2)*10.0); // accelerator from 0 to 100 CHANGE BACK TO MIN FOR ACTUAL PROGRAM
   
   if(millis() > MAIN_SENDER_TIMER){
     send_can_message(AM::MAIN_MESSAGE_SEND, mainMessage);
