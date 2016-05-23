@@ -175,8 +175,8 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     for(int i = 0; i < 8; i++) {
       message[i] = 0;
     }
-    message[1] = char(brake_input_voltage * 20.0); // brakes from 0 to 100
-    message[3] = char(min(accel_input_voltage_1, accel_input_voltage_2)*20.0); // accelerator from 0 to 100
+    message[1] = (unsigned char) (brake_input_voltage * 20.0); // brakes from 0 to 100
+    message[3] = (unsigned char) (min(accel_input_voltage_1, accel_input_voltage_2)*20.0); // accelerator from 0 to 100
     send_can_message(AM::MAIN_MESSAGE_SEND, message);
     
     // here, I listen to CAN in order to determine if the main arduino
@@ -292,8 +292,8 @@ void setup() { // BEGIN SETUP~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       for(int i = 0; i < 8; i++) {
         messageOther[i] = 0;
       } 
-      messageOther[1] = int(brake_input_voltage * 20.0); // brakes from 0 to 100
-      messageOther[3] = char(min(accel_input_voltage_1, accel_input_voltage_2)*20.0); // accelerator from 0 to 100
+      messageOther[1] = (unsigned char) (brake_input_voltage * 20.0); // brakes from 0 to 100
+      messageOther[3] = (unsigned char) (min(accel_input_voltage_1, accel_input_voltage_2)*20.0); // accelerator from 0 to 100
 
       send_can_message(AM::MAIN_MESSAGE_SEND, messageOther);
       
@@ -563,8 +563,8 @@ void loop() {
     Serial.println("pedal error");
   }
   
-  mainMessage[1] = char(brake_input_voltage * 20.0); // brakes from 0 to 100
-  mainMessage[3] = char((accel_input_voltage_1 + accel_input_voltage_2)*10.0); // accelerator from 0 to 100 CHANGE BACK TO MIN FOR ACTUAL PROGRAM
+  mainMessage[1] = (unsigned char) (brake_input_voltage * 20.0); // brakes from 0 to 100
+  mainMessage[3] = (unsigned char) ((accel_input_voltage_1 + accel_input_voltage_2)*10.0); // accelerator from 0 to 100 CHANGE BACK TO MIN FOR ACTUAL PROGRAM
   
   if(millis() > MAIN_SENDER_TIMER){
     send_can_message(AM::MAIN_MESSAGE_SEND, mainMessage);
