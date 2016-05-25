@@ -13,7 +13,7 @@ MCP_CAN CAN(SPI_CS_PIN);
 unsigned char len;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   START_INIT:
 
@@ -31,7 +31,7 @@ void setup() {
     Serial.println("Hit a to program");
 }
 
-unsigned char msg[8] = {158, 0, 1, 0, 1, 0, 0, 0};
+unsigned char msg[8] = {101, 0, 1, 0, 64, 6, 0, 0};
 
 void loop() {
   
