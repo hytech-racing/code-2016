@@ -54,7 +54,7 @@ unsigned char lastEVDCmessage[8] = {0,0,0,0,0,0,0,0};
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   
   while(CAN_OK != MCcan.begin(CAN_500KBPS)) {
     Serial.println("MC bus not operational");
@@ -79,6 +79,15 @@ void loop() {
                                              // a buffer and increment a counter
     MCcan.readMsgBuf(&len, tempBuf);
     //Serial.println("M");
+    /*Serial.print(millis());
+    Serial.print(" - ");
+    Serial.print(MCcan.getCanId(), HEX);
+    Serial.print(": ");
+    for(int i = 0; i < 8; i++) {
+      Serial.print(tempBuf[i], HEX);
+      Serial.print(" ");
+    }
+    Serial.println("");*/
     switch(MCcan.getCanId()) {
       case 0x0A0:
         for(int i = 0; i < 8; i++) {
@@ -139,12 +148,28 @@ void loop() {
           lastABmessage[i] = tempBuf[i];
         }
         messageABcounter++;
+        /*Serial.print(0x0AB, HEX);
+        Serial.print(": ");
+        for(int i = 0; i < 8; i++) {
+          Serial.print(tempBuf[i], HEX);
+          Serial.print(" ");
+        }
+        Serial.println("");*/
         break;
       case 0x0AC:
         for(int i = 0; i < 8; i++) {
           lastACmessage[i] = tempBuf[i];
         }
         messageACcounter++;
+        break;
+      case 0x0AF:
+        Serial.print(0x0AF, HEX);
+        Serial.print(": ");
+        for(int i = 0; i < 8; i++) {
+          Serial.print(tempBuf[i], HEX);
+          Serial.print(" ");
+        }
+        Serial.println("");
         break;
     }
   }
