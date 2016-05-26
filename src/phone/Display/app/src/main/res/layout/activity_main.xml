@@ -60,7 +60,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Rear Voltage (V)"
+            android:text="GLV (V)"
             android:textColor="@color/gray"
             android:padding="@dimen/spacing_0.5"
             android:layout_alignParentRight="true"
