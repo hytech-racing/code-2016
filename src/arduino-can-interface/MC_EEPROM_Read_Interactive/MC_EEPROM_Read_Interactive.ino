@@ -13,7 +13,7 @@ unsigned char msg[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 MCP_CAN CAN(SPI_CS_PIN); 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   inputString.reserve(200);
 
   START_INIT:
@@ -60,7 +60,7 @@ void loop() {
       Serial.print(" ");
       Serial.println(buf[4], HEX);
     }
-   }
+  }
 }
 
 void serialEvent() {

@@ -5,12 +5,15 @@
 
 // the cs pin of the version after v1.1 is default to D9
 // v0.9b and v1.0 is default D10
-const int SPI_CS_PIN = 10;
+// Pin 9 is used for MC_CAN on decongester
+const int SPI_CS_PIN = 9;
 
-MCP_CAN CAN(SPI_CS_PIN); 
+MCP_CAN CAN(SPI_CS_PIN);
+
+unsigned char len;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   START_INIT:
 
@@ -25,22 +28,24 @@ void setup() {
         delay(100);
         goto START_INIT;
     }
+    Serial.println("Hit a to program");
 }
 
-unsigned char msg[8] = {142, 0, 1, 0, 0, 1, 0, 0, 0};
+unsigned char msg[8] = {101, 0, 1, 0, 64, 6, 0, 0};
 
 void loop() {
-  Serial.println("Hit a to program");
+  
   char entry = Serial.read();
   if (entry == 'a') {
     CAN.sendMsgBuf(0x0C1, 0, 8, msg);
+    Serial.println("Sent message");
   }
 
-   if(CAN_MSGAVAIL == CAN.checkReceive()) {
-    unsigned char[8] buf;
-    CAN.readMsgBuf(8, buf);
+  if(CAN_MSGAVAIL == CAN.checkReceive()) {
+    unsigned char buf[8];
+    CAN.readMsgBuf(&len, buf);
     if (CAN.getCanId() == 0x0C2) {
       Serial.print(buf[2]);
     }
-   }
+  }
 }
