@@ -162,7 +162,7 @@ void loop() {
         }
         messageACcounter++;
         break;
-      case 0x0AF:
+      /*case 0x0AF:
         Serial.print(0x0AF, HEX);
         Serial.print(": ");
         for(int i = 0; i < 8; i++) {
@@ -170,7 +170,7 @@ void loop() {
           Serial.print(" ");
         }
         Serial.println("");
-        break;
+        break;*/
     }
   }
   
