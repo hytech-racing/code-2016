@@ -3,8 +3,8 @@
 #include <mcp_can.h>
 #include <mcp_can_dfs.h>
 
-MCP_CAN MCcan(9); // SEED shiled goes to MC
-MCP_CAN CarCAN(10); // sparkfun shield goes to rest of car
+MCP_CAN MCcan(9); // SEED shield goes to MC
+MCP_CAN CarCAN(10); // Sparkfun shield goes to rest of car
 
 int messageA0counter = 0;
 int messageA1counter = 0;
@@ -67,7 +67,7 @@ void setup() {
   
   CarCAN.init_Filt(0, 0, 0x0C0); // scan only for command messages
   
-  Serial.println("all good");
+  Serial.println("MC BUS and Car Bus operational");
 
 }
 
@@ -148,13 +148,6 @@ void loop() {
           lastABmessage[i] = tempBuf[i];
         }
         messageABcounter++;
-        /*Serial.print(0x0AB, HEX);
-        Serial.print(": ");
-        for(int i = 0; i < 8; i++) {
-          Serial.print(tempBuf[i], HEX);
-          Serial.print(" ");
-        }
-        Serial.println("");*/
         break;
       case 0x0AC:
         for(int i = 0; i < 8; i++) {
@@ -162,20 +155,13 @@ void loop() {
         }
         messageACcounter++;
         break;
-      /*case 0x0AF:
-        Serial.print(0x0AF, HEX);
-        Serial.print(": ");
-        for(int i = 0; i < 8; i++) {
-          Serial.print(tempBuf[i], HEX);
-          Serial.print(" ");
-        }
-        Serial.println("");
-        break;*/
+      default: // Otherwise rebroadcast message on Car CAN Bus
+        CarCAN.sendMsgBuf(MCcan.getCanId(), 0, 8, tempBuf);
     }
   }
   
   // here, if the decongester has recieved a certain number of messages,
-  // it will put a message out onto the main CAN network
+  // it will put a message out onto the Car CAN BUS
   
   if(messageA0counter > 1) {
     CarCAN.sendMsgBuf(0x0A0, 0, 8, lastA0message);
@@ -222,32 +208,12 @@ void loop() {
     messageACcounter = 0;
   }
   
-  // here, if a message is available from the EVDC, it reads it in and loads
-  // it into a buffer, and resets the timeout
+  // here, if a message is available on Car CAN bus,
+  // it is rebroadcast on MC CAN bus
   
   if(CAN_MSGAVAIL == CarCAN.checkReceive()) {
     CarCAN.readMsgBuf(&len, tempBuf);
-    if(CarCAN.getCanId() == 0x0C0) {
-      for(int i = 0; i < 8; i++) {
-        lastEVDCmessage[i] = tempBuf[i];
-      }
-      messageTimeoutCheck = millis() + EVDC_TIMEOUT_LIMIT;
-    }
-  }
-  
-  // if the timeout has been too long, send a disable message
-  
-  if(millis() > messageTimeoutCheck) {
-    for(int i = 0; i < 8; i++) {
-      lastEVDCmessage[i] = 0;
-    }
-  }
-  
-  // if it is time to send a command message, then send it!
-  
-  if(millis() > messageEVDCtimer){
-    MCcan.sendMsgBuf(0x0C0, 0, 8, lastEVDCmessage);
-    messageEVDCtimer = millis() + MOTOR_CONTR_MESSAGE_DELAY;
+    MCcan.sendMsgBuf(CarCAN.getCanId(), 0, 8, tempBuf);
   }
   
 }
