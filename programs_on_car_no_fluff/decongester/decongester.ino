@@ -141,6 +141,13 @@ void loop() {
         for(int i = 0; i < 8; i++) {
           lastAAmessage[i] = tempBuf[i];
         }
+        Serial.print(0x0AA, HEX);
+        Serial.print(": ");
+        for(int i = 0; i < 8; i++) {
+          Serial.print(tempBuf[i], HEX);
+          Serial.print(" ");
+        }
+        Serial.println("");
         messageAAcounter++;
         break;
       case 0x0AB:
@@ -155,6 +162,14 @@ void loop() {
         }
         messageACcounter++;
         break;
+      case 0x0AF:
+        Serial.print(0x0AF, HEX);
+        Serial.print(": ");
+        for(int i = 0; i < 8; i++) {
+          Serial.print(tempBuf[i], HEX);
+          Serial.print(" ");
+        }
+        Serial.println("");
       default: // Otherwise rebroadcast message on Car CAN Bus
         CarCAN.sendMsgBuf(MCcan.getCanId(), 0, 8, tempBuf);
     }
