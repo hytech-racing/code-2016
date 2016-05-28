@@ -9,14 +9,14 @@ const int SPI_CS_PIN = 9;
 boolean stringComplete = false;
 String inputString = "";
 unsigned char msg[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-int id = 100;
+short id = 0;
 boolean done = false;
 long timer;
 
 MCP_CAN CAN(SPI_CS_PIN);
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   inputString.reserve(500);
 
   START_INIT:
@@ -32,21 +32,28 @@ void setup() {
         delay(100);
         goto START_INIT;
     }
-  Serial.println("Waiting 10 seconds...");
-  delay(10000);
+  Serial.println("Waiting 5 seconds...");
+  delay(5000);
   Serial.println("Beginning");
   timer = millis();
 }
 
 void loop() {
   if (millis() > timer) {
-    timer = millis() + 500;
-    if (id < 500) {
-      Serial.print("Checking ID ");
-      Serial.println(id);
-      msg[0] = (unsigned char) id;
+    timer = millis() + 100;
+    if (id < 0x1F4) {
+      /*Serial.print("Checking ID ");
+      Serial.println(id);*/
+      msg[0] = id & 0xFF;
+      msg[1] = (id >> 8) & 0xFF;
       CAN.sendMsgBuf(0x0C1, 0, 8, msg);
       id++;
+      Serial.print("C1: ");
+      for(int i = 0; i < 8; i++) {
+        Serial.print(msg[i], HEX);
+        Serial.print(" ");
+      }
+      Serial.println("");
     } else if (!done) {
       Serial.println("######################");
       Serial.println("Done");
@@ -61,11 +68,14 @@ void loop() {
     CAN.readMsgBuf(&len, buf);
 
     if (CAN.getCanId() == 0x0C2) {
-      Serial.print(buf[2]);
+      Serial.print(0x0C2, HEX);
       Serial.print(": ");
-      Serial.print(buf[5], HEX);
-      Serial.print(" ");
-      Serial.println(buf[4], HEX);
+      for(int i = 0; i < 8; i++) {
+        Serial.print(buf[i], HEX);
+        Serial.print(" ");
+      }
+      Serial.println("");
+      Serial.println("");
     }
    }
 }
