@@ -3,36 +3,24 @@
 #include <SPI.h>
 #include <string.h>
 
-//Decongester Board uses pin 9 for MC CAN Bus
-const int SPI_CS_PIN = 9;
 
 boolean stringComplete = false;
 String inputString = "";
 unsigned char msg[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-MCP_CAN CAN(SPI_CS_PIN); 
+MCP_CAN CAN(9); // SEED shield goes to MC
 
 void setup() {
   Serial.begin(115200);
   inputString.reserve(200);
 
-  START_INIT:
-
-    if(CAN_OK == CAN.begin(CAN_500KBPS))                   // init can bus : baudrate = 500k
-    {
-        Serial.println("CAN BUS Shield init ok!");
-    }
-    else
-    {
-        Serial.println("CAN BUS Shield init fail");
-        Serial.println("Init CAN BUS Shield again");
-        delay(100);
-        goto START_INIT;
-    }
-
-  Serial.println("Type an ID to read");
+  while(CAN_OK != CAN.begin(CAN_500KBPS)) {
+    Serial.println("MC bus not operational");
+    delay(10);
+  }
+  Serial.println("MC CAN BUS operational");
+  Serial.println("Enter EEPROM value to check");
 }
-
 
 
 void loop() {
@@ -45,20 +33,26 @@ void loop() {
     // clear the string:
     inputString = "";
     stringComplete = false;
-    
   }
   
   if(CAN_MSGAVAIL == CAN.checkReceive()) {
     unsigned char buf[8];
-    unsigned char len = 8;
+    unsigned char len;
     CAN.readMsgBuf(&len, buf);
 
     if (CAN.getCanId() == 0x0C2) {
-      Serial.print(buf[2]);
+      Serial.print(0x0C2, HEX);
+      Serial.print(": ");
+      for(int i = 0; i < 8; i++) {
+        Serial.print(buf[i], HEX);
+        Serial.print(" ");
+      }
+      Serial.println("");
+      /*Serial.print(buf[2]);
       Serial.print(": ");
       Serial.print(buf[5], HEX);
       Serial.print(" ");
-      Serial.println(buf[4], HEX);
+      Serial.println(buf[4], HEX);*/
     }
   }
 }
