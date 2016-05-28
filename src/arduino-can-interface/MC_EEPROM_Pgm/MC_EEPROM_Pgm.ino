@@ -31,7 +31,7 @@ void setup() {
     Serial.println("Hit a to program");
 }
 
-unsigned char msg[8] = {0x94, 0, 1, 0, 0xF7, 0xFF, 0, 0};
+unsigned char msg[8] = {0x94, 0, 1, 0, 0x64, 0x9C, 0, 0};
 
 void loop() {
   
