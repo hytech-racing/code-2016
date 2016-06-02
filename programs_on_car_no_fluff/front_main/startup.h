@@ -129,7 +129,7 @@ boolean startupSequence(MCP_CAN& lilEngineThatCAN) {
     }
     if((getMultiplexerAnalog(IMD_PWM_HIGH_SELECT) < 50) && (brakes > 250)) { // if the progress button is pressed and brakes are more than 25%
       progressBlock = false;
-      Serial.println("both conditions met");    
+      Serial.println("both conditions met");
     }
   }
   

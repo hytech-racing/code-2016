@@ -306,14 +306,14 @@ void loop() {
   }
   
   if(desiredPumpDuty > oldPumpDuty) {
-    oldPumpDuty++;
+    oldPumpDuty+= 20;
   }
   else if(desiredPumpDuty < oldPumpDuty) {
     oldPumpDuty = desiredPumpDuty;
   }
   
   analogWrite(fan_control, oldFanDuty);// write the PWM values
-  analogWrite(pump_control, oldPumpDuty); 
+  analogWrite(pump_control, oldPumpDuty);
   
   
   
