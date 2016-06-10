@@ -47,8 +47,8 @@ okay, so the software_shutdown_control is turned on. then, the software_pushbutt
 #define software_shutdown_control 2 //OKAY
 #define software_pushbutton_control 3 //GOOD
 #define start_LED 4 
-#define fan_control 6 //GOOD -- 150 is a fair value to use
-#define pump_control 5 //GOOD
+#define fan_control 5 //GOOD -- 150 is a fair value to use
+#define pump_control 6 //GOOD
 #define IMD_LED 8
 #define BMS_LED 7
 #define MULTIPLEXER_SELECT_0 9 //GOOD
