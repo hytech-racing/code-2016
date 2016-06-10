@@ -190,9 +190,11 @@ void loop() {
   // TIMER CHECKING  
   
   
+  /*
   if(millis() > BMS_timeout) {
     shutdownError(CanBus, BMS_TIMED_OUT);
   }
+  */
   if(millis() > ar_timeout) {
     shutdownError(CanBus, AR_TIMED_OUT); 
   }
@@ -207,9 +209,11 @@ void loop() {
     IMDerror = 0;
   }
   
+  /*
   if((BMSrelayStatus & 0x01) == 0) { // bit 0 will be 1 if discharge is on, and 0 if it is off
     shutdownError(CanBus, BMS_TIMED_OUT);
   }
+  */
   
   // here I check for over-temps in the motor and controller.
   
