@@ -212,6 +212,153 @@ void loop() {
   }
   if(messageAAcounter > 1) {
     CarCAN.sendMsgBuf(0x0AA, 0, 8, lastAAmessage);
+    Serial.println("********** MC Internal States **********");
+    int vsmState = (lastAAmessage[0] << 8) | lastAAmessage[1];
+    Serial.print("VSM State: ");
+    Serial.print(vsmState);
+    switch(vsmState) {
+      case 0: 
+        Serial.println(" (VSM Start State)");
+        break;
+      case 1:
+        Serial.println(" (Pre-charge Init State)");
+        break;
+      case 2:
+        Serial.println(" (Pre-charge Active State)");
+        break;
+      case 3:
+        Serial.println(" (Pre-charge Complete State)");
+        break;
+      case 4:
+        Serial.println(" (VSM Wait State)");
+        break;
+      case 5:
+        Serial.println(" (VSM Ready State)");
+        break;
+      case 6:
+        Serial.println(" (Motor Running State)");
+        break;
+      case 7:
+        Serial.println(" (Blink Fault Code State)");
+        break;
+      case 14:
+        Serial.println(" (Shutdown in progress)");
+        break;
+      case 15:
+        Serial.println(" (Recycle Power State)");
+        break;
+    }
+    Serial.print("Inverter State: ");
+    Serial.print(lastAAmessage[2]);
+    switch(lastAAmessage[2]) {
+      case 0:
+        Serial.println(" (Power On State)");
+        break;
+      case 1:
+        Serial.println(" (Stop State)");
+        break;
+      case 2:
+        Serial.println(" (Open Loop State)");
+        break;
+      case 3:
+        Serial.println(" (Closed Loop State)");
+        break;
+      case 4:
+        Serial.println(" (Wait State)");
+        break;
+      case 5:
+      case 6:
+      case 7:
+        Serial.println(" (Internal State)");
+        break;
+      case 8:
+        Serial.println(" (Idle Run State)");
+        break;
+      case 9:
+        Serial.println(" (Idle Stop State)");
+        break;
+      case 10:
+      case 11:
+      case 12:
+        Serial.println(" (Internal State)");
+    }
+    Serial.print("Relay State (last 6 bits): ");
+    Serial.println(lastAAmessage[3], HEX);
+    Serial.print("Inverter Run Mode: ");
+    int runMode = lastAAmessage[4] & 0x1;
+    Serial.print(runMode);
+    switch(runMode) {
+      case 0:
+        Serial.println(" (Torque Mode)");
+        break;
+      case 1:
+        Serial.println(" (Speed Mode)");
+        break;
+    }
+    int dischargeState = (lastAAmessage[4] & 0xE0) >> 5;
+    Serial.print("Inverter Active Discharge State: ");
+    Serial.print(dischargeState);
+    switch(dischargeState) {
+      case 0:
+        Serial.println(" (Discharge Disabled)");
+        break;
+      case 1:
+        Serial.println(" (Discharge Enabled, waiting)");
+        break;
+      case 2:
+        Serial.println(" (Performing Speed Check)");
+        break;
+      case 3:
+        Serial.println(" (Discharge Actively Occurring)");
+        break;
+      case 4:
+        Serial.println(" (Discharge Completed)");
+        break;
+    }
+    int cmdMode = lastAAmessage[5];
+    Serial.print("Inverter Command Mode: ");
+    Serial.print(cmdMode);
+    switch(cmdMode) {
+      case 0:
+        Serial.println(" (CAN Mode)");
+        break;
+      case 1:
+        Serial.println(" (VSM Mode)");
+        break;
+    }
+    int enableState = lastAAmessage[6] & 0x1;
+    Serial.print("Inverter Enable State: ");
+    Serial.print(enableState);
+    switch(enableState) {
+      case 0:
+        Serial.println(" (DISABLED)");
+        break;
+      case 1:
+        Serial.println(" (ENABLED)");
+        break;
+    }
+    int lockoutState = (lastAAmessage[6] & 0x80) >> 7;
+    Serial.print("Inverter Lockout State: ");
+    Serial.print(lockoutState);
+    switch(lockoutState) {
+      case 0:
+        Serial.println(" (Lockout OFF - inverter can be enabled)");
+        break;
+      case 1:
+        Serial.println(" (Lockout ON - inverter cannot be enabled)");
+        break;
+    }
+    int direc = lastAAmessage[7];
+    Serial.print("Direction Command: ");
+    Serial.print(direc);
+    switch(direc) {
+      case 0:
+        Serial.println(" (Reverse/Stop)");
+        break;
+      case 1:
+        Serial.println(" (Forward)");
+        break;
+    }
     messageAAcounter = 0;
   }
   if(messageABcounter > 1) {
