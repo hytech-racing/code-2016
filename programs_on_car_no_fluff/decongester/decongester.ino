@@ -213,7 +213,7 @@ void loop() {
   if(messageAAcounter > 1) {
     CarCAN.sendMsgBuf(0x0AA, 0, 8, lastAAmessage);
     Serial.println("********** MC Internal States **********");
-    int vsmState = (lastAAmessage[0] << 8) | lastAAmessage[1];
+    int vsmState = (lastAAmessage[1] << 8) | lastAAmessage[1];
     Serial.print("VSM State: ");
     Serial.print(vsmState);
     switch(vsmState) {
@@ -375,6 +375,50 @@ void loop() {
   
   if(CAN_MSGAVAIL == CarCAN.checkReceive()) {
     CarCAN.readMsgBuf(&len, tempBuf);
+    Serial.println("********** Command Message **********");
+    int tCmd = (tempBuf[1] << 8) | tempBuf[0];
+    Serial.print("Torque Command: ");
+    Serial.println(tCmd);
+    int sCmd = (tempBuf[3] << 8) | tempBuf[2];
+    Serial.print("Speed Command: ");
+    Serial.println(sCmd);
+    int dir = tempBuf[4];
+    Serial.print("Direction: ");
+    switch(dir) {
+      case 0:
+        Serial.println("CW");
+        break;
+      case 1:
+        Serial.println("CCW");
+        break;
+    }
+    int invEn = tempBuf[5] & 0x1;
+    Serial.print("Inverter Status: ");
+    switch(invEn) {
+      case 0:
+        Serial.println("OFF");
+        break;
+      case 1:
+        Serial.println("ON");
+        break;
+    }
+    int disEn = (tempBuf[5] & 0x2) >> 1;
+    Serial.print("Discharge Status: ");
+    switch(disEn) {
+      case 0:
+        Serial.println("Disabled");
+        break;
+      case 1:
+        Serial.println("Enabled");
+        break;
+    }
+    int torqueLimit = (tempBuf[7] << 8) | tempBuf[6];
+    Serial.print("Commanded Torque Limit: ");
+    if (torqueLimit == 0) {
+      Serial.println("default from EEPROM");
+    } else {
+      Serial.println(torqueLimit);
+    }
     MCcan.sendMsgBuf(CarCAN.getCanId(), 0, 8, tempBuf);
   }
   
