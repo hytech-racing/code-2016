@@ -26,12 +26,12 @@ public class BluetoothCommService {
     private static final String LOG_TAG = "BT_COMM";
     // Laptop Address
     // private static final String SERVER_ADDR = "A0:A8:CD:B5:52:97";
-    // RPi Address
-    private static final String SERVER_ADDR = "00:1A:7D:DA:71:11";
+    // RPi Address (Pi Zero W)
+    private static final String SERVER_ADDR = "B8:27:EB:BF:00:6A";
     private static final String B_UUID = "00001101-0000-1000-8000-00805F9B34FB";
     private static final int PORT = 10;
 
-    private static final int DATA_LENGTH = 4;
+    private static final int DATA_LENGTH = 8;
 
     public BluetoothCommService(Handler btHandler, OnConnectedListener onConnectedListener) {
         btAdapter = BluetoothAdapter.getDefaultAdapter();

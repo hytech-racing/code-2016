@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.util.Log;
 
 import com.github.lzyzsd.circleprogress.ArcProgress;
 import com.github.nkzawa.emitter.Emitter;
@@ -37,14 +38,15 @@ public class MainActivity extends Activity implements SensorEventListener {
     public int RED;
     public int[] PROGRESS_COLORS;
 
-    public static final byte BT_BATT_SOC = 0;
-    public static final byte BT_BATT_HI_AVG_TEMP = 1;
-    public static final byte BT_CAR_STARTUP_STATE = 2;
+    //public static final byte BT_BATT_SOC = 0;
+    public static final byte BT_PCU_TEMP = 1;
+    public static final byte BT_PCU_STATUS = 2;
     public static final byte BT_MOTOR_TEMP = 3;
     public static final byte BT_MOTOR_SPEED = 4;
     public static final byte BT_MOTOR_CURRENT = 5;
-    public static final byte BT_REAR_VOLTAGE = 6;
+    public static final byte BT_PCU_VOLTAGE = 6;
     public static final byte BT_PEDALS = 7;
+    public static final byte BT_TCU_STATUS = 8;
     public static final byte BT_DISCONNECT = 0x7F;
     // endregion
 
@@ -69,13 +71,14 @@ public class MainActivity extends Activity implements SensorEventListener {
     private float previousRotation = 0;
 
     private AlertDialog infoDisplay;
-    private byte currentState = -1;
+    private byte currentPCUState = -1;
+    private byte currentTCUState = -1;
     private byte errorState = -1;
 
     private Socket socketIO;
     private static final String MSG_NAMESPACE = "telemetry";
 
-    ByteBuffer btByteBuffer = ByteBuffer.allocate(2);
+    ByteBuffer btByteBuffer = ByteBuffer.allocate(7);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,11 +147,15 @@ public class MainActivity extends Activity implements SensorEventListener {
     private final Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message message) {
+            Log.d("BT_DISP", "Message received");
             byte[] data = (byte[]) message.obj;
             btByteBuffer.clear();
-            btByteBuffer.put(data, 1, 2);
+            btByteBuffer.put(data, 1, 7);
             short value = btByteBuffer.getShort(0);
             switch (data[0]) {
+                /*
+                 * As of Apr 30 2017, State of Charge is not implemented on BMS
+                 * This code will work once it is implemented
                 case BT_BATT_SOC:
                     int soc = btByteBuffer.get(0);
                     chargeMeter.setProgress(soc);
@@ -159,12 +166,13 @@ public class MainActivity extends Activity implements SensorEventListener {
                         chargeMeter.setTextColor(newColor);
                     }
                     break;
-                case BT_BATT_HI_AVG_TEMP:
-                    battTempHigh.setText(String.valueOf(btByteBuffer.get(0)));
-                    battTempAvg.setText(String.valueOf(btByteBuffer.get(1)));
+                 */
+                case BT_PCU_TEMP:
+                    battTempHigh.setText(String.valueOf(btByteBuffer.get(1) << 8 | btByteBuffer.get(0)));
+                    battTempAvg.setText(String.valueOf(btByteBuffer.get(4) << 8 | btByteBuffer.get(3)));
                     break;
-                case BT_CAR_STARTUP_STATE:
-                    handleErrorCode(btByteBuffer.get(1), btByteBuffer.get(0));
+                case BT_PCU_STATUS:
+                    handlePCUMessage(btByteBuffer.get(0), btByteBuffer.get(1));
                     break;
                 case BT_MOTOR_TEMP:
                     motorTemp.setText(String.valueOf(value));
@@ -175,12 +183,15 @@ public class MainActivity extends Activity implements SensorEventListener {
                 case BT_MOTOR_CURRENT:
                     motorCurrent.setText(String.valueOf(value / 10));
                     break;
-                case BT_REAR_VOLTAGE:
-                    rearVoltage.setText(String.valueOf(btByteBuffer.get(0)));
+                case BT_PCU_VOLTAGE:
+                    rearVoltage.setText(String.valueOf(btByteBuffer.get(1) << 8 | btByteBuffer.get(0)));
                     break;
                 case BT_PEDALS:
-                    pedalsAccel.setProgress(btByteBuffer.get(1));
-                    pedalsBrake.setProgress(btByteBuffer.get(0));
+                    //pedalsAccel.setProgress(btByteBuffer.get(1));
+                    //pedalsBrake.setProgress(btByteBuffer.get(0));
+                    break;
+                case BT_TCU_STATUS:
+                    handleTCUMessage(btByteBuffer.get(0), btByteBuffer.get(1));
                     break;
                 case BT_DISCONNECT:
                     setDefaultValues();
@@ -195,13 +206,90 @@ public class MainActivity extends Activity implements SensorEventListener {
     });
     // endregion
 
-    public void handleStartupCode(byte startupCode) {
+    public void handlePCUMessage(byte state, byte flags) {
         errorState = -1;
-        if (currentState == startupCode) {
+        if (currentPCUState == state)
+            return;
+
+        currentPCUState = state;
+
+        String message = null;
+        switch (state) {
+            case 1:
+                message = "Waiting for BMS & IMD";
+                break;
+            case 2:
+                message = "Press START button to begin";
+                break;
+            case 3:
+                message = "Latching AIRs...";
+                break;
+            case 4:
+                if (currentTCUState < 4) {
+                    message = "Tractive system energized, but TCU not in expected state";
+                }
+                break;
+        }
+        int bms_fault = (flags & 0x8) >> 3;
+        int imd_fault = (flags & 0x4) >> 2;
+        if (bms_fault > 0) {
+            message = "BMS Fault";
+        }
+        if (imd_fault > 0) {
+            message = "IMD Fault";
+        }
+        if (bms_fault > 0 && imd_fault > 0) {
+            message = "BMS & IMD Fault";
+        }
+
+        if (message != null) {
+            btErrorDialog(message, false);
+        }
+    }
+
+    public void handleTCUMessage(byte state, byte flags) {
+        errorState = -1;
+        if (currentTCUState == state) {
             return;
         }
 
-        currentState = startupCode;
+        currentTCUState = state;
+
+        String message = null;
+        switch (state) {
+            case 4:
+                message = "Press brake pedal and START button to start car";
+                break;
+            case 5:
+                message = "Enabling inverter...";
+                break;
+            case 7:
+                if (infoDisplay != null && infoDisplay.isShowing()) {
+                    infoDisplay.dismiss();
+                }
+                break;
+        }
+        int throttle_error = (flags & 0x8) >> 3;
+        int brake_error = (flags & 0x8) >> 1;
+        if (throttle_error > 0) {
+            message = "Throttle pedal error (implausibility)";
+        }
+        if (brake_error > 0) {
+            message = "Brake pedal error (implausibility)";
+        }
+
+        if (message != null) {
+            btErrorDialog(message, false);
+        }
+    }
+
+    public void handleStartupCode(byte startupCode) {
+        errorState = -1;
+        if (currentPCUState == startupCode) {
+            return;
+        }
+
+        currentPCUState = startupCode;
 
         String message = null;
         switch (startupCode) {
@@ -324,7 +412,7 @@ public class MainActivity extends Activity implements SensorEventListener {
                 return;
         }
 
-        currentState = -1;
+        currentTCUState = -1;
         if (message != null) {
             btErrorDialog(message, true);
         }
